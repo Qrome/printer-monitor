@@ -92,7 +92,7 @@ used to open a browser to the Web Interface.  Everything can be configured there
 David Payne  
 Daniel Eichhorn -- Author of the TimeClient class and OLEDDisplayUi
 
-![Video](https://youtu.be/niRv9SCgAPk)  
+[![Watch the video](/images/video_print_monitor.png)](https://youtu.be/niRv9SCgAPk)
 ![Printer Monitor Temps](/images/temperatures.jpg)  
 ![Printer Monitor Time Remaining](/images/time_remaining.jpg)  
 ![Printer Monitor Printing Time](/images/printing_time.jpg)
