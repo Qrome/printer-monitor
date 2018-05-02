@@ -36,6 +36,7 @@ SOFTWARE.
 * Fully configurable from the web interface (not required to update Settings.h)
 * Supports OTA (loading firmware over WiFi connection on same LAN)
 * Basic Athentication to protect your settings
+* Video: https://youtu.be/niRv9SCgAPk
 
 ## Required Parts:
 * Wemos D1 Mini: https://amzn.to/2qLyKJd
@@ -91,6 +92,7 @@ used to open a browser to the Web Interface.  Everything can be configured there
 David Payne  
 Daniel Eichhorn -- Author of the TimeClient class and OLEDDisplayUi
 
+![Video](https://youtu.be/niRv9SCgAPk)  
 ![Printer Monitor Temps](/images/temperatures.jpg)  
 ![Printer Monitor Time Remaining](/images/time_remaining.jpg)  
 ![Printer Monitor Printing Time](/images/printing_time.jpg)
