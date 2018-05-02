@@ -75,7 +75,7 @@ You will can update the **Settings.h** file with your OctoPrint API Key or do it
 NOTE: The settings in the Settings.h are the default settings for the first loading. After loading you will manage changes to the settings via the Web Interface. If you want to change settings again in the settings.h, you will need to erase the file system on the Wemos or use the “Reset Settings” option in the Web Interface.  
 
 ## Web Interface
-The Marquee Scroller uses the **WiFiManager** so when it can't find the last network it was connected to 
+The Printer Monitor uses the **WiFiManager** so when it can't find the last network it was connected to 
 it will become a **AP Hotspot** -- connect to it with your phone and you can then enter your WiFi connection information.
 
 After connected to your WiFi network it will display the IP addressed assigned to it and that can be 
