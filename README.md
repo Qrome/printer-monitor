@@ -31,6 +31,7 @@ SOFTWARE.
 * Progress bar
 * Screen turns off when printer is turned off or disconnected
 * Screen turns on when printer is Operational or connected
+* Option to display a clock screen instead of sleep mode
 * Sample rate is every 60 seconds when not printing
 * Sample rate is every 10 seconds when printing
 * Fully configurable from the web interface (not required to update Settings.h)
