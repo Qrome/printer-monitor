@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "1.0"
+#define VERSION "1.1"
 
 #define HOSTNAME "ESP8266-" 
 #define CONFIG "/conf.txt"
@@ -54,12 +54,17 @@ void drawScreen1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
 void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
+void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 
 // Set the number of Frames supported
 const int numberOfFrames = 3;
 FrameCallback frames[numberOfFrames];
+FrameCallback clockFrame[1];
+boolean isClockOn = false;
 
 OverlayCallback overlays[] = { drawHeaderOverlay };
+OverlayCallback clockOverlay[] = { drawClockHeaderOverlay };
 int numberOfOverlays = 1;
 
 // Time 
@@ -92,6 +97,7 @@ const String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' m
                             "<label>OctoPrint API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintApiKey' value='%OCTOKEY%' maxlength='60'>"
                             "<label>OctoPrint Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintAddress' value='%OCTOADDRESS%' maxlength='60'>"
                             "<label>OctoPrint Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'>"
+                            "<input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off<p>"
                             "Time Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>"
                             "Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
                             "<label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'>"
@@ -182,10 +188,11 @@ void setup() {
   ui.setFrameAnimation(SLIDE_LEFT);
   ui.setTargetFPS(30);
   ui.disableAllIndicators();
-  ui.setFrames(frames, numberOfFrames);
+  ui.setFrames(frames, (numberOfFrames));
   frames[0] = drawScreen1;
   frames[1] = drawScreen2;
   frames[2] = drawScreen3;
+  clockFrame[0] = drawClock;
   ui.setOverlays(overlays, numberOfOverlays);
   
   // Inital UI takes care of initalising the display too.
@@ -278,7 +285,7 @@ void loop() {
     }
   }
 
-  checkDisplay(); // this will see if we need to turn it on or off for night mode.
+  checkDisplay(); // Check to see if the printer is on or offline and change display.
 
   ui.update();
 
@@ -321,6 +328,7 @@ void handleUpdateConfig() {
   OctoPrintApiKey = server.arg("octoPrintApiKey");
   OctoPrintServer = server.arg("octoPrintAddress");
   OctoPrintPort = server.arg("octoPrintPort").toInt();
+  DISPLAYCLOCK = server.hasArg("isClockEnabled");
   minutesBetweenDataRefresh = server.arg("refresh").toInt();
   themeColor = server.arg("theme");
   UtcOffset = server.arg("utcoffset").toFloat();
@@ -329,6 +337,9 @@ void handleUpdateConfig() {
   temp = server.arg("stationpassword");
   temp.toCharArray(www_password, sizeof(temp));
   writeSettings();
+  printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort);
+  printerClient.getPrinterJobResults();
+  checkDisplay();
   lastEpoch = 0;
   redirectHome();
 }
@@ -366,6 +377,11 @@ void handleConfigure() {
   form.replace("%OCTOKEY%", OctoPrintApiKey);
   form.replace("%OCTOADDRESS%", OctoPrintServer);
   form.replace("%OCTOPORT%", String(OctoPrintPort));
+  String isClockChecked = "";
+  if (DISPLAYCLOCK) {
+    isClockChecked = "checked='checked'";
+  }
+  form.replace("%IS_CLOCK_CHECKED%", isClockChecked);
   String options = "<option>10</option><option>15</option><option>20</option><option>30</option><option>60</option>";
   options.replace(">"+String(minutesBetweenDataRefresh)+"<", " selected>"+String(minutesBetweenDataRefresh)+"<");
   form.replace("%OPTIONS%", options);
@@ -415,11 +431,18 @@ void redirectHome() {
 }
 
 String getHeader() {
+  return getHeader(false);
+}
+
+String getHeader(boolean refresh) {
   String menu = String(WEB_ACTIONS);
 
   String html = "<!DOCTYPE HTML>";
   html += "<html><head><title>Printer Monitor</title><link rel='icon' href='data:;base64,='>";
   html += "<meta name='viewport' content='width=device-width, initial-scale=1'>";
+  if (refresh) {
+    html += "<meta http-equiv=\"refresh\" content=\"30\">";
+  }
   html += "<link rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css'>";
   html += "<link rel='stylesheet' href='https://www.w3schools.com/lib/w3-theme-" + themeColor + ".css'>";
   html += "<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'>";
@@ -467,7 +490,7 @@ void displayPrinterStatus() {
   server.sendHeader("Expires", "-1");
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send(200, "text/html", "");
-  server.sendContent(String(getHeader()));
+  server.sendContent(String(getHeader(true)));
 
   html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds() + " " + timeClient.getAmPm() + "</h2></div><div class='w3-cell-row'>";
   html += "<div class='w3-cell w3-container' style='width:100%'><p>";
@@ -585,6 +608,13 @@ void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
   display->drawString(64 + x, 14 + y, time);
 }
 
+void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->setFont(ArialMT_Plain_24);
+  String time = timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  display->drawString(64 + x, 10 + y, time);
+}
+
 String zeroPad(int value) {
   String rtnValue = String(value);
   if (value < 10) {
@@ -614,6 +644,28 @@ void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   display->drawHorizontalLine(0, 43, updatePos);
   display->drawHorizontalLine(0, 44, updatePos);
   display->drawHorizontalLine(0, 45, updatePos);
+  
+  drawRssi(display);
+}
+
+void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
+  display->setColor(WHITE);
+  display->setFont(ArialMT_Plain_16);
+  String time = timeClient.getAmPm();
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->drawString(0, 48, time);
+  display->setFont(ArialMT_Plain_16);
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->drawString(64, 48, "offline");
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+
+  display->drawRect(0, 41, 128, 2);
+  
+  drawRssi(display);
+}
+
+void drawRssi(OLEDDisplay *display) {
+
  
   int8_t quality = getWifiQuality();
   for (int8_t i = 0; i < 4; i++) {
@@ -653,6 +705,7 @@ void writeSettings() {
     f.println("themeColor=" + themeColor);
     f.println("www_username=" + String(www_username));
     f.println("www_password=" + String(www_password));
+    f.println("DISPLAYCLOCK=" + String(DISPLAYCLOCK));
   }
   f.close();
   readSettings();
@@ -709,11 +762,13 @@ void readSettings() {
       temp.toCharArray(www_password, sizeof(temp));
       Serial.println("www_password=" + String(www_password));
     }
+    if (line.indexOf("DISPLAYCLOCK=") >= 0) {
+      DISPLAYCLOCK = line.substring(line.lastIndexOf("DISPLAYCLOCK=") + 13).toInt();
+      Serial.println("DISPLAYCLOCK=" + String(DISPLAYCLOCK));
+    }
   }
   fr.close();
   timeClient.setUtcOffset(UtcOffset);
-  printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort);
-  printerClient.getPrinterJobResults();
 }
 
 int getMinutesFromLastRefresh() {
@@ -728,7 +783,10 @@ int getMinutesFromLastDisplay() {
 
 // Toggle on and off the display if user defined times
 void checkDisplay() {
-  if (displayOn && !(printerClient.isOperational() || printerClient.isPrinting())) {
+  if (!displayOn && DISPLAYCLOCK) {
+    enableDisplay(true);
+  }
+  if (displayOn && !(printerClient.isOperational() || printerClient.isPrinting()) && !DISPLAYCLOCK) {
     // Put Display to sleep
     display.clear();
     display.display();
@@ -739,8 +797,9 @@ void checkDisplay() {
     display.display();
     delay(5000);
     enableDisplay(false);
-    return;
-  } else if (!displayOn) {
+    Serial.println("Printer is offline going down to sleep...");
+    return;    
+  } else if (!displayOn && !DISPLAYCLOCK) {
     if (printerClient.isOperational()) {
       // Wake the Screen up
       enableDisplay(true);
@@ -751,8 +810,24 @@ void checkDisplay() {
       display.setContrast(255); // default is 255
       display.drawString(64, 5, "Printer Online\nWake up...");
       display.display();
+      Serial.println("Printer is online waking up...");
       delay(5000);
       return;
+    }
+  } else if (DISPLAYCLOCK) {
+    if (!printerClient.isOperational() && !isClockOn) {
+      Serial.println("Clock Mode is turned on.");
+      ui.disableAutoTransition();
+      ui.setFrames(clockFrame, 1);
+      clockFrame[0] = drawClock;
+      ui.setOverlays(clockOverlay, numberOfOverlays);
+      isClockOn = true;
+    } else if (printerClient.isOperational() && isClockOn) {
+      Serial.println("Printer Monitor is active.");
+      ui.setFrames(frames, numberOfFrames);
+      ui.setOverlays(overlays, numberOfOverlays);
+      ui.enableAutoTransition();
+      isClockOn = false;
     }
   }
 }
