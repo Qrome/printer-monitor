@@ -337,7 +337,6 @@ void handleUpdateConfig() {
   temp = server.arg("stationpassword");
   temp.toCharArray(www_password, sizeof(temp));
   writeSettings();
-  printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort);
   printerClient.getPrinterJobResults();
   checkDisplay();
   lastEpoch = 0;
@@ -768,6 +767,7 @@ void readSettings() {
     }
   }
   fr.close();
+  printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort);
   timeClient.setUtcOffset(UtcOffset);
 }
 
