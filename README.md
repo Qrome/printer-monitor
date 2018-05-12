@@ -29,6 +29,7 @@ SOFTWARE.
 * Time Printing
 * Percentage complete
 * Progress bar
+* Bed and Tool Temperature
 * Screen turns off when printer is turned off or disconnected
 * Screen turns on when printer is Operational or connected
 * Option to display a clock screen instead of sleep mode
