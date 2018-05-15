@@ -41,8 +41,8 @@ SOFTWARE.
 * Video: https://youtu.be/niRv9SCgAPk
 
 ## Required Parts:
-* Wemos D1 Mini: https://amzn.to/2qLyKJd
-* 0.96" OLED I2C 128x64 Display (12864) SSD1306:  https://amzn.to/2JDEAUF
+* Wemos D1 Mini: https://amzn.to/2ImqD1n
+* 0.96" OLED I2C 128x64 Display (12864) SSD1306:  https://amzn.to/2InSNF0
 
 ## Wiring for the Wemos D1 Mini to the I2C SSD1306 OLED
 SDA -> D2  
