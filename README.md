@@ -50,7 +50,7 @@ SCL -> D5
 VCC -> 5V+  
 GND -> GND-  
 
-![Printer Monitor Wire Diagram](/images/3D-Printer-monitor-wire.jpg)  
+![Printer Monitor Wire Diagram](/images/printer_monitor_wiring.jpg)  
 
 ## 3D Printed Case by Qrome:  
 https://www.thingiverse.com/thing:2884823
