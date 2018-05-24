@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "1.2"
+#define VERSION "1.3"
 
 #define HOSTNAME "ESP8266-" 
 #define CONFIG "/conf.txt"
@@ -98,6 +98,7 @@ const String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' m
                             "<label>OctoPrint Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintAddress' value='%OCTOADDRESS%' maxlength='60'>"
                             "<label>OctoPrint Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'>"
                             "<input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off<p>"
+                            "<input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)<p>"
                             "Time Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>"
                             "Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
                             "<label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'>"
@@ -329,6 +330,7 @@ void handleUpdateConfig() {
   OctoPrintServer = server.arg("octoPrintAddress");
   OctoPrintPort = server.arg("octoPrintPort").toInt();
   DISPLAYCLOCK = server.hasArg("isClockEnabled");
+  IS_24HOUR = server.hasArg("is24hour");
   minutesBetweenDataRefresh = server.arg("refresh").toInt();
   themeColor = server.arg("theme");
   UtcOffset = server.arg("utcoffset").toFloat();
@@ -381,6 +383,11 @@ void handleConfigure() {
     isClockChecked = "checked='checked'";
   }
   form.replace("%IS_CLOCK_CHECKED%", isClockChecked);
+  String is24hourChecked = "";
+  if (IS_24HOUR) {
+    is24hourChecked = "checked='checked'";
+  }
+  form.replace("%IS_24HOUR_CHECKED%", is24hourChecked);
   String options = "<option>10</option><option>15</option><option>20</option><option>30</option><option>60</option>";
   options.replace(">"+String(minutesBetweenDataRefresh)+"<", " selected>"+String(minutesBetweenDataRefresh)+"<");
   form.replace("%OPTIONS%", options);
@@ -491,7 +498,12 @@ void displayPrinterStatus() {
   server.send(200, "text/html", "");
   server.sendContent(String(getHeader(true)));
 
-  html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds() + " " + timeClient.getAmPm() + "</h2></div><div class='w3-cell-row'>";
+  String displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds() + " " + timeClient.getAmPm();
+  if (IS_24HOUR) {
+    displayTime = timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  }
+  
+  html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + displayTime + "</h2></div><div class='w3-cell-row'>";
   html += "<div class='w3-cell w3-container' style='width:100%'><p>";
   if (printerClient.getError() != "") {
     html += "Error: " + printerClient.getError() + "<br>";
@@ -610,8 +622,11 @@ void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
 void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->setTextAlignment(TEXT_ALIGN_CENTER);
   display->setFont(ArialMT_Plain_24);
-  String time = timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
-  display->drawString(64 + x, 10 + y, time);
+  String displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  if (IS_24HOUR) {
+    displayTime = timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds(); 
+  }
+  display->drawString(64 + x, 10 + y, displayTime);
 }
 
 String zeroPad(int value) {
@@ -625,12 +640,19 @@ String zeroPad(int value) {
 void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   display->setColor(WHITE);
   display->setFont(ArialMT_Plain_16);
-  String time = timeClient.getAmPmHours() + ":" + timeClient.getMinutes();
+  String displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes();
+  if (IS_24HOUR) {
+    displayTime = timeClient.getHours() + ":" + timeClient.getMinutes();
+  }
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->drawString(0, 48, time);
-  String ampm = timeClient.getAmPm();
-  display->setFont(ArialMT_Plain_10);
-  display->drawString(39, 54, ampm);
+  display->drawString(0, 48, displayTime);
+  
+  if (!IS_24HOUR) {
+    String ampm = timeClient.getAmPm();
+    display->setFont(ArialMT_Plain_10);
+    display->drawString(39, 54, ampm);
+  }
+
   display->setFont(ArialMT_Plain_16);
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   String percent = String(printerClient.getProgressCompletion()) + "%";
@@ -705,6 +727,7 @@ void writeSettings() {
     f.println("www_username=" + String(www_username));
     f.println("www_password=" + String(www_password));
     f.println("DISPLAYCLOCK=" + String(DISPLAYCLOCK));
+    f.println("is24hour=" + String(IS_24HOUR));
   }
   f.close();
   readSettings();
@@ -764,6 +787,10 @@ void readSettings() {
     if (line.indexOf("DISPLAYCLOCK=") >= 0) {
       DISPLAYCLOCK = line.substring(line.lastIndexOf("DISPLAYCLOCK=") + 13).toInt();
       Serial.println("DISPLAYCLOCK=" + String(DISPLAYCLOCK));
+    }
+    if (line.indexOf("is24hour=") >= 0) {
+      IS_24HOUR = line.substring(line.lastIndexOf("is24hour=") + 9).toInt();
+      Serial.println("IS_24HOUR=" + String(IS_24HOUR));
     }
   }
   fr.close();
