@@ -60,6 +60,7 @@ const boolean WEBSERVER_ENABLED = true;  // Device will provide a web interface 
 char* www_username = "admin";  // User account for the Web Interface
 char* www_password = "password";  // Password for the Web Interface
 float UtcOffset = -7; // Hour offset from GMT for your timezone
+boolean IS_24HOUR = false; // 23:00 millitary 24 hour clock
 int minutesBetweenDataRefresh = 60;
 boolean DISPLAYCLOCK = true; // true = Show Clock when not printing / false = turn off display when not printing
 
