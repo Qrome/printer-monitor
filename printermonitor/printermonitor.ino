@@ -27,9 +27,9 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "1.3"
+#define VERSION "1.4"
 
-#define HOSTNAME "ESP8266-" 
+#define HOSTNAME "OctoMon-" 
 #define CONFIG "/conf.txt"
 
 /* Useful Constants */
@@ -222,6 +222,7 @@ void setup() {
       else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
       else if (error == OTA_END_ERROR) Serial.println("End Failed");
     });
+    ArduinoOTA.setHostname((const char *)hostname.c_str()); 
     ArduinoOTA.begin();
   }
 
