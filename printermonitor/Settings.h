@@ -50,26 +50,26 @@ SOFTWARE.
 //******************************
 
 // OctoPrint Monitoring -- Monitor your 3D printer OctoPrint Server
-String OctoPrintApiKey = "";  // ApiKey from your User Account on OctoPrint
-String OctoPrintServer = ""; // IP or Address of your OctoPrint Server (DO NOT include http://)
-int OctoPrintPort = 80; // the port you are running your OctoPrint server on (usually 80);
+String OctoPrintApiKey = "";   // ApiKey from your User Account on OctoPrint
+String OctoPrintServer = "";   // IP or Address of your OctoPrint Server (DO NOT include http://)
+int OctoPrintPort = 80;        // the port you are running your OctoPrint server on (usually 80);
 
 const int WEBSERVER_PORT = 80; // The port you can access this device on over HTTP
 const boolean WEBSERVER_ENABLED = true;  // Device will provide a web interface via http://[ip]:[port]/
 char* www_username = "admin";  // User account for the Web Interface
 char* www_password = "password";  // Password for the Web Interface
 float UtcOffset = -7; // Hour offset from GMT for your timezone
-boolean IS_24HOUR = false; // 23:00 millitary 24 hour clock
+boolean IS_24HOUR = false;     // 23:00 millitary 24 hour clock
 int minutesBetweenDataRefresh = 60;
-boolean DISPLAYCLOCK = true; // true = Show Clock when not printing / false = turn off display when not printing
+boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = turn off display when not printing
 
 // Display Settings
 const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)
 const int SDA_PIN = D2;
 const int SCL_PIN = D5;
-//#define DISPLAY_SH1106  // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
+//#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
 
-boolean ENABLE_OTA = true;  // this will allow you to load firmware to the device over WiFi (see OTA for ESP8266)
+boolean ENABLE_OTA = true;     // this will allow you to load firmware to the device over WiFi (see OTA for ESP8266)
 
 //******************************
 // End Settings
@@ -77,7 +77,7 @@ boolean ENABLE_OTA = true;  // this will allow you to load firmware to the devic
 
 String themeColor = "light-green"; // this can be changed later in the web interface.
 
-// Define the type of display you are using above and include the right lib
+// SSD1306 is default - if DISPLAY_SH1106 is defined then it will use SH1106
 #if defined(DISPLAY_SH1106)
   #include "SH1106Wire.h"
 #else
