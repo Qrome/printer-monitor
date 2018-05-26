@@ -43,7 +43,6 @@ SOFTWARE.
 #include "TimeClient.h"
 #include "OctoPrintClient.h"
 #include "FS.h"
-#include "SSD1306Wire.h"
 #include "OLEDDisplayUi.h"
 
 //******************************
@@ -68,6 +67,7 @@ boolean DISPLAYCLOCK = true; // true = Show Clock when not printing / false = tu
 const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)
 const int SDA_PIN = D2;
 const int SCL_PIN = D5;
+//#define DISPLAY_SH1106  // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
 
 boolean ENABLE_OTA = true;  // this will allow you to load firmware to the device over WiFi (see OTA for ESP8266)
 
@@ -76,3 +76,10 @@ boolean ENABLE_OTA = true;  // this will allow you to load firmware to the devic
 //******************************
 
 String themeColor = "light-green"; // this can be changed later in the web interface.
+
+// Define the type of display you are using above and include the right lib
+#if defined(DISPLAY_SH1106)
+  #include "SH1106Wire.h"
+#else
+  #include "SSD1306Wire.h"
+#endif
