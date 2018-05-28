@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "1.4"
+#define VERSION "1.5"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
@@ -154,6 +154,9 @@ void setup() {
 
   // initialize dispaly
   display.init();
+  if (INVERT_DISPLAY) {
+    display.flipScreenVertically(); // connections at top of OLED display
+  }
   display.clear();
   display.display();
 
@@ -195,6 +198,9 @@ void setup() {
   
   // Inital UI takes care of initalising the display too.
   ui.init();
+  if (INVERT_DISPLAY) {
+    display.flipScreenVertically();  //connections at top of OLED display
+  }
   
   // print the received signal strength:
   Serial.print("Signal Strength (RSSI): ");
