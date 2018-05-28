@@ -55,7 +55,8 @@ GND -> GND-
 ![Printer Monitor Wire Diagram](/images/printer_monitor_wiring.jpg)  
 
 ## 3D Printed Case by Qrome:  
-https://www.thingiverse.com/thing:2884823
+https://www.thingiverse.com/thing:2884823 -- for the 0.96" OLED Display  
+https://www.thingiverse.com/thing:2934049 -- for the 1.3" OLED Display
 
 ## Compiling and Loading to Wemos D1 Mini
 It is recommended to use Arduino IDE.  You will need to configure Arduino IDE to work with the Wemos board and USB port and installed the required USB drivers etc.  
