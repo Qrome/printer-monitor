@@ -43,6 +43,8 @@ SOFTWARE.
 #include "TimeClient.h"
 #include "OctoPrintClient.h"
 #include "FS.h"
+#include "SH1106Wire.h"
+#include "SSD1306Wire.h"
 #include "OLEDDisplayUi.h"
 
 //******************************
@@ -76,10 +78,3 @@ boolean ENABLE_OTA = true;     // this will allow you to load firmware to the de
 //******************************
 
 String themeColor = "light-green"; // this can be changed later in the web interface.
-
-// SSD1306 is default - if DISPLAY_SH1106 is defined then it will use SH1106
-#if defined(DISPLAY_SH1106)
-  #include "SH1106Wire.h"
-#else
-  #include "SSD1306Wire.h"
-#endif
