@@ -27,9 +27,9 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "1.3"
+#define VERSION "1.4"
 
-#define HOSTNAME "ESP8266-" 
+#define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
 
 /* Useful Constants */
@@ -45,7 +45,12 @@ SOFTWARE.
 
 // Initialize the oled display for I2C_DISPLAY_ADDRESS
 // SDA_PIN and SCL_PIN
-SSD1306Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SCL_PIN);
+#if defined(DISPLAY_SH1106)
+  SH1106Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SCL_PIN);
+#else
+  SSD1306Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SCL_PIN); // this is the default
+#endif
+
 OLEDDisplayUi   ui( &display );
 
 void drawProgress(OLEDDisplay *display, int percentage, String label);
@@ -167,23 +172,15 @@ void setup() {
   //wifiManager.resetSettings();
   wifiManager.setAPCallback(configModeCallback);
   
-  //or use this for auto generated name ESP + ChipID
-  wifiManager.autoConnect();
-  
-  //Manual Wifi
   String hostname(HOSTNAME);
   hostname += String(ESP.getChipId(), HEX);
-  WiFi.hostname(hostname);
-
-  int cnt = 0;
-  while (WiFi.status() != WL_CONNECTED) {
-    digitalWrite(externalLight, LOW);
-    delay(500);
-    Serial.print(".");
-    cnt++;
-    digitalWrite(externalLight, HIGH);
+  if (!wifiManager.autoConnect((const char *)hostname.c_str())) {// new addition
+    delay(3000);
+    WiFi.disconnect(true);
+    ESP.reset();
+    delay(5000);
   }
-
+  
   // You can change the transition that is used
   // SLIDE_LEFT, SLIDE_RIGHT, SLIDE_TOP, SLIDE_DOWN
   ui.setFrameAnimation(SLIDE_LEFT);
@@ -222,6 +219,7 @@ void setup() {
       else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
       else if (error == OTA_END_ERROR) Serial.println("End Failed");
     });
+    ArduinoOTA.setHostname((const char *)hostname.c_str()); 
     ArduinoOTA.begin();
   }
 
@@ -552,7 +550,19 @@ void displayPrinterStatus() {
 
 void configModeCallback (WiFiManager *myWiFiManager) {
   Serial.println("Entered config mode");
-  Serial.println(WiFi.softAPIP());  
+  Serial.println(WiFi.softAPIP());
+
+  display.clear();
+  display.setTextAlignment(TEXT_ALIGN_CENTER);
+  display.setFont(ArialMT_Plain_10);
+  display.drawString(64, 0, "Wifi Manager");
+  display.drawString(64, 10, "Please connect to AP");
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(64, 23, myWiFiManager->getConfigPortalSSID());
+  display.setFont(ArialMT_Plain_10);
+  display.drawString(64, 42, "To setup Wifi connection");
+  display.display();
+  
   Serial.println("Wifi Manager");
   Serial.println("Please connect to AP");
   Serial.println(myWiFiManager->getConfigPortalSSID());
