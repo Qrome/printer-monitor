@@ -210,7 +210,11 @@ String OctoPrintClient::getProgressPrintTime() {
 }
 
 String OctoPrintClient::getProgressPrintTimeLeft() {
-  return printerData.progressPrintTimeLeft;
+  String rtnValue = printerData.progressPrintTimeLeft;
+  if (getProgressCompletion() == "100") {
+    rtnValue = "0"; // Print is done so this should be 0 this is a fix for OctoPrint
+  }
+  return rtnValue;
 }
 
 String OctoPrintClient::getState() {
