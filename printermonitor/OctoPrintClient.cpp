@@ -64,16 +64,16 @@ WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
     if (printClient.println() == 0) {
       Serial.println("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
       Serial.println();
+      resetPrintData();
       printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
-      printerData.state = "";
       return printClient;
     }
   } 
   else {
     Serial.println("Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
     Serial.println();
+    resetPrintData();
     printerData.error = "Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort);
-    printerData.state = "";
     return printClient;
   }
 
@@ -175,6 +175,27 @@ void OctoPrintClient::getPrinterJobResults() {
   }
   
   printClient.stop(); //stop client
+}
+
+// Reset all PrinterData
+void OctoPrintClient::resetPrintData() {
+  printerData.averagePrintTime = "";
+  printerData.estimatedPrintTime = "";
+  printerData.fileName = "";
+  printerData.fileSize = "";
+  printerData.lastPrintTime = "";
+  printerData.progressCompletion = "";
+  printerData.progressFilepos = "";
+  printerData.progressPrintTime = "";
+  printerData.progressPrintTimeLeft = "";
+  printerData.state = "";
+  printerData.toolTemp = "";
+  printerData.toolTargetTemp = "";
+  printerData.filamentLength = "";
+  printerData.bedTemp = "";
+  printerData.bedTargetTemp = "";
+  printerData.isPrinting = false;
+  printerData.error = "";
 }
 
 String OctoPrintClient::getAveragePrintTime(){

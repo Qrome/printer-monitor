@@ -32,6 +32,7 @@ private:
   int myPort = 80;
   String myApiKey = "";
 
+  void resetPrintData();
   boolean validate();
   WiFiClient getSubmitRequest(String apiGetData);
   
