@@ -53,6 +53,7 @@ SOFTWARE.
 
 // OctoPrint Monitoring -- Monitor your 3D printer OctoPrint Server
 String OctoPrintApiKey = "";   // ApiKey from your User Account on OctoPrint
+String OctoPrintHostName = "octopi";// Default 'octopi' -- or hostname if different (optional if your IP changes)
 String OctoPrintServer = "";   // IP or Address of your OctoPrint Server (DO NOT include http://)
 int OctoPrintPort = 80;        // the port you are running your OctoPrint server on (usually 80);
 

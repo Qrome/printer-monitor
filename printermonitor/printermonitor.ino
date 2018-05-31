@@ -100,6 +100,7 @@ const String WEB_ACTIONS =  "<a class='w3-bar-item w3-button' href='/'><i class=
                             
 const String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
                             "<label>OctoPrint API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintApiKey' value='%OCTOKEY%' maxlength='60'>"
+                            "<label>OctoPrint Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintHostName' value='%OCTOHOST%' maxlength='60'>"
                             "<label>OctoPrint Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintAddress' value='%OCTOADDRESS%' maxlength='60'>"
                             "<label>OctoPrint Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'>"
                             "<input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off<p>"
@@ -262,6 +263,34 @@ void setup() {
   }
    
   flashLED(5, 500);
+  findMDNS();  //go find Octoprint Server by the hostname
+}
+
+void findMDNS() {
+  if (OctoPrintHostName == "") {
+    return; // nothing to do here
+  }
+  // We now query our network for 'web servers' service
+  // over tcp, and get the number of available devices
+  int n = MDNS.queryService("http", "tcp");
+  if (n == 0) {
+    Serial.println("no services found - make sure OctoPrint server is turned on");
+    return;
+  }
+  Serial.println("*** Looking for " + OctoPrintHostName + " over mDNS");
+  for (int i = 0; i < n; ++i) {
+    // Going through every available service,
+    // we're searching for the one whose hostname
+    // matches what we want, and then get its IP
+    Serial.println("Found: " + MDNS.hostname(i));
+    if (MDNS.hostname(i) == OctoPrintHostName) {
+      IPAddress serverIp = MDNS.IP(i);
+      OctoPrintServer = serverIp.toString();
+      OctoPrintPort = MDNS.port(i); // save the port
+      Serial.println("*** Found OctoPrint Server " + OctoPrintHostName + " http://" + OctoPrintServer + ":" + OctoPrintPort);
+      writeSettings(); // update the settings
+    }
+  }
 }
 
 //************************************************************
@@ -331,6 +360,7 @@ void handleUpdateConfig() {
     return server.requestAuthentication();
   }
   OctoPrintApiKey = server.arg("octoPrintApiKey");
+  OctoPrintHostName = server.arg("octoPrintHostName");
   OctoPrintServer = server.arg("octoPrintAddress");
   OctoPrintPort = server.arg("octoPrintPort").toInt();
   DISPLAYCLOCK = server.hasArg("isClockEnabled");
@@ -343,6 +373,7 @@ void handleUpdateConfig() {
   temp = server.arg("stationpassword");
   temp.toCharArray(www_password, sizeof(temp));
   writeSettings();
+  findMDNS();
   printerClient.getPrinterJobResults();
   checkDisplay();
   lastEpoch = 0;
@@ -380,6 +411,7 @@ void handleConfigure() {
   String form = String(CHANGE_FORM);
   
   form.replace("%OCTOKEY%", OctoPrintApiKey);
+  form.replace("%OCTOHOST%", OctoPrintHostName);
   form.replace("%OCTOADDRESS%", OctoPrintServer);
   form.replace("%OCTOPORT%", String(OctoPrintPort));
   String isClockChecked = "";
@@ -736,6 +768,7 @@ void writeSettings() {
     Serial.println("Saving settings now...");
     f.println("UtcOffset=" + String(UtcOffset));
     f.println("octoKey=" + OctoPrintApiKey);
+    f.println("octoHost=" + OctoPrintHostName);
     f.println("octoServer=" + OctoPrintServer);
     f.println("octoPort=" + String(OctoPrintPort));
     f.println("refreshRate=" + String(minutesBetweenDataRefresh));
@@ -769,6 +802,11 @@ void readSettings() {
       OctoPrintApiKey = line.substring(line.lastIndexOf("octoKey=") + 8);
       OctoPrintApiKey.trim();
       Serial.println("OctoPrintApiKey=" + OctoPrintApiKey);
+    }
+    if (line.indexOf("octoHost=") >= 0) {
+      OctoPrintHostName = line.substring(line.lastIndexOf("octoHost=") + 9);
+      OctoPrintHostName.trim();
+      Serial.println("OctoPrintHostName=" + OctoPrintHostName);
     }
     if (line.indexOf("octoServer=") >= 0) {
       OctoPrintServer = line.substring(line.lastIndexOf("octoServer=") + 11);
