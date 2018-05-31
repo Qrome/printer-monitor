@@ -99,7 +99,12 @@ used to open a browser to the Web Interface.  Everything can be configured there
 
 ## Contributors
 David Payne  
-Daniel Eichhorn -- Author of the TimeClient class and OLEDDisplayUi
+Daniel Eichhorn -- Author of the TimeClient class and OLEDDisplayUi . 
+
+Contributing to this software is warmly welcomed. You can do this basically by
+forking from master, committing modifications and then making a pulling requests to be reviewed (follow the links above
+for operating guide).  Detailed comments are encouraged.  Adding change log and your contact into file header is encouraged.
+Thanks for your contribution.
 
 [![Watch the video](/images/video_print_monitor.png)](https://youtu.be/niRv9SCgAPk)
 ![Printer Monitor Temps](/images/temperatures.jpg)  
