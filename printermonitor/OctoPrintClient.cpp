@@ -23,14 +23,20 @@ SOFTWARE.
 
 #include "OctoPrintClient.h"
 
-OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port) {
-  updateOctoPrintClient(ApiKey, server, port);
+OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass) {
+  updateOctoPrintClient(ApiKey, server, port, user, pass);
 }
 
-void OctoPrintClient::updateOctoPrintClient(String ApiKey, String server, int port) {
+void OctoPrintClient::updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass) {
   server.toCharArray(myServer, 100);
   myApiKey = ApiKey;
   myPort = port;
+  encodedAuth = "";
+  if (user != "") {
+    String userpass = user + ":" + pass;
+    base64 b64;
+    encodedAuth = b64.encode(userpass, true);
+  }
 }
 
 boolean OctoPrintClient::validate() {
@@ -59,6 +65,10 @@ WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
     printClient.println(apiGetData);
     printClient.println("Host: " + String(myServer) + ":" + String(myPort));
     printClient.println("X-Api-Key: " + myApiKey);
+    if (encodedAuth != "") {
+      printClient.print("Authorization: ");
+      printClient.println("Basic " + encodedAuth);
+    }
     printClient.println("User-Agent: ArduinoWiFi/1.1");
     printClient.println("Connection: close");
     if (printClient.println() == 0) {

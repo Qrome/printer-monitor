@@ -56,6 +56,8 @@ String OctoPrintApiKey = "";   // ApiKey from your User Account on OctoPrint
 String OctoPrintHostName = "octopi";// Default 'octopi' -- or hostname if different (optional if your IP changes)
 String OctoPrintServer = "";   // IP or Address of your OctoPrint Server (DO NOT include http://)
 int OctoPrintPort = 80;        // the port you are running your OctoPrint server on (usually 80);
+String OctoAuthUser = "";      // only used if you have haproxy or basic athentintication turned on (not default)
+String OctoAuthPass = "";      // only used with haproxy or basic auth (only needed if you must authenticate)
 
 const int WEBSERVER_PORT = 80; // The port you can access this device on over HTTP
 const boolean WEBSERVER_ENABLED = true;  // Device will provide a web interface via http://[ip]:[port]/

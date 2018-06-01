@@ -83,7 +83,7 @@ String lastReportStatus = "";
 boolean displayOn = true;
 
 // OctoPrint Client
-OctoPrintClient printerClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort);
+OctoPrintClient printerClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass);
 int printerCount = 0;
 
 //declairing prototypes
@@ -103,11 +103,13 @@ const String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' m
                             "<label>OctoPrint Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintHostName' value='%OCTOHOST%' maxlength='60'>"
                             "<label>OctoPrint Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintAddress' value='%OCTOADDRESS%' maxlength='60'>"
                             "<label>OctoPrint Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'>"
+                            "<label>OctoPrint User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'>"
+                            "<label>OctoPrint Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'><hr>"
                             "<input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off<p>"
                             "<input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)<p>"
                             "Time Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>"
                             "Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
-                            "<label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'>"
+                            "<label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'><hr>"
                             "<label>User ID (for this interface)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='userid' value='%USERID%' maxlength='20'>"
                             "<label>Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='stationpassword' value='%STATIONPASSWORD%'>"
                             "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>";
@@ -363,6 +365,8 @@ void handleUpdateConfig() {
   OctoPrintHostName = server.arg("octoPrintHostName");
   OctoPrintServer = server.arg("octoPrintAddress");
   OctoPrintPort = server.arg("octoPrintPort").toInt();
+  OctoAuthUser = server.arg("octoUser");
+  OctoAuthPass = server.arg("octoPass");
   DISPLAYCLOCK = server.hasArg("isClockEnabled");
   IS_24HOUR = server.hasArg("is24hour");
   minutesBetweenDataRefresh = server.arg("refresh").toInt();
@@ -414,6 +418,8 @@ void handleConfigure() {
   form.replace("%OCTOHOST%", OctoPrintHostName);
   form.replace("%OCTOADDRESS%", OctoPrintServer);
   form.replace("%OCTOPORT%", String(OctoPrintPort));
+  form.replace("%OCTOUSER%", OctoAuthUser);
+  form.replace("%OCTOPASS%", OctoAuthPass);
   String isClockChecked = "";
   if (DISPLAYCLOCK) {
     isClockChecked = "checked='checked'";
@@ -771,6 +777,8 @@ void writeSettings() {
     f.println("octoHost=" + OctoPrintHostName);
     f.println("octoServer=" + OctoPrintServer);
     f.println("octoPort=" + String(OctoPrintPort));
+    f.println("octoUser=" + OctoAuthUser);
+    f.println("octoPass=" + OctoAuthPass);
     f.println("refreshRate=" + String(minutesBetweenDataRefresh));
     f.println("themeColor=" + themeColor);
     f.println("www_username=" + String(www_username));
@@ -817,6 +825,16 @@ void readSettings() {
       OctoPrintPort = line.substring(line.lastIndexOf("octoPort=") + 9).toInt();
       Serial.println("OctoPrintPort=" + String(OctoPrintPort));
     }
+    if (line.indexOf("octoUser=") >= 0) {
+      OctoAuthUser = line.substring(line.lastIndexOf("octoUser=") + 9);
+      OctoAuthUser.trim();
+      Serial.println("OctoAuthUser=" + OctoAuthUser);
+    }
+    if (line.indexOf("octoPass=") >= 0) {
+      OctoAuthPass = line.substring(line.lastIndexOf("octoPass=") + 9);
+      OctoAuthPass.trim();
+      Serial.println("OctoAuthPass=" + OctoAuthPass);
+    }
     if (line.indexOf("refreshRate=") >= 0) {
       minutesBetweenDataRefresh = line.substring(line.lastIndexOf("refreshRate=") + 12).toInt();
       Serial.println("minutesBetweenDataRefresh=" + String(minutesBetweenDataRefresh));
@@ -848,7 +866,7 @@ void readSettings() {
     }
   }
   fr.close();
-  printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort);
+  printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass);
   timeClient.setUtcOffset(UtcOffset);
 }
 
