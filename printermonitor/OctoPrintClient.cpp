@@ -23,14 +23,20 @@ SOFTWARE.
 
 #include "OctoPrintClient.h"
 
-OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port) {
-  updateOctoPrintClient(ApiKey, server, port);
+OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass) {
+  updateOctoPrintClient(ApiKey, server, port, user, pass);
 }
 
-void OctoPrintClient::updateOctoPrintClient(String ApiKey, String server, int port) {
+void OctoPrintClient::updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass) {
   server.toCharArray(myServer, 100);
   myApiKey = ApiKey;
   myPort = port;
+  encodedAuth = "";
+  if (user != "") {
+    String userpass = user + ":" + pass;
+    base64 b64;
+    encodedAuth = b64.encode(userpass, true);
+  }
 }
 
 boolean OctoPrintClient::validate() {
@@ -59,21 +65,25 @@ WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
     printClient.println(apiGetData);
     printClient.println("Host: " + String(myServer) + ":" + String(myPort));
     printClient.println("X-Api-Key: " + myApiKey);
+    if (encodedAuth != "") {
+      printClient.print("Authorization: ");
+      printClient.println("Basic " + encodedAuth);
+    }
     printClient.println("User-Agent: ArduinoWiFi/1.1");
     printClient.println("Connection: close");
     if (printClient.println() == 0) {
       Serial.println("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
       Serial.println();
+      resetPrintData();
       printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
-      printerData.state = "";
       return printClient;
     }
   } 
   else {
     Serial.println("Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
     Serial.println();
+    resetPrintData();
     printerData.error = "Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort);
-    printerData.state = "";
     return printClient;
   }
 
@@ -177,6 +187,27 @@ void OctoPrintClient::getPrinterJobResults() {
   printClient.stop(); //stop client
 }
 
+// Reset all PrinterData
+void OctoPrintClient::resetPrintData() {
+  printerData.averagePrintTime = "";
+  printerData.estimatedPrintTime = "";
+  printerData.fileName = "";
+  printerData.fileSize = "";
+  printerData.lastPrintTime = "";
+  printerData.progressCompletion = "";
+  printerData.progressFilepos = "";
+  printerData.progressPrintTime = "";
+  printerData.progressPrintTimeLeft = "";
+  printerData.state = "";
+  printerData.toolTemp = "";
+  printerData.toolTargetTemp = "";
+  printerData.filamentLength = "";
+  printerData.bedTemp = "";
+  printerData.bedTargetTemp = "";
+  printerData.isPrinting = false;
+  printerData.error = "";
+}
+
 String OctoPrintClient::getAveragePrintTime(){
   return printerData.averagePrintTime;
 }
@@ -210,7 +241,11 @@ String OctoPrintClient::getProgressPrintTime() {
 }
 
 String OctoPrintClient::getProgressPrintTimeLeft() {
-  return printerData.progressPrintTimeLeft;
+  String rtnValue = printerData.progressPrintTimeLeft;
+  if (getProgressCompletion() == "100") {
+    rtnValue = "0"; // Print is done so this should be 0 this is a fix for OctoPrint
+  }
+  return rtnValue;
 }
 
 String OctoPrintClient::getState() {

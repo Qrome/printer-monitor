@@ -53,8 +53,11 @@ SOFTWARE.
 
 // OctoPrint Monitoring -- Monitor your 3D printer OctoPrint Server
 String OctoPrintApiKey = "";   // ApiKey from your User Account on OctoPrint
+String OctoPrintHostName = "octopi";// Default 'octopi' -- or hostname if different (optional if your IP changes)
 String OctoPrintServer = "";   // IP or Address of your OctoPrint Server (DO NOT include http://)
 int OctoPrintPort = 80;        // the port you are running your OctoPrint server on (usually 80);
+String OctoAuthUser = "";      // only used if you have haproxy or basic athentintication turned on (not default)
+String OctoAuthPass = "";      // only used with haproxy or basic auth (only needed if you must authenticate)
 
 const int WEBSERVER_PORT = 80; // The port you can access this device on over HTTP
 const boolean WEBSERVER_ENABLED = true;  // Device will provide a web interface via http://[ip]:[port]/
@@ -69,6 +72,7 @@ boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = 
 const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)
 const int SDA_PIN = D2;
 const int SCL_PIN = D5;
+const boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bottom
 //#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
 
 boolean ENABLE_OTA = true;     // this will allow you to load firmware to the device over WiFi (see OTA for ESP8266)
