@@ -229,6 +229,9 @@ void setup() {
       else if (error == OTA_END_ERROR) Serial.println("End Failed");
     });
     ArduinoOTA.setHostname((const char *)hostname.c_str()); 
+    if (OTA_Password != "") {
+      ArduinoOTA.setPassword(((const char *)OTA_Password.c_str()));
+    }
     ArduinoOTA.begin();
   }
 
