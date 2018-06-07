@@ -40,6 +40,7 @@ SOFTWARE.
 * Supports OTA (loading firmware over WiFi connection on same LAN)
 * Basic Athentication to protect your settings
 * Video: https://youtu.be/niRv9SCgAPk
+* Detailed build video by Chris Riley: https://youtu.be/Rm-l1FSuJpI
 
 ## Required Parts:
 * Wemos D1 Mini: https://amzn.to/2ImqD1n
