@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "1.6"
+#define VERSION "1.7"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
@@ -630,10 +630,10 @@ void drawScreen1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
   display->drawString(64 + x, 0 + y, "Bed / Tool Temp");
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->setFont(ArialMT_Plain_24);
-  int bed = printerClient.getTempBedActual().toInt();
-  int tool = printerClient.getTempToolActual().toInt();
-  display->drawString(2 + x, 14 + y, String(bed) + "°");
-  display->drawString(64 + x, 14 + y, String(tool) + "°");
+  String bed = printerClient.getValueRounded(printerClient.getTempBedActual());
+  String tool = printerClient.getValueRounded(printerClient.getTempToolActual());
+  display->drawString(2 + x, 14 + y, bed + "°");
+  display->drawString(64 + x, 14 + y, tool + "°");
 }
 
 void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
