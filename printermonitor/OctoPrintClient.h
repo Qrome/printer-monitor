@@ -85,6 +85,7 @@ public:
   String getTempToolActual();
   String getTempToolTarget();
   String getFilamentLength();
+  String getValueRounded(String value);
   String getError();
 };
 

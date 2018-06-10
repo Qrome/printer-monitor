@@ -287,3 +287,9 @@ String OctoPrintClient::getFilamentLength() {
 String OctoPrintClient::getError() {
   return printerData.error;
 }
+
+String OctoPrintClient::getValueRounded(String value) {
+  float f = value.toFloat();
+  int rounded = (int)(f+0.5f);
+  return String(rounded);
+}
