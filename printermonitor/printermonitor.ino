@@ -121,9 +121,10 @@ String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method=
 
 String WEATHER_FORM = "<form class='w3-container' action='/updateweatherconfig' method='get'><h2>Weather Config:</h2>"
                       "<p><input name='isWeatherEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_WEATHER_CHECKED%> Display Weather when printer is off</p>"
-                      "<label>OpenWeahterMap API Key (get from <a href='https://openweathermap.org/' target='_BLANK'>here</a>)</label>"
+                      "<label>OpenWeatherMap API Key (get from <a href='https://openweathermap.org/' target='_BLANK'>here</a>)</label>"
                       "<input class='w3-input w3-border w3-margin-bottom' type='text' name='openWeatherMapApiKey' value='%WEATHERKEY%' maxlength='60'>"
-                      "<p><label>%CITYNAME1% (<a href='http://openweathermap.org/find' target='_BLANK'><i class='fa fa-search'></i> Search for City ID</a>)</label>"
+                      "<p><label>%CITYNAME1% (<a href='http://openweathermap.org/find' target='_BLANK'><i class='fa fa-search'></i> Search for City ID</a>) "
+                      "or full <a href='http://openweathermap.org/help/city_list.txt' target='_BLANK'>city list</a></label>"
                       "<input class='w3-input w3-border w3-margin-bottom' type='text' name='city1' value='%CITY1%' onkeypress='return isNumberKey(event)'></p>"
                       "<p><input name='metric' class='w3-check w3-margin-top' type='checkbox' %METRIC%> Use Metric (Celsius)</p>"
                       "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>"
@@ -669,7 +670,7 @@ void displayPrinterStatus() {
 
   if (DISPLAYWEATHER) {
     if (weatherClient.getCity(0) == "") {
-      html += "<p>Please <a href='/configureweather'>Configure Weahter</a> API</p>";
+      html += "<p>Please <a href='/configureweather'>Configure Weather</a> API</p>";
       if (weatherClient.getError() != "") {
         html += "<p>Weather Error: <strong>" + weatherClient.getError() + "</strong></p>";
       }
