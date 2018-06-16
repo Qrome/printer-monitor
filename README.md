@@ -34,6 +34,7 @@ SOFTWARE.
 * Screen turns on when printer is Operational or connected
 * Option to display a clock screen instead of sleep mode
 * Option to display 24 hour clock or AM/PM style
+* Option to display Current Weather when printer is off
 * Sample rate is every 60 seconds when not printing
 * Sample rate is every 10 seconds when printing
 * Fully configurable from the web interface (not required to update Settings.h)
@@ -79,8 +80,9 @@ ArduinoOTA.h  --> Arduino OTA Library
 "OLEDDisplayUi.h"  
 
 ## Initial Configuration
-You will can update the **Settings.h** file with your OctoPrint API Key or do it from the web interface.  
+All settings may be managed from the Web Interface, however, you may update the **Settings.h** file manually -- but it is not required.  There is also an option to display current weather when the print is off-line.  
 * Your OctoPrint API Key from your OctoPrint -> User Settings -> Current API Key  
+* Optional OpenWeatherMap API Key -- if you want current weather when not printing.  Get the api key from: https://openweathermap.org/  
 
 NOTE: The settings in the Settings.h are the default settings for the first loading. After loading you will manage changes to the settings via the Web Interface. If you want to change settings again in the settings.h, you will need to erase the file system on the Wemos or use the “Reset Settings” option in the Web Interface.  
 
@@ -89,7 +91,7 @@ The Printer Monitor uses the **WiFiManager** so when it can't find the last netw
 it will become a **AP Hotspot** -- connect to it with your phone and you can then enter your WiFi connection information.
 
 After connected to your WiFi network it will display the IP addressed assigned to it and that can be 
-used to open a browser to the Web Interface.  Everything can be configured there.
+used to open a browser to the Web Interface.  **Everything** can be configured there.
 
 <p align="center">
   <img src="/images/shot_01.png" width="200"/>
