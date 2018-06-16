@@ -42,6 +42,8 @@ SOFTWARE.
 #include <ArduinoOTA.h>
 #include "TimeClient.h"
 #include "OctoPrintClient.h"
+#include "OpenWeatherMapClient.h"
+#include "WeatherStationFonts.h"
 #include "FS.h"
 #include "SH1106Wire.h"
 #include "SSD1306Wire.h"
@@ -59,13 +61,20 @@ int OctoPrintPort = 80;        // the port you are running your OctoPrint server
 String OctoAuthUser = "";      // only used if you have haproxy or basic athentintication turned on (not default)
 String OctoAuthPass = "";      // only used with haproxy or basic auth (only needed if you must authenticate)
 
+// Weather Configuration
+boolean DISPLAYWEATHER = true; // true = show weather when not printing / false = no weather
+String WeatherApiKey = ""; // Your API Key from http://openweathermap.org/
+// Default City Location (use http://openweathermap.org/find to find city ID)
+int CityIDs[] = { 5304391 }; //Only USE ONE for weather marquee
+boolean IS_METRIC = false; // false = Imperial and true = Metric
+
 const int WEBSERVER_PORT = 80; // The port you can access this device on over HTTP
 const boolean WEBSERVER_ENABLED = true;  // Device will provide a web interface via http://[ip]:[port]/
 char* www_username = "admin";  // User account for the Web Interface
 char* www_password = "password";  // Password for the Web Interface
 float UtcOffset = -7; // Hour offset from GMT for your timezone
 boolean IS_24HOUR = false;     // 23:00 millitary 24 hour clock
-int minutesBetweenDataRefresh = 60;
+int minutesBetweenDataRefresh = 15;
 boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = turn off display when not printing
 
 // Display Settings

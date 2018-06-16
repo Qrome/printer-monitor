@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "1.7"
+#define VERSION "2.0"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
@@ -60,12 +60,13 @@ void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
 void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 
 // Set the number of Frames supported
 const int numberOfFrames = 3;
 FrameCallback frames[numberOfFrames];
-FrameCallback clockFrame[1];
+FrameCallback clockFrame[2];
 boolean isClockOn = false;
 
 OverlayCallback overlays[] = { drawHeaderOverlay };
@@ -86,57 +87,71 @@ boolean displayOn = true;
 OctoPrintClient printerClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass);
 int printerCount = 0;
 
+// Weather Client
+OpenWeatherMapClient weatherClient(WeatherApiKey, CityIDs, 1, IS_METRIC);
+
 //declairing prototypes
 void configModeCallback (WiFiManager *myWiFiManager);
 int8_t getWifiQuality();
 
 ESP8266WebServer server(WEBSERVER_PORT);
 
-const String WEB_ACTIONS =  "<a class='w3-bar-item w3-button' href='/'><i class='fa fa-home'></i> Home</a>"
-                            "<a class='w3-bar-item w3-button' href='/configure'><i class='fa fa-cog'></i> Configure</a>"
-                            "<a class='w3-bar-item w3-button' href='/systemreset' onclick='return confirm(\"Do you want to reset to default settings?\")'><i class='fa fa-undo'></i> Reset Settings</a>"
-                            "<a class='w3-bar-item w3-button' href='/forgetwifi' onclick='return confirm(\"Do you want to forget to WiFi connection?\")'><i class='fa fa-wifi'></i> Forget WiFi</a>"
-                            "<a class='w3-bar-item w3-button' href='https://github.com/Qrome' target='_blank'><i class='fa fa-question-circle'></i> About</a>";
+String WEB_ACTIONS =  "<a class='w3-bar-item w3-button' href='/'><i class='fa fa-home'></i> Home</a>"
+                      "<a class='w3-bar-item w3-button' href='/configure'><i class='fa fa-cog'></i> Configure</a>"
+                      "<a class='w3-bar-item w3-button' href='/configureweather'><i class='fa fa-cloud'></i> Weather</a>"
+                      "<a class='w3-bar-item w3-button' href='/systemreset' onclick='return confirm(\"Do you want to reset to default settings?\")'><i class='fa fa-undo'></i> Reset Settings</a>"
+                      "<a class='w3-bar-item w3-button' href='/forgetwifi' onclick='return confirm(\"Do you want to forget to WiFi connection?\")'><i class='fa fa-wifi'></i> Forget WiFi</a>"
+                      "<a class='w3-bar-item w3-button' href='https://github.com/Qrome' target='_blank'><i class='fa fa-question-circle'></i> About</a>";
                             
-const String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
-                            "<p><label>OctoPrint API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintApiKey' value='%OCTOKEY%' maxlength='60'></p>"
-                            "<p><label>OctoPrint Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintHostName' value='%OCTOHOST%' maxlength='60'></p>"
-                            "<p><label>OctoPrint Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
-                            "<p><label>OctoPrint Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>"
-                            "<p><label>OctoPrint User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
-                            "<p><label>OctoPrint Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
-                            "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
-                            "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
-                            "<p>Time Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>"
-                            "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
-                            "<p><label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'></p><hr>"
-                            "<p><label>User ID (for this interface)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='userid' value='%USERID%' maxlength='20'></p>"
-                            "<p><label>Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='stationpassword' value='%STATIONPASSWORD%'></p>"
-                            "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>";
+String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
+                      "<p><label>OctoPrint API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintApiKey' value='%OCTOKEY%' maxlength='60'></p>"
+                      "<p><label>OctoPrint Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintHostName' value='%OCTOHOST%' maxlength='60'></p>"
+                      "<p><label>OctoPrint Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
+                      "<p><label>OctoPrint Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>"
+                      "<p><label>OctoPrint User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
+                      "<p><label>OctoPrint Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
+                      "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
+                      "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
+                      "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>"
+                      "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
+                      "<p><label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'></p><hr>"
+                      "<p><label>User ID (for this interface)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='userid' value='%USERID%' maxlength='20'></p>"
+                      "<p><label>Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='stationpassword' value='%STATIONPASSWORD%'></p>"
+                      "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>";
 
-const String COLOR_THEMES = "<option>red</option>"
-                            "<option>pink</option>"
-                            "<option>purple</option>"
-                            "<option>deep-purple</option>"
-                            "<option>indigo</option>"
-                            "<option>blue</option>"
-                            "<option>light-blue</option>"
-                            "<option>cyan</option>"
-                            "<option>teal</option>"
-                            "<option>green</option>"
-                            "<option>light-green</option>"
-                            "<option>lime</option>"
-                            "<option>khaki</option>"
-                            "<option>yellow</option>"
-                            "<option>amber</option>"
-                            "<option>orange</option>"
-                            "<option>deep-orange</option>"
-                            "<option>blue-grey</option>"
-                            "<option>brown</option>"
-                            "<option>grey</option>"
-                            "<option>dark-grey</option>"
-                            "<option>black</option>"
-                            "<option>w3schools</option>";
+String WEATHER_FORM = "<form class='w3-container' action='/updateweatherconfig' method='get'><h2>Weather Config:</h2>"
+                      "<p><input name='isWeatherEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_WEATHER_CHECKED%> Display Weather when printer is off</p>"
+                      "<label>OpenWeahterMap API Key (get from <a href='https://openweathermap.org/' target='_BLANK'>here</a>)</label>"
+                      "<input class='w3-input w3-border w3-margin-bottom' type='text' name='openWeatherMapApiKey' value='%WEATHERKEY%' maxlength='60'>"
+                      "<p><label>%CITYNAME1% (<a href='http://openweathermap.org/find' target='_BLANK'><i class='fa fa-search'></i> Search for City ID</a>)</label>"
+                      "<input class='w3-input w3-border w3-margin-bottom' type='text' name='city1' value='%CITY1%' onkeypress='return isNumberKey(event)'></p>"
+                      "<p><input name='metric' class='w3-check w3-margin-top' type='checkbox' %METRIC%> Use Metric (Celsius)</p>"
+                      "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>"
+                      "<script>function isNumberKey(e){var h=e.which?e.which:event.keyCode;return!(h>31&&(h<48||h>57))}</script>";
+
+String COLOR_THEMES = "<option>red</option>"
+                      "<option>pink</option>"
+                      "<option>purple</option>"
+                      "<option>deep-purple</option>"
+                      "<option>indigo</option>"
+                      "<option>blue</option>"
+                      "<option>light-blue</option>"
+                      "<option>cyan</option>"
+                      "<option>teal</option>"
+                      "<option>green</option>"
+                      "<option>light-green</option>"
+                      "<option>lime</option>"
+                      "<option>khaki</option>"
+                      "<option>yellow</option>"
+                      "<option>amber</option>"
+                      "<option>orange</option>"
+                      "<option>deep-orange</option>"
+                      "<option>blue-grey</option>"
+                      "<option>brown</option>"
+                      "<option>grey</option>"
+                      "<option>dark-grey</option>"
+                      "<option>black</option>"
+                      "<option>w3schools</option>";
                             
 
 // Change the externalLight to the pin you wish to use if other than the Built-in LED
@@ -197,6 +212,7 @@ void setup() {
   frames[1] = drawScreen2;
   frames[2] = drawScreen3;
   clockFrame[0] = drawClock;
+  clockFrame[1] = drawWeather;
   ui.setOverlays(overlays, numberOfOverlays);
   
   // Inital UI takes care of initalising the display too.
@@ -240,7 +256,9 @@ void setup() {
     server.on("/systemreset", handleSystemReset);
     server.on("/forgetwifi", handleWifiReset);
     server.on("/updateconfig", handleUpdateConfig);
+    server.on("/updateweatherconfig", handleUpdateWeather);
     server.on("/configure", handleConfigure);
+    server.on("/configureweather", handleWeatherConfigure);
     server.onNotFound(redirectHome);
     // Start the server
     server.begin();
@@ -340,6 +358,11 @@ void getUpdateTime() {
   digitalWrite(externalLight, LOW); // turn on the LED
   Serial.println();
 
+  if (displayOn && DISPLAYWEATHER) {
+    Serial.println("Getting Weather Data...");
+    weatherClient.updateWeather();
+  }
+
   Serial.println("Updating Time...");
   //Update the Time
   timeClient.updateTime();
@@ -358,6 +381,21 @@ void handleSystemReset() {
     redirectHome();
     ESP.restart();
   }
+}
+
+void handleUpdateWeather() {
+  if (!server.authenticate(www_username, www_password)) {
+    return server.requestAuthentication();
+  }
+  DISPLAYWEATHER = server.hasArg("isWeatherEnabled");
+  WeatherApiKey = server.arg("openWeatherMapApiKey");
+  CityIDs[0] = server.arg("city1").toInt();
+  IS_METRIC = server.hasArg("metric");
+  writeSettings();
+  isClockOn = false; // this will force a check for the display
+  checkDisplay();
+  lastEpoch = 0;
+  redirectHome();
 }
 
 void handleUpdateConfig() {
@@ -399,6 +437,46 @@ void handleWifiReset() {
   ESP.restart();
 }
 
+void handleWeatherConfigure() {
+  if (!server.authenticate(www_username, www_password)) {
+    return server.requestAuthentication();
+  }
+  digitalWrite(externalLight, LOW);
+  String html = "";
+
+  server.sendHeader("Cache-Control", "no-cache, no-store");
+  server.sendHeader("Pragma", "no-cache");
+  server.sendHeader("Expires", "-1");
+  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  server.send(200, "text/html", "");
+
+  html = getHeader();
+  server.sendContent(html);
+  
+  String form = WEATHER_FORM;
+  String isWeatherChecked = "";
+  if (DISPLAYWEATHER) {
+    isWeatherChecked = "checked='checked'";
+  }
+  form.replace("%IS_WEATHER_CHECKED%", isWeatherChecked);
+  form.replace("%WEATHERKEY%", WeatherApiKey);
+  form.replace("%CITYNAME1%", weatherClient.getCity(0));
+  form.replace("%CITY1%", String(CityIDs[0]));
+  String checked = "";
+  if (IS_METRIC) {
+    checked = "checked='checked'";
+  }
+  form.replace("%METRIC%", checked);
+
+  server.sendContent(form);
+  
+  html = getFooter();
+  server.sendContent(html);
+  server.sendContent("");
+  server.client().stop();
+  digitalWrite(externalLight, HIGH);
+}
+
 void handleConfigure() {
   if (!server.authenticate(www_username, www_password)) {
     return server.requestAuthentication();
@@ -415,7 +493,7 @@ void handleConfigure() {
   html = getHeader();
   server.sendContent(html);
   
-  String form = String(CHANGE_FORM);
+  String form = CHANGE_FORM;
   
   form.replace("%OCTOKEY%", OctoPrintApiKey);
   form.replace("%OCTOHOST%", OctoPrintHostName);
@@ -436,14 +514,14 @@ void handleConfigure() {
   String options = "<option>10</option><option>15</option><option>20</option><option>30</option><option>60</option>";
   options.replace(">"+String(minutesBetweenDataRefresh)+"<", " selected>"+String(minutesBetweenDataRefresh)+"<");
   form.replace("%OPTIONS%", options);
-  String themeOptions = String(COLOR_THEMES);
+  String themeOptions = COLOR_THEMES;
   themeOptions.replace(">"+String(themeColor)+"<", " selected>"+String(themeColor)+"<");
   form.replace("%THEME_OPTIONS%", themeOptions);
   form.replace("%UTCOFFSET%", String(UtcOffset));
   form.replace("%USERID%", String(www_username));
   form.replace("%STATIONPASSWORD%", String(www_password));
 
-  server.sendContent(String(form));
+  server.sendContent(form);
   
   html = getFooter();
   server.sendContent(html);
@@ -486,7 +564,7 @@ String getHeader() {
 }
 
 String getHeader(boolean refresh) {
-  String menu = String(WEB_ACTIONS);
+  String menu = WEB_ACTIONS;
 
   String html = "<!DOCTYPE HTML>";
   html += "<html><head><title>Printer Monitor</title><link rel='icon' href='data:;base64,='>";
@@ -586,9 +664,33 @@ void displayPrinterStatus() {
   html += "<div id=\"myProgress\"><div id=\"myBar\" class=\"w3-medium w3-center\">" + printerClient.getProgressCompletion() + "%</div></div>";
   html += "</p></div></div>";
 
-  server.sendContent(String(html)); // spit out what we got
-  
-  
+  server.sendContent(html); // spit out what we got
+  html = "";
+
+  if (DISPLAYWEATHER) {
+    if (weatherClient.getCity(0) == "") {
+      html += "<p>Please <a href='/configureweather'>Configure Weahter</a> API</p>";
+      if (weatherClient.getError() != "") {
+        html += "<p>Weather Error: <strong>" + weatherClient.getError() + "</strong></p>";
+      }
+    } else {
+      html += "<div class='w3-cell-row' style='width:100%'><h2>" + weatherClient.getCity(0) + ", " + weatherClient.getCountry(0) + "</h2></div><div class='w3-cell-row'>";
+      html += "<div class='w3-cell w3-left w3-medium' style='width:120px'>";
+      html += "<img src='http://openweathermap.org/img/w/" + weatherClient.getIcon(0) + ".png' alt='" + weatherClient.getDescription(0) + "'><br>";
+      html += weatherClient.getHumidity(0) + "% Humidity<br>";
+      html += weatherClient.getWind(0) + " <span class='w3-tiny'>" + getSpeedSymbol() + "</span> Wind<br>";
+      html += "</div>";
+      html += "<div class='w3-cell w3-container' style='width:100%'><p>";
+      html += weatherClient.getCondition(0) + " (" + weatherClient.getDescription(0) + ")<br>";
+      html += weatherClient.getTempRounded(0) + getTempSymbol(true) + "<br>";
+      html += "<a href='https://www.google.com/maps/@" + weatherClient.getLat(0) + "," + weatherClient.getLon(0) + ",10000m/data=!3m1!1e3' target='_BLANK'><i class='fa fa-map-marker' style='color:red'></i> Map It!</a><br>";
+      html += "</p></div></div>";
+    }
+    
+    server.sendContent(html); // spit out what we got
+    html = ""; // fresh start
+  }
+
   server.sendContent(String(getFooter()));
   server.sendContent("");
   server.client().stop();
@@ -683,6 +785,44 @@ void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16
   display->drawString(64 + x, 10 + y, displayTime);
 }
 
+void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->setFont(ArialMT_Plain_24);
+  display->drawString(0 + x, 0 + y, weatherClient.getTempRounded(0) + getTempSymbol());
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->setFont(ArialMT_Plain_24);
+
+  display->setFont(ArialMT_Plain_16);
+  display->drawString(0 + x, 24 + y, weatherClient.getCondition(0));
+  display->setFont((const uint8_t*)Meteocons_Plain_42);
+  display->drawString(86 + x, 0 + y, weatherClient.getWeatherIcon(0));
+}
+
+String getTempSymbol() {
+  return getTempSymbol(false);
+}
+
+String getTempSymbol(boolean forHTML) {
+  String rtnValue = "F";
+  if (IS_METRIC) {
+    rtnValue = "C";
+  }
+  if (forHTML) {
+    rtnValue = "&#176;" + rtnValue;
+  } else {
+    rtnValue = "°" + rtnValue;
+  }
+  return rtnValue;
+}
+
+String getSpeedSymbol() {
+  String rtnValue = "mph";
+  if (IS_METRIC) {
+    rtnValue = "kph";
+  }
+  return rtnValue;
+}
+
 String zeroPad(int value) {
   String rtnValue = String(value);
   if (value < 10) {
@@ -734,7 +874,7 @@ void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   display->drawString(64, 48, "offline");
   display->setTextAlignment(TEXT_ALIGN_LEFT);
 
-  display->drawRect(0, 41, 128, 2);
+  display->drawRect(0, 43, 128, 2);
   
   drawRssi(display);
 }
@@ -785,6 +925,10 @@ void writeSettings() {
     f.println("www_password=" + String(www_password));
     f.println("DISPLAYCLOCK=" + String(DISPLAYCLOCK));
     f.println("is24hour=" + String(IS_24HOUR));
+    f.println("isWeather=" + String(DISPLAYWEATHER));
+    f.println("weatherKey=" + WeatherApiKey);
+    f.println("CityID=" + String(CityIDs[0]));
+    f.println("isMetric=" + String(IS_METRIC));
   }
   f.close();
   readSettings();
@@ -864,9 +1008,29 @@ void readSettings() {
       IS_24HOUR = line.substring(line.lastIndexOf("is24hour=") + 9).toInt();
       Serial.println("IS_24HOUR=" + String(IS_24HOUR));
     }
+    if (line.indexOf("isWeather=") >= 0) {
+      DISPLAYWEATHER = line.substring(line.lastIndexOf("isWeather=") + 10).toInt();
+      Serial.println("DISPLAYWEATHER=" + String(DISPLAYWEATHER));
+    }
+    if (line.indexOf("weatherKey=") >= 0) {
+      WeatherApiKey = line.substring(line.lastIndexOf("weatherKey=") + 11);
+      WeatherApiKey.trim();
+      Serial.println("WeatherApiKey=" + WeatherApiKey);
+    }
+    if (line.indexOf("CityID=") >= 0) {
+      CityIDs[0] = line.substring(line.lastIndexOf("CityID=") + 7).toInt();
+      Serial.println("CityID: " + String(CityIDs[0]));
+    }
+    if (line.indexOf("isMetric=") >= 0) {
+      IS_METRIC = line.substring(line.lastIndexOf("isMetric=") + 9).toInt();
+      Serial.println("IS_METRIC=" + String(IS_METRIC));
+    }
   }
   fr.close();
   printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass);
+  weatherClient.updateWeatherApiKey(WeatherApiKey);
+  weatherClient.setMetric(IS_METRIC);
+  weatherClient.updateCityIdList(CityIDs, 1);
   timeClient.setUtcOffset(UtcOffset);
 }
 
@@ -916,9 +1080,16 @@ void checkDisplay() {
   } else if (DISPLAYCLOCK) {
     if (!printerClient.isOperational() && !isClockOn) {
       Serial.println("Clock Mode is turned on.");
-      ui.disableAutoTransition();
-      ui.setFrames(clockFrame, 1);
-      clockFrame[0] = drawClock;
+      if (!DISPLAYWEATHER) {
+        ui.disableAutoTransition();
+        ui.setFrames(clockFrame, 1);
+        clockFrame[0] = drawClock;
+      } else {
+        ui.enableAutoTransition();
+        ui.setFrames(clockFrame, 2);
+        clockFrame[0] = drawClock;
+        clockFrame[1] = drawWeather;
+      }
       ui.setOverlays(clockOverlay, numberOfOverlays);
       isClockOn = true;
     } else if (printerClient.isOperational() && isClockOn) {
