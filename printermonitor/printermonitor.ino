@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "2.0"
+#define VERSION "2.1"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
@@ -867,16 +867,17 @@ void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
 void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   display->setColor(WHITE);
   display->setFont(ArialMT_Plain_16);
-  String time = timeClient.getAmPm();
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->drawString(0, 48, time);
-  display->setFont(ArialMT_Plain_16);
-  display->setTextAlignment(TEXT_ALIGN_CENTER);
-  display->drawString(64, 48, "offline");
+  if (!IS_24HOUR) {
+    display->drawString(0, 48, timeClient.getAmPm());
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->drawString(64, 48, "offline");
+  } else {
+    display->drawString(0,48, OctoPrintHostName + " offline");
+  }
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-
   display->drawRect(0, 43, 128, 2);
-  
+ 
   drawRssi(display);
 }
 
