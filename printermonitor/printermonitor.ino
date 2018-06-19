@@ -785,12 +785,15 @@ void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
 
 void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->setTextAlignment(TEXT_ALIGN_CENTER);
-  display->setFont(ArialMT_Plain_24);
+  
   String displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
   if (IS_24HOUR) {
     displayTime = timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds(); 
   }
-  display->drawString(64 + x, 10 + y, displayTime);
+  display->setFont(ArialMT_Plain_16);
+  display->drawString(64 + x, 0 + y, OctoPrintHostName);
+  display->setFont(ArialMT_Plain_24);
+  display->drawString(64 + x, 17 + y, displayTime);
 }
 
 void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
@@ -880,7 +883,7 @@ void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     display->drawString(64, 48, "offline");
   } else {
-    display->drawString(0,48, OctoPrintHostName + " offline");
+    display->drawString(0,48, "offline");
   }
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawRect(0, 43, 128, 2);
