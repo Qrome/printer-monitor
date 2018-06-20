@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "2.0"
+#define VERSION "2.1"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
@@ -629,40 +629,47 @@ void displayPrinterStatus() {
   
   html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + displayTime + "</h2></div><div class='w3-cell-row'>";
   html += "<div class='w3-cell w3-container' style='width:100%'><p>";
+  html += "Host Name: " + OctoPrintHostName + "<br>";
   if (printerClient.getError() != "") {
     html += "Error: " + printerClient.getError() + "<br>";
   }
   html += "Status: " + printerClient.getState() + "<br>";
-  html += "File: " + printerClient.getFileName() + "<br>";
-  float fileSize = printerClient.getFileSize().toFloat();
-  if (fileSize > 0) {
-    fileSize = fileSize / 1024;
-    html += "File Size: " + String(fileSize) + "KB<br>";
-  }
-  int filamentLength = printerClient.getFilamentLength().toInt();
-  if (filamentLength > 0) {
-    float fLength = float(filamentLength) / 1000;
-    html += "Filament: " + String(fLength) + "m<br>";
-  }
 
-  html += "Tool Temperature: " + printerClient.getTempToolActual() + "&#176; C<br>";
-  html += "Bed Temperature: " + printerClient.getTempBedActual() + "&#176; C<br>";
+  if (printerClient.isPrinting()) {
+    html += "File: " + printerClient.getFileName() + "<br>";
+    float fileSize = printerClient.getFileSize().toFloat();
+    if (fileSize > 0) {
+      fileSize = fileSize / 1024;
+      html += "File Size: " + String(fileSize) + "KB<br>";
+    }
+    int filamentLength = printerClient.getFilamentLength().toInt();
+    if (filamentLength > 0) {
+      float fLength = float(filamentLength) / 1000;
+      html += "Filament: " + String(fLength) + "m<br>";
+    }
   
-  int val = printerClient.getProgressPrintTimeLeft().toInt();
-  int days = elapsedDays(val);
-  int hours = numberOfHours(val);
-  int minutes = numberOfMinutes(val);
-  int seconds = numberOfSeconds(val);
-  html += "Est. Print Time Left: " + zeroPad(hours) + ":" + zeroPad(minutes) + ":" + zeroPad(seconds) + "<br>";
+    html += "Tool Temperature: " + printerClient.getTempToolActual() + "&#176; C<br>";
+    html += "Bed Temperature: " + printerClient.getTempBedActual() + "&#176; C<br>";
+    
+    int val = printerClient.getProgressPrintTimeLeft().toInt();
+    int days = elapsedDays(val);
+    int hours = numberOfHours(val);
+    int minutes = numberOfMinutes(val);
+    int seconds = numberOfSeconds(val);
+    html += "Est. Print Time Left: " + zeroPad(hours) + ":" + zeroPad(minutes) + ":" + zeroPad(seconds) + "<br>";
+  
+    val = printerClient.getProgressPrintTime().toInt();
+    days = elapsedDays(val);
+    hours = numberOfHours(val);
+    minutes = numberOfMinutes(val);
+    seconds = numberOfSeconds(val);
+    html += "Printing Time: " + zeroPad(hours) + ":" + zeroPad(minutes) + ":" + zeroPad(seconds) + "<br>";
+    html += "<style>#myProgress {width: 100%;background-color: #ddd;}#myBar {width: " + printerClient.getProgressCompletion() + "%;height: 30px;background-color: #4CAF50;}</style>";
+    html += "<div id=\"myProgress\"><div id=\"myBar\" class=\"w3-medium w3-center\">" + printerClient.getProgressCompletion() + "%</div></div>";
+  } else {
+    html += "<hr>";
+  }
 
-  val = printerClient.getProgressPrintTime().toInt();
-  days = elapsedDays(val);
-  hours = numberOfHours(val);
-  minutes = numberOfMinutes(val);
-  seconds = numberOfSeconds(val);
-  html += "Printing Time: " + zeroPad(hours) + ":" + zeroPad(minutes) + ":" + zeroPad(seconds) + "<br>";
-  html += "<style>#myProgress {width: 100%;background-color: #ddd;}#myBar {width: " + printerClient.getProgressCompletion() + "%;height: 30px;background-color: #4CAF50;}</style>";
-  html += "<div id=\"myProgress\"><div id=\"myBar\" class=\"w3-medium w3-center\">" + printerClient.getProgressCompletion() + "%</div></div>";
   html += "</p></div></div>";
 
   server.sendContent(html); // spit out what we got
@@ -778,12 +785,15 @@ void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
 
 void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->setTextAlignment(TEXT_ALIGN_CENTER);
-  display->setFont(ArialMT_Plain_24);
+  
   String displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
   if (IS_24HOUR) {
     displayTime = timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds(); 
   }
-  display->drawString(64 + x, 10 + y, displayTime);
+  display->setFont(ArialMT_Plain_16);
+  display->drawString(64 + x, 0 + y, OctoPrintHostName);
+  display->setFont(ArialMT_Plain_24);
+  display->drawString(64 + x, 17 + y, displayTime);
 }
 
 void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
@@ -867,16 +877,17 @@ void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
 void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   display->setColor(WHITE);
   display->setFont(ArialMT_Plain_16);
-  String time = timeClient.getAmPm();
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->drawString(0, 48, time);
-  display->setFont(ArialMT_Plain_16);
-  display->setTextAlignment(TEXT_ALIGN_CENTER);
-  display->drawString(64, 48, "offline");
+  if (!IS_24HOUR) {
+    display->drawString(0, 48, timeClient.getAmPm());
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->drawString(64, 48, "offline");
+  } else {
+    display->drawString(0,48, "offline");
+  }
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-
   display->drawRect(0, 43, 128, 2);
-  
+ 
   drawRssi(display);
 }
 
