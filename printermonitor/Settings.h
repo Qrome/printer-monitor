@@ -70,6 +70,7 @@ boolean IS_METRIC = false; // false = Imperial and true = Metric
 
 const int WEBSERVER_PORT = 80; // The port you can access this device on over HTTP
 const boolean WEBSERVER_ENABLED = true;  // Device will provide a web interface via http://[ip]:[port]/
+boolean IS_BASIC_AUTH = true;  // true = require athentication to change configuration settings / false = no auth
 char* www_username = "admin";  // User account for the Web Interface
 char* www_password = "password";  // Password for the Web Interface
 float UtcOffset = -7; // Hour offset from GMT for your timezone
