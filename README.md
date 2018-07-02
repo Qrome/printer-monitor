@@ -100,6 +100,9 @@ used to open a browser to the Web Interface.  **Everything** can be configured t
   <img src="/images/shot_04.png" width="200"/>
 </p>
 
+## Donate or Tip
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=HUEEBF8T4XKS8)
+
 ## Contributors
 David Payne  
 Daniel Eichhorn -- Author of the TimeClient class and OLEDDisplayUi . 
