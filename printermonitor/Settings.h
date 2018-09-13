@@ -48,6 +48,7 @@ SOFTWARE.
 #include "SH1106Wire.h"
 #include "SSD1306Wire.h"
 #include "OLEDDisplayUi.h"
+#include "NewsApiClient.h" 
 
 //******************************
 // Start Settings
@@ -76,6 +77,10 @@ float UtcOffset = -7; // Hour offset from GMT for your timezone
 boolean IS_24HOUR = false;     // 23:00 millitary 24 hour clock
 int minutesBetweenDataRefresh = 15;
 boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = turn off display when not printing
+
+boolean NEWS_ENABLED = true;
+String NEWS_API_KEY = ""; // Get your News API Key from https://newsapi.org
+String NEWS_SOURCE = "rtl-nieuws";  // https://newsapi.org/sources to get full list of news sources available
 
 // Display Settings
 const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)

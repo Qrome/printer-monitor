@@ -66,7 +66,7 @@ void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 // Set the number of Frames supported
 const int numberOfFrames = 3;
 FrameCallback frames[numberOfFrames];
-FrameCallback clockFrame[2];
+FrameCallback clockFrame[20];
 boolean isClockOn = false;
 
 OverlayCallback overlays[] = { drawHeaderOverlay };
@@ -90,6 +90,32 @@ int printerCount = 0;
 // Weather Client
 OpenWeatherMapClient weatherClient(WeatherApiKey, CityIDs, 1, IS_METRIC);
 
+// News Client
+NewsApiClient newsClient(NEWS_API_KEY, NEWS_SOURCE);
+int newsIndex = 0;
+
+String NEWS_OPTIONS = "<option>bbc-news</option>"
+                      "<option>cnn</option>"
+                      "<option>crypto-coins-news</option>"
+                      "<option>engadget</option>"
+                      "<option>espn</option>"
+                      "<option>fox-news</option>"
+                      "<option>fox-sports</option>"
+                      "<option>google-news</option>"
+                      "<option>hacker-news</option>"
+                      "<option>mtv-news</option>"
+                      "<option>national-geographic</option>"
+                      "<option>newsweek</option>"
+                      "<option>nfl-news</option>"
+                      "<option>recode</option>"
+                      "<option>reddit-r-all</option>"
+                      "<option>rtl-nieuws</option>"
+                      "<option>reuters</option>"
+                      "<option>the-new-york-times</option>"
+                      "<option>time</option>"
+                      "<option>usa-today</option>"
+                      "<option>wired</option>";
+                            
 //declairing prototypes
 void configModeCallback (WiFiManager *myWiFiManager);
 int8_t getWifiQuality();
@@ -99,6 +125,7 @@ ESP8266WebServer server(WEBSERVER_PORT);
 String WEB_ACTIONS =  "<a class='w3-bar-item w3-button' href='/'><i class='fa fa-home'></i> Home</a>"
                       "<a class='w3-bar-item w3-button' href='/configure'><i class='fa fa-cog'></i> Configure</a>"
                       "<a class='w3-bar-item w3-button' href='/configureweather'><i class='fa fa-cloud'></i> Weather</a>"
+                      "<a class='w3-bar-item w3-button' href='/configurenews'><i class='fa fa-newspaper-o'></i> News</a>"
                       "<a class='w3-bar-item w3-button' href='/systemreset' onclick='return confirm(\"Do you want to reset to default settings?\")'><i class='fa fa-undo'></i> Reset Settings</a>"
                       "<a class='w3-bar-item w3-button' href='/forgetwifi' onclick='return confirm(\"Do you want to forget to WiFi connection?\")'><i class='fa fa-wifi'></i> Forget WiFi</a>"
                       "<a class='w3-bar-item w3-button' href='https://github.com/Qrome' target='_blank'><i class='fa fa-question-circle'></i> About</a>";
@@ -260,6 +287,8 @@ void setup() {
     server.on("/updateweatherconfig", handleUpdateWeather);
     server.on("/configure", handleConfigure);
     server.on("/configureweather", handleWeatherConfigure);
+    server.on("/updatenewsconfig", handleUpdateNews);
+    server.on("/configurenews", handleNewsConfigure);
     server.onNotFound(redirectHome);
     // Start the server
     server.begin();
@@ -364,6 +393,11 @@ void getUpdateTime() {
     weatherClient.updateWeather();
   }
 
+  if (displayOn && NEWS_ENABLED) {
+    Serial.println("Getting News Data for " + NEWS_SOURCE);
+    newsClient.updateNews();
+  }
+  
   Serial.println("Updating Time...");
   //Update the Time
   timeClient.updateTime();
@@ -478,6 +512,53 @@ void handleWeatherConfigure() {
   digitalWrite(externalLight, HIGH);
 }
 
+void handleNewsConfigure() {
+  if (!server.authenticate(www_username, www_password)) {
+    return server.requestAuthentication();
+  }
+  digitalWrite(externalLight, LOW);
+  String html = "";
+
+  String NEWS_FORM1 =   "<form class='w3-container' action='/updatenewsconfig' method='get'><h2>News Configuration:</h2>"
+                      "<p><input name='displaynews' class='w3-check w3-margin-top' type='checkbox' %NEWSCHECKED%> Display News Headlines</p>"
+                      "<label>News API Key (get from <a href='https://newsapi.org/' target='_BLANK'>here</a>)</label>"
+                      "<input class='w3-input w3-border w3-margin-bottom' type='text' name='newsApiKey' value='%NEWSKEY%' maxlength='60'>"
+                      "<p>Select News Source <select class='w3-option w3-padding' name='newssource'>";
+
+  String NEWS_FORM2 =   "</select></p>"
+                      "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>";
+
+  server.sendHeader("Cache-Control", "no-cache, no-store");
+  server.sendHeader("Pragma", "no-cache");
+  server.sendHeader("Expires", "-1");
+  server.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  server.send(200, "text/html", "");
+
+  html = getHeader();
+  server.sendContent(html);
+
+  String form = NEWS_FORM1;
+  String isNewsDisplayedChecked = "";
+  if (NEWS_ENABLED) {
+    isNewsDisplayedChecked = "checked='checked'";
+  }
+  form.replace("%NEWSCHECKED%", isNewsDisplayedChecked);
+  form.replace("%NEWSKEY%", NEWS_API_KEY);
+  server.sendContent(form); //Send first Chunk of form
+  String newsOptions = NEWS_OPTIONS;
+  newsOptions.replace(">" + NEWS_SOURCE + "<", " selected>" + NEWS_SOURCE + "<");
+  server.sendContent(newsOptions);
+  server.sendContent(NEWS_FORM2);
+  
+  html = getFooter();
+  server.sendContent(html);
+  
+  server.sendContent("");
+  server.client().stop();
+  digitalWrite(externalLight, HIGH);
+}
+
+
 void handleConfigure() {
   if (!server.authenticate(www_username, www_password)) {
     return server.requestAuthentication();
@@ -530,6 +611,28 @@ void handleConfigure() {
   server.client().stop();
   digitalWrite(externalLight, HIGH);
 }
+
+
+void handleUpdateNews() {
+  if (!server.authenticate(www_username, www_password)) {
+    return server.requestAuthentication();
+  }
+  NEWS_ENABLED = server.hasArg("displaynews");
+  NEWS_API_KEY = server.arg("newsApiKey");
+  NEWS_SOURCE = server.arg("newssource");
+
+  writeSettings();
+  isClockOn = false; // this will force a check for the display
+  checkDisplay();
+
+  if (NEWS_ENABLED)
+  {
+     newsClient.updateNews();
+  }
+  redirectHome();
+}
+
+
 
 void displayMessage(String message) {
   digitalWrite(externalLight, LOW);
@@ -695,6 +798,25 @@ void displayPrinterStatus() {
       html += "</p></div></div>";
     }
     
+    if (NEWS_ENABLED) {
+        if (NEWS_API_KEY == "" || NEWS_SOURCE == "") {
+            html += "<p>Please <a href='/configurenews'>Configure News</a> API and <a href='/configurenews'>News Source</a></p>";
+        } else {
+           if (newsClient.getTitle(0) == "") {
+              html += "<p>Error: No news headlines found</p>";
+           } else {
+              html += "<div class='w3-cell-row' style='width:100%'><h2>" + NEWS_SOURCE + "</h2></div><div class='w3-cell-row'>";
+              html += "<div class='w3-cell w3-container' style='width:100%'><p>";
+              html += "<ul>";
+              for (int i=0; i < 10; i++)
+              {
+                    html += "<li><a href='" + newsClient.getUrl(i) + "' target='_BLANK'>" + newsClient.getTitle(i) + "</a></li>";
+              }
+              html += "</ul>";
+              html += "</p></div></div>";
+           }
+        }
+    }
     server.sendContent(html); // spit out what we got
     html = ""; // fresh start
   }
@@ -805,8 +927,88 @@ void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
 
   display->setFont(ArialMT_Plain_16);
   display->drawString(0 + x, 24 + y, weatherClient.getCondition(0));
-  display->setFont((const uint8_t*)Meteocons_Plain_42);
+  display->setFont(Meteocons_Plain_42);
   display->drawString(86 + x, 0 + y, weatherClient.getWeatherIcon(0));
+}
+
+void drawNews(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y, int newsIndex) 
+{
+    display->setFont(ArialMT_Plain_10);
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    //display->drawStringMaxWidth(64 + x, 0, 128, newsClient.getTitle(newsIndex));
+    
+    // Based on the drawStringMaxWidth function of the SSD1306Wire module
+    char text[100];
+    newsClient.getTitle(newsIndex).toCharArray(text, 99); 
+    uint16_t length = strlen(text);
+    uint16_t lastDrawnPos = 0;
+    uint16_t lineNumber = 0;
+    uint16_t strWidth = 0;
+    uint16_t preferredBreakpoint = 0;
+    uint16_t widthAtBreakpoint = 0;
+  
+    for (uint16_t i = 0; i < length  && lineNumber < 4 ; i++) {
+      strWidth += display->getStringWidth(&text[i], 1);
+  
+      // Always try to break on a space or dash
+      if (text[i] == ' ' || text[i]== '-') {
+        preferredBreakpoint = i;
+        widthAtBreakpoint = strWidth;
+      }
+  
+      if (strWidth >= 128) {
+        if (preferredBreakpoint == 0) {
+          preferredBreakpoint = i;
+          widthAtBreakpoint = strWidth;
+        }
+        text[preferredBreakpoint] = '\0';
+        display->drawString(64 + x, y + ((lineNumber++) * 11) , &text[lastDrawnPos]);
+        lastDrawnPos = preferredBreakpoint + 1;
+        // It is possible that we did not draw all letters to i so we need
+        // to account for the width of the chars from `i - preferredBreakpoint`
+        // by calculating the width we did not draw yet.
+        strWidth = strWidth - widthAtBreakpoint;
+        preferredBreakpoint = 0;
+      }
+    }
+
+    // Draw last part if needed
+    if (lastDrawnPos < length && lineNumber < 4) {
+        display->drawString(64 + x, y + (lineNumber * 11) , &text[lastDrawnPos]);
+    }
+}
+
+// It look silly to have then function which do the same but i did not find a way to pass the news index 
+// trough the frame function
+void drawNewsPage1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+    drawNews(display, state, x, y, 0);
+}
+void drawNewsPage2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+    drawNews(display, state, x, y, 1);
+}
+void drawNewsPage3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+    drawNews(display, state, x, y, 2);
+}
+void drawNewsPage4(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+    drawNews(display, state, x, y, 3);
+}
+void drawNewsPage5(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+    drawNews(display, state, x, y, 4);
+}
+void drawNewsPage6(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+    drawNews(display, state, x, y, 5);
+}
+void drawNewsPage7(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+    drawNews(display, state, x, y, 6);
+}
+void drawNewsPage8(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+    drawNews(display, state, x, y, 7);
+}
+void drawNewsPage9(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+    drawNews(display, state, x, y, 8);
+}
+void drawNewsPage10(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+    drawNews(display, state, x, y, 9);
 }
 
 String getTempSymbol() {
@@ -941,6 +1143,9 @@ void writeSettings() {
     f.println("weatherKey=" + WeatherApiKey);
     f.println("CityID=" + String(CityIDs[0]));
     f.println("isMetric=" + String(IS_METRIC));
+    f.println("displaynews=" + String(NEWS_ENABLED));
+    f.println("newsApiKey=" + String(NEWS_API_KEY));
+    f.println("newssource=" + String(NEWS_SOURCE));
   }
   f.close();
   readSettings();
@@ -1037,6 +1242,20 @@ void readSettings() {
       IS_METRIC = line.substring(line.lastIndexOf("isMetric=") + 9).toInt();
       Serial.println("IS_METRIC=" + String(IS_METRIC));
     }
+    if (line.indexOf("displaynews=") >= 0) {
+      NEWS_ENABLED = line.substring(line.lastIndexOf("displaynews=") + 12).toInt();
+      Serial.println("NEWS_ENABLED=" + String(NEWS_ENABLED));
+    }
+    if (line.indexOf("newsApiKey=") >= 0) {
+      NEWS_API_KEY = line.substring(line.lastIndexOf("newsApiKey=") + 11);
+      NEWS_API_KEY.trim();
+      Serial.println("NEWS_API_KEY=" + NEWS_API_KEY);
+    }
+    if (line.indexOf("newssource=") >= 0) {
+      NEWS_SOURCE = line.substring(line.lastIndexOf("newssource=") + 11);
+      NEWS_SOURCE.trim();
+      Serial.println("NEWS_API_KEY=" + NEWS_SOURCE);
+    }
   }
   fr.close();
   printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass);
@@ -1044,6 +1263,7 @@ void readSettings() {
   weatherClient.setMetric(IS_METRIC);
   weatherClient.updateCityIdList(CityIDs, 1);
   timeClient.setUtcOffset(UtcOffset);
+  newsClient.updateNewsClient(NEWS_API_KEY, NEWS_SOURCE);
 }
 
 int getMinutesFromLastRefresh() {
@@ -1096,11 +1316,34 @@ void checkDisplay() {
         ui.disableAutoTransition();
         ui.setFrames(clockFrame, 1);
         clockFrame[0] = drawClock;
-      } else {
-        ui.enableAutoTransition();
-        ui.setFrames(clockFrame, 2);
-        clockFrame[0] = drawClock;
-        clockFrame[1] = drawWeather;
+      } 
+      else {
+        if (NEWS_ENABLED) {
+            ui.enableAutoTransition();
+            ui.setFrames(clockFrame, 13);
+            clockFrame[0] = drawClock;
+            clockFrame[1] = drawNewsPage1;
+            clockFrame[2] = drawNewsPage2;
+            clockFrame[3] = drawNewsPage3;
+            if (DISPLAYWEATHER) {
+              clockFrame[4] = drawWeather;
+            } else {
+              clockFrame[4] = drawClock;
+            }
+            clockFrame[5] = drawNewsPage4;
+            clockFrame[6] = drawNewsPage5;
+            clockFrame[7] = drawNewsPage6;
+            clockFrame[8] = drawClock;
+            clockFrame[9] = drawNewsPage7;
+            clockFrame[10] = drawNewsPage8;
+            clockFrame[11] = drawNewsPage9;
+            clockFrame[12] = drawNewsPage10;
+        } else {
+            ui.enableAutoTransition();
+            ui.setFrames(clockFrame, 2);
+            clockFrame[0] = drawClock;
+            clockFrame[1] = drawWeather;
+          }
       }
       ui.setOverlays(clockOverlay, numberOfOverlays);
       isClockOn = true;
