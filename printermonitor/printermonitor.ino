@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "2.1"
+#define VERSION "2.2"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
@@ -66,7 +66,7 @@ void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 // Set the number of Frames supported
 const int numberOfFrames = 3;
 FrameCallback frames[numberOfFrames];
-FrameCallback clockFrame[20];
+FrameCallback clockFrame[13];
 boolean isClockOn = false;
 
 OverlayCallback overlays[] = { drawHeaderOverlay };
@@ -519,13 +519,14 @@ void handleNewsConfigure() {
   digitalWrite(externalLight, LOW);
   String html = "";
 
-  String NEWS_FORM1 =   "<form class='w3-container' action='/updatenewsconfig' method='get'><h2>News Configuration:</h2>"
-                      "<p><input name='displaynews' class='w3-check w3-margin-top' type='checkbox' %NEWSCHECKED%> Display News Headlines</p>"
+  String NEWS_FORM1 = "<script>function updateSourceField(el) {if (el.selectedIndex > 0) {document.getElementById('myNewsSource').value = el.options[el.selectedIndex].text; el.selectedIndex=0;}}</script>"
+                      "<form class='w3-container' action='/updatenewsconfig' method='get'><h2>News Configuration:</h2>"
+                      "<p><input name='displaynews' class='w3-check w3-margin-top' type='checkbox' %NEWSCHECKED%> Display News Headlines when printer is off</p>"
                       "<label>News API Key (get from <a href='https://newsapi.org/' target='_BLANK'>here</a>)</label>"
                       "<input class='w3-input w3-border w3-margin-bottom' type='text' name='newsApiKey' value='%NEWSKEY%' maxlength='60'>"
-                      "<p>Select News Source <select class='w3-option w3-padding' name='newssource'>";
+                      "<p><select class='w3-option w3-padding' onchange='updateSourceField(this);'><option>-- Select or enter Nieuws Source --</option>";
 
-  String NEWS_FORM2 =   "</select></p>"
+  String NEWS_FORM2 =  "</select><input type='text' id='myNewsSource' class='w3-option w3-padding' name='newssource' value='%NEWSSOURCE%' /></p>"
                       "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>";
 
   server.sendHeader("Cache-Control", "no-cache, no-store");
@@ -545,11 +546,11 @@ void handleNewsConfigure() {
   form.replace("%NEWSCHECKED%", isNewsDisplayedChecked);
   form.replace("%NEWSKEY%", NEWS_API_KEY);
   server.sendContent(form); //Send first Chunk of form
-  String newsOptions = NEWS_OPTIONS;
-  newsOptions.replace(">" + NEWS_SOURCE + "<", " selected>" + NEWS_SOURCE + "<");
-  server.sendContent(newsOptions);
-  server.sendContent(NEWS_FORM2);
-  
+  server.sendContent(NEWS_OPTIONS);
+  form = NEWS_FORM2;
+  form.replace("%NEWSSOURCE%", NEWS_SOURCE);
+  server.sendContent(form);
+
   html = getFooter();
   server.sendContent(html);
   
@@ -797,8 +798,11 @@ void displayPrinterStatus() {
       html += "<a href='https://www.google.com/maps/@" + weatherClient.getLat(0) + "," + weatherClient.getLon(0) + ",10000m/data=!3m1!1e3' target='_BLANK'><i class='fa fa-map-marker' style='color:red'></i> Map It!</a><br>";
       html += "</p></div></div>";
     }
-    
-    if (NEWS_ENABLED) {
+    server.sendContent(html); // spit out what we got
+    html = ""; // fresh start
+  }
+  
+  if (NEWS_ENABLED) {
         if (NEWS_API_KEY == "" || NEWS_SOURCE == "") {
             html += "<p>Please <a href='/configurenews'>Configure News</a> API and <a href='/configurenews'>News Source</a></p>";
         } else {
@@ -816,7 +820,6 @@ void displayPrinterStatus() {
               html += "</p></div></div>";
            }
         }
-    }
     server.sendContent(html); // spit out what we got
     html = ""; // fresh start
   }
@@ -927,7 +930,7 @@ void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
 
   display->setFont(ArialMT_Plain_16);
   display->drawString(0 + x, 24 + y, weatherClient.getCondition(0));
-  display->setFont(Meteocons_Plain_42);
+  display->setFont((const uint8_t*)Meteocons_Plain_42);
   display->drawString(86 + x, 0 + y, weatherClient.getWeatherIcon(0));
 }
 
@@ -1312,7 +1315,7 @@ void checkDisplay() {
   } else if (DISPLAYCLOCK) {
     if (!printerClient.isOperational() && !isClockOn) {
       Serial.println("Clock Mode is turned on.");
-      if (!DISPLAYWEATHER) {
+      if (!DISPLAYWEATHER && !NEWS_ENABLED) {
         ui.disableAutoTransition();
         ui.setFrames(clockFrame, 1);
         clockFrame[0] = drawClock;
