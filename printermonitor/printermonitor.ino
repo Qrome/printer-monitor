@@ -1,6 +1,7 @@
  /** The MIT License (MIT)
 
 Copyright (c) 2018 David Payne
+Copyright (c) 2018 Florian Schütte
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -112,6 +113,7 @@ String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method=
                       "<p><label>OctoPrint Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
                       "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
                       "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
+                      "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display?</p>"
                       "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>"
                       "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
                       "<p><label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'></p><hr>"
@@ -400,6 +402,7 @@ void handleUpdateWeather() {
 }
 
 void handleUpdateConfig() {
+  boolean flipOld = INVERT_DISPLAY;
   if (!server.authenticate(www_username, www_password)) {
     return server.requestAuthentication();
   }
@@ -411,6 +414,7 @@ void handleUpdateConfig() {
   OctoAuthPass = server.arg("octoPass");
   DISPLAYCLOCK = server.hasArg("isClockEnabled");
   IS_24HOUR = server.hasArg("is24hour");
+  INVERT_DISPLAY = server.hasArg("invDisp");
   minutesBetweenDataRefresh = server.arg("refresh").toInt();
   themeColor = server.arg("theme");
   UtcOffset = server.arg("utcoffset").toFloat();
@@ -421,6 +425,12 @@ void handleUpdateConfig() {
   writeSettings();
   findMDNS();
   printerClient.getPrinterJobResults();
+  if (INVERT_DISPLAY != flipOld) {
+    ui.init();
+    if(INVERT_DISPLAY)     
+      display.flipScreenVertically();
+    ui.update();
+  }
   checkDisplay();
   lastEpoch = 0;
   redirectHome();
@@ -512,6 +522,11 @@ void handleConfigure() {
     is24hourChecked = "checked='checked'";
   }
   form.replace("%IS_24HOUR_CHECKED%", is24hourChecked);
+  String isInvDisp = "";
+  if (INVERT_DISPLAY) {
+    isInvDisp = "checked='checked'";
+  }
+  form.replace("%IS_INVDISP_CHECKED%", isInvDisp);
   String options = "<option>10</option><option>15</option><option>20</option><option>30</option><option>60</option>";
   options.replace(">"+String(minutesBetweenDataRefresh)+"<", " selected>"+String(minutesBetweenDataRefresh)+"<");
   form.replace("%OPTIONS%", options);
@@ -937,6 +952,7 @@ void writeSettings() {
     f.println("www_password=" + String(www_password));
     f.println("DISPLAYCLOCK=" + String(DISPLAYCLOCK));
     f.println("is24hour=" + String(IS_24HOUR));
+    f.println("invertDisp=" + String(INVERT_DISPLAY));
     f.println("isWeather=" + String(DISPLAYWEATHER));
     f.println("weatherKey=" + WeatherApiKey);
     f.println("CityID=" + String(CityIDs[0]));
@@ -1019,6 +1035,10 @@ void readSettings() {
     if (line.indexOf("is24hour=") >= 0) {
       IS_24HOUR = line.substring(line.lastIndexOf("is24hour=") + 9).toInt();
       Serial.println("IS_24HOUR=" + String(IS_24HOUR));
+    }
+    if(line.indexOf("invertDisp=") >= 0) {
+      INVERT_DISPLAY = line.substring(line.lastIndexOf("invertDisp=") + 11).toInt();
+      Serial.println("INVERT_DISPLAY=" + String(INVERT_DISPLAY));
     }
     if (line.indexOf("isWeather=") >= 0) {
       DISPLAYWEATHER = line.substring(line.lastIndexOf("isWeather=") + 10).toInt();

@@ -1,6 +1,7 @@
 /** The MIT License (MIT)
 
 Copyright (c) 2018 David Payne
+Copyright (c) 2018 Florian Schütte
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -81,7 +82,7 @@ boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = 
 const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)
 const int SDA_PIN = D2;
 const int SCL_PIN = D5;
-const boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bottom
+boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bottom
 //#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
 
 boolean ENABLE_OTA = true;     // this will allow you to load firmware to the device over WiFi (see OTA for ESP8266)
