@@ -1,4 +1,4 @@
- /** The MIT License (MIT)
+/** The MIT License (MIT)
 
 Copyright (c) 2018 David Payne
 
@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "2.1"
+#define VERSION "2.2"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
