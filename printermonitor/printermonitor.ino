@@ -112,10 +112,11 @@ String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method=
                       "<p><label>OctoPrint Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
                       "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
                       "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
-                      "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display?</p>"
+                      "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
                       "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>"
                       "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
                       "<p><label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'></p><hr>"
+                      "<p><input name='isBasicAuth' class='w3-check w3-margin-top' type='checkbox' %IS_BASICAUTH_CHECKED%> Use Security Credentials for Configuration Changes</p>"
                       "<p><label>User ID (for this interface)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='userid' value='%USERID%' maxlength='20'></p>"
                       "<p><label>Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='stationpassword' value='%STATIONPASSWORD%'></p>"
                       "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>";
@@ -374,8 +375,15 @@ void getUpdateTime() {
   digitalWrite(externalLight, HIGH);  // turn off the LED
 }
 
+boolean authentication() {
+  if (IS_BASIC_AUTH && (strlen(www_username) >= 1 && strlen(www_password) >= 1)) {
+    return server.authenticate(www_username, www_password);
+  } 
+  return true; // Authentication not required
+}
+
 void handleSystemReset() {
-  if (!server.authenticate(www_username, www_password)) {
+  if (!authentication()) {
     return server.requestAuthentication();
   }
   Serial.println("Reset System Configuration");
@@ -386,7 +394,7 @@ void handleSystemReset() {
 }
 
 void handleUpdateWeather() {
-  if (!server.authenticate(www_username, www_password)) {
+  if (!authentication()) {
     return server.requestAuthentication();
   }
   DISPLAYWEATHER = server.hasArg("isWeatherEnabled");
@@ -402,7 +410,7 @@ void handleUpdateWeather() {
 
 void handleUpdateConfig() {
   boolean flipOld = INVERT_DISPLAY;
-  if (!server.authenticate(www_username, www_password)) {
+  if (!authentication()) {
     return server.requestAuthentication();
   }
   OctoPrintApiKey = server.arg("octoPrintApiKey");
@@ -436,7 +444,7 @@ void handleUpdateConfig() {
 }
 
 void handleWifiReset() {
-  if (!server.authenticate(www_username, www_password)) {
+  if (!authentication()) {
     return server.requestAuthentication();
   }
   //WiFiManager
@@ -448,7 +456,7 @@ void handleWifiReset() {
 }
 
 void handleWeatherConfigure() {
-  if (!server.authenticate(www_username, www_password)) {
+  if (!authentication()) {
     return server.requestAuthentication();
   }
   digitalWrite(externalLight, LOW);
@@ -488,7 +496,7 @@ void handleWeatherConfigure() {
 }
 
 void handleConfigure() {
-  if (!server.authenticate(www_username, www_password)) {
+  if (!authentication()) {
     return server.requestAuthentication();
   }
   digitalWrite(externalLight, LOW);
@@ -533,6 +541,11 @@ void handleConfigure() {
   themeOptions.replace(">"+String(themeColor)+"<", " selected>"+String(themeColor)+"<");
   form.replace("%THEME_OPTIONS%", themeOptions);
   form.replace("%UTCOFFSET%", String(UtcOffset));
+  String isUseSecurityChecked = "";
+  if (IS_BASIC_AUTH) {
+    isUseSecurityChecked = "checked='checked'";
+  }
+  form.replace("%IS_BASICAUTH_CHECKED%", isUseSecurityChecked);
   form.replace("%USERID%", String(www_username));
   form.replace("%STATIONPASSWORD%", String(www_password));
 
@@ -947,6 +960,7 @@ void writeSettings() {
     f.println("octoPass=" + OctoAuthPass);
     f.println("refreshRate=" + String(minutesBetweenDataRefresh));
     f.println("themeColor=" + themeColor);
+    f.println("IS_BASIC_AUTH=" + String(IS_BASIC_AUTH));
     f.println("www_username=" + String(www_username));
     f.println("www_password=" + String(www_password));
     f.println("DISPLAYCLOCK=" + String(DISPLAYCLOCK));
@@ -1014,6 +1028,10 @@ void readSettings() {
       themeColor = line.substring(line.lastIndexOf("themeColor=") + 11);
       themeColor.trim();
       Serial.println("themeColor=" + themeColor);
+    }
+    if (line.indexOf("IS_BASIC_AUTH=") >= 0) {
+      IS_BASIC_AUTH = line.substring(line.lastIndexOf("IS_BASIC_AUTH=") + 14).toInt();
+      Serial.println("IS_BASIC_AUTH=" + String(IS_BASIC_AUTH));
     }
     if (line.indexOf("www_username=") >= 0) {
       String temp = line.substring(line.lastIndexOf("www_username=") + 13);

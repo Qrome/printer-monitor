@@ -109,7 +109,8 @@ Please do not feel obligated, but donations and tips are warmly welcomed.  I hav
 
 ## Contributors
 David Payne  
-Daniel Eichhorn -- Author of the TimeClient class and OLEDDisplayUi . 
+Daniel Eichhorn -- Author of the TimeClient class and OLEDDisplayUi  
+Florian Schütte -- added flip display to web interface  
 
 Contributing to this software is warmly welcomed. You can do this basically by
 forking from master, committing modifications and then making a pulling requests to be reviewed (follow the links above
