@@ -155,9 +155,6 @@ String COLOR_THEMES = "<option>red</option>"
                       "<option>w3schools</option>";
                             
 
-// Change the externalLight to the pin you wish to use if other than the Built-in LED
-int externalLight = LED_BUILTIN; // LED_BUILTIN is is the built in LED on the Wemos
-
 void setup() {
   Serial.begin(115200);
   SPIFFS.begin();
