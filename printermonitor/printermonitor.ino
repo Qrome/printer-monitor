@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "2.2"
+#define VERSION "2.3"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
