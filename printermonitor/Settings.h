@@ -40,6 +40,7 @@ SOFTWARE.
 #include <WiFiManager.h>
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
+#include <ESP8266HTTPUpdateServer.h>
 #include "TimeClient.h"
 #include "OctoPrintClient.h"
 #include "OpenWeatherMapClient.h"
