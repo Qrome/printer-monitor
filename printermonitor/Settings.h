@@ -86,6 +86,9 @@ const int SCL_PIN = D5;
 boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bottom
 #define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
 
+// LED Settings
+const int externalLight = LED_BUILTIN; // Set to unused pin, like D1, to disable use of built-in LED (LED_BUILTIN)
+
 boolean ENABLE_OTA = true;     // this will allow you to load firmware to the device over WiFi (see OTA for ESP8266)
 String OTA_Password = "";      // Set an OTA password here -- leave blank if you don't want to be prompted for password
 //******************************
