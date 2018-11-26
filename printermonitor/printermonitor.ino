@@ -95,12 +95,14 @@ void configModeCallback (WiFiManager *myWiFiManager);
 int8_t getWifiQuality();
 
 ESP8266WebServer server(WEBSERVER_PORT);
+ESP8266HTTPUpdateServer serverUpdater;
 
 String WEB_ACTIONS =  "<a class='w3-bar-item w3-button' href='/'><i class='fa fa-home'></i> Home</a>"
                       "<a class='w3-bar-item w3-button' href='/configure'><i class='fa fa-cog'></i> Configure</a>"
                       "<a class='w3-bar-item w3-button' href='/configureweather'><i class='fa fa-cloud'></i> Weather</a>"
                       "<a class='w3-bar-item w3-button' href='/systemreset' onclick='return confirm(\"Do you want to reset to default settings?\")'><i class='fa fa-undo'></i> Reset Settings</a>"
                       "<a class='w3-bar-item w3-button' href='/forgetwifi' onclick='return confirm(\"Do you want to forget to WiFi connection?\")'><i class='fa fa-wifi'></i> Forget WiFi</a>"
+                      "<a class='w3-bar-item w3-button' href='/update'><i class='fa fa-wrench'></i> Firmware Update</a>"
                       "<a class='w3-bar-item w3-button' href='https://github.com/Qrome' target='_blank'><i class='fa fa-question-circle'></i> About</a>";
                             
 String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
@@ -263,6 +265,7 @@ void setup() {
     server.on("/configure", handleConfigure);
     server.on("/configureweather", handleWeatherConfigure);
     server.onNotFound(redirectHome);
+    serverUpdater.setup(&server, "/update", www_username, www_password);
     // Start the server
     server.begin();
     Serial.println("Server started");
