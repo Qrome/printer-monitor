@@ -287,13 +287,13 @@ void setup() {
     display.drawString(64, 20, "Enable in Settings.h");
     display.display(); 
   }
-   
   flashLED(5, 500);
   findMDNS();  //go find Octoprint Server by the hostname
+  Serial.println("*** Leaving setup()");
 }
 
 void findMDNS() {
-  if (OctoPrintHostName == "") {
+  if (OctoPrintHostName == "" || ENABLE_OTA == false) {
     return; // nothing to do here
   }
   // We now query our network for 'web servers' service
