@@ -39,7 +39,8 @@ SOFTWARE.
 * Sample rate is every 10 seconds when printing
 * Fully configurable from the web interface (not required to update Settings.h)
 * Supports OTA (loading firmware over WiFi connection on same LAN)
-* Basic Athentication to protect your settings
+* Basic Authentication to protect your settings
+* Version 2.2 added the ability to update firmware through web interface from a compiled binary
 * Video: https://youtu.be/niRv9SCgAPk
 * Detailed build video by Chris Riley: https://youtu.be/Rm-l1FSuJpI
 
