@@ -84,7 +84,7 @@ const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x
 const int SDA_PIN = D2;
 const int SCL_PIN = D5;
 boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bottom
-#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
+//#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
 
 // LED Settings
 const int externalLight = LED_BUILTIN; // Set to unused pin, like D1, to disable use of built-in LED (LED_BUILTIN)
