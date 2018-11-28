@@ -35,13 +35,11 @@ SOFTWARE.
 /* Useful Constants */
 #define SECS_PER_MIN  (60UL)
 #define SECS_PER_HOUR (3600UL)
-#define SECS_PER_DAY  (SECS_PER_HOUR * 24L)
 
 /* Useful Macros for getting elapsed time */
 #define numberOfSeconds(_time_) (_time_ % SECS_PER_MIN)  
 #define numberOfMinutes(_time_) ((_time_ / SECS_PER_MIN) % SECS_PER_MIN) 
-#define numberOfHours(_time_) (( _time_% SECS_PER_DAY) / SECS_PER_HOUR)
-#define elapsedDays(_time_) ( _time_ / SECS_PER_DAY)  
+#define numberOfHours(_time_) (_time_ / SECS_PER_HOUR)
 
 // Initialize the oled display for I2C_DISPLAY_ADDRESS
 // SDA_PIN and SCL_PIN
@@ -679,14 +677,12 @@ void displayPrinterStatus() {
     html += "Bed Temperature: " + printerClient.getTempBedActual() + "&#176; C<br>";
     
     int val = printerClient.getProgressPrintTimeLeft().toInt();
-    int days = elapsedDays(val);
     int hours = numberOfHours(val);
     int minutes = numberOfMinutes(val);
     int seconds = numberOfSeconds(val);
     html += "Est. Print Time Left: " + zeroPad(hours) + ":" + zeroPad(minutes) + ":" + zeroPad(seconds) + "<br>";
   
     val = printerClient.getProgressPrintTime().toInt();
-    days = elapsedDays(val);
     hours = numberOfHours(val);
     minutes = numberOfMinutes(val);
     seconds = numberOfSeconds(val);
@@ -784,7 +780,6 @@ void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
   //display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->setFont(ArialMT_Plain_24);
   int val = printerClient.getProgressPrintTimeLeft().toInt();
-  int days = elapsedDays(val);
   int hours = numberOfHours(val);
   int minutes = numberOfMinutes(val);
   int seconds = numberOfSeconds(val);
@@ -801,7 +796,6 @@ void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
   //display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->setFont(ArialMT_Plain_24);
   int val = printerClient.getProgressPrintTime().toInt();
-  int days = elapsedDays(val);
   int hours = numberOfHours(val);
   int minutes = numberOfMinutes(val);
   int seconds = numberOfSeconds(val);
