@@ -86,7 +86,7 @@ OctoPrintClient printerClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, O
 int printerCount = 0;
 
 // Weather Client
-OpenWeatherMapClient weatherClient(WeatherApiKey, CityIDs, 1, IS_METRIC);
+OpenWeatherMapClient weatherClient(WeatherApiKey, CityIDs, 1, IS_METRIC, WeatherLanguage);
 
 //declairing prototypes
 void configModeCallback (WiFiManager *myWiFiManager);
@@ -129,8 +129,43 @@ String WEATHER_FORM = "<form class='w3-container' action='/updateweatherconfig' 
                       "or full <a href='http://openweathermap.org/help/city_list.txt' target='_BLANK'>city list</a></label>"
                       "<input class='w3-input w3-border w3-margin-bottom' type='text' name='city1' value='%CITY1%' onkeypress='return isNumberKey(event)'></p>"
                       "<p><input name='metric' class='w3-check w3-margin-top' type='checkbox' %METRIC%> Use Metric (Celsius)</p>"
+                      "<p>Weather Language <select class='w3-option w3-padding' name='language'>%LANGUAGEOPTIONS%</select></p>"
                       "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>"
                       "<script>function isNumberKey(e){var h=e.which?e.which:event.keyCode;return!(h>31&&(h<48||h>57))}</script>";
+
+String LANG_OPTIONS = "<option>ar</option>"
+                      "<option>bg</option>"
+                      "<option>ca</option>"
+                      "<option>cz</option>"
+                      "<option>de</option>"
+                      "<option>el</option>"
+                      "<option>en</option>"
+                      "<option>fa</option>"
+                      "<option>fi</option>"
+                      "<option>fr</option>"
+                      "<option>gl</option>"
+                      "<option>hr</option>"
+                      "<option>hu</option>"
+                      "<option>it</option>"
+                      "<option>ja</option>"
+                      "<option>kr</option>"
+                      "<option>la</option>"
+                      "<option>lt</option>"
+                      "<option>mk</option>"
+                      "<option>nl</option>"
+                      "<option>pl</option>"
+                      "<option>pt</option>"
+                      "<option>ro</option>"
+                      "<option>ru</option>"
+                      "<option>se</option>"
+                      "<option>sk</option>"
+                      "<option>sl</option>"
+                      "<option>es</option>"
+                      "<option>tr</option>"
+                      "<option>ua</option>"
+                      "<option>vi</option>"
+                      "<option>zh_cn</option>"
+                      "<option>zh_tw</option>";
 
 String COLOR_THEMES = "<option>red</option>"
                       "<option>pink</option>"
@@ -399,6 +434,7 @@ void handleUpdateWeather() {
   WeatherApiKey = server.arg("openWeatherMapApiKey");
   CityIDs[0] = server.arg("city1").toInt();
   IS_METRIC = server.hasArg("metric");
+  WeatherLanguage = server.arg("language");
   writeSettings();
   isClockOn = false; // this will force a check for the display
   checkDisplay();
@@ -483,7 +519,9 @@ void handleWeatherConfigure() {
     checked = "checked='checked'";
   }
   form.replace("%METRIC%", checked);
-
+  String options = LANG_OPTIONS;
+  options.replace(">"+String(WeatherLanguage)+"<", " selected>"+String(WeatherLanguage)+"<");
+  form.replace("%LANGUAGEOPTIONS%", options);
   server.sendContent(form);
   
   html = getFooter();
@@ -594,6 +632,7 @@ String getHeader(boolean refresh) {
 
   String html = "<!DOCTYPE HTML>";
   html += "<html><head><title>Printer Monitor</title><link rel='icon' href='data:;base64,='>";
+  html += "<meta charset='UTF-8'>";
   html += "<meta name='viewport' content='width=device-width, initial-scale=1'>";
   if (refresh) {
     html += "<meta http-equiv=\"refresh\" content=\"30\">";
@@ -964,6 +1003,7 @@ void writeSettings() {
     f.println("weatherKey=" + WeatherApiKey);
     f.println("CityID=" + String(CityIDs[0]));
     f.println("isMetric=" + String(IS_METRIC));
+    f.println("language=" + String(WeatherLanguage));
   }
   f.close();
   readSettings();
@@ -1068,10 +1108,16 @@ void readSettings() {
       IS_METRIC = line.substring(line.lastIndexOf("isMetric=") + 9).toInt();
       Serial.println("IS_METRIC=" + String(IS_METRIC));
     }
+    if (line.indexOf("language=") >= 0) {
+      WeatherLanguage = line.substring(line.lastIndexOf("language=") + 9);
+      WeatherLanguage.trim();
+      Serial.println("WeatherLanguage=" + WeatherLanguage);
+    }
   }
   fr.close();
   printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass);
   weatherClient.updateWeatherApiKey(WeatherApiKey);
+  weatherClient.updateLanguage(WeatherLanguage);
   weatherClient.setMetric(IS_METRIC);
   weatherClient.updateCityIdList(CityIDs, 1);
   timeClient.setUtcOffset(UtcOffset);

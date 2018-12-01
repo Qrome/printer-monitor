@@ -23,8 +23,9 @@ SOFTWARE.
 
 #include "OpenWeatherMapClient.h"
 
-OpenWeatherMapClient::OpenWeatherMapClient(String ApiKey, int CityIDs[], int cityCount, boolean isMetric) {
+OpenWeatherMapClient::OpenWeatherMapClient(String ApiKey, int CityIDs[], int cityCount, boolean isMetric, String language) {
   updateCityIdList(CityIDs, cityCount);
+  updateLanguage(language);
   myApiKey = ApiKey;
   setMetric(isMetric);
 }
@@ -33,9 +34,16 @@ void OpenWeatherMapClient::updateWeatherApiKey(String ApiKey) {
   myApiKey = ApiKey;
 }
 
+void OpenWeatherMapClient::updateLanguage(String language) {
+  lang = language;
+  if (lang == "") {
+    lang = "en";
+  }
+}
+
 void OpenWeatherMapClient::updateWeather() {
   WiFiClient weatherClient;
-  String apiGetData = "GET /data/2.5/group?id=" + myCityIDs + "&units=" + units + "&cnt=1&APPID=" + myApiKey + " HTTP/1.1";
+  String apiGetData = "GET /data/2.5/group?id=" + myCityIDs + "&units=" + units + "&cnt=1&APPID=" + myApiKey + "&lang=" + lang + " HTTP/1.1";
 
   Serial.println("Getting Weather Data");
   Serial.println(apiGetData);
