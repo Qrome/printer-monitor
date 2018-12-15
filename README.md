@@ -39,7 +39,8 @@ SOFTWARE.
 * Sample rate is every 10 seconds when printing
 * Fully configurable from the web interface (not required to update Settings.h)
 * Supports OTA (loading firmware over WiFi connection on same LAN)
-* Basic Athentication to protect your settings
+* Basic Authentication to protect your settings
+* Version 2.2 added the ability to update firmware through web interface from a compiled binary
 * Video: https://youtu.be/niRv9SCgAPk
 * Detailed build video by Chris Riley: https://youtu.be/Rm-l1FSuJpI
 
@@ -61,6 +62,11 @@ GND -> GND-
 ## 3D Printed Case by Qrome:  
 https://www.thingiverse.com/thing:2884823 -- for the 0.96" OLED Display  
 https://www.thingiverse.com/thing:2934049 -- for the 1.3" OLED Display
+
+## Upgrading from version 2.2 or Higher
+Version 2.2 introduced the ability to upgrade pre-compiled firmware from a binary file.  In version 2.3 and on you should find binary files that can be uploaded to your printer monitor via the web interface.  From the main menu in the web interface select "Firmware Update" and follow the prompts.
+* **printermonitor.ino.d1_mini_SSD1306.bin** - compiled for Wemos D1 Mini for the smaller 0.96" SSD1306 OLED (default)
+* **printermonitor.ino.d1_mini_SH1106.bin** - compiled for Wemos D1 Mini for the larger 1.3" SH1106 OLED
 
 ## Compiling and Loading to Wemos D1 Mini
 It is recommended to use Arduino IDE.  You will need to configure Arduino IDE to work with the Wemos board and USB port and installed the required USB drivers etc.  

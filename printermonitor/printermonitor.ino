@@ -27,7 +27,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "2.2"
+#define VERSION "2.3"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
@@ -35,13 +35,11 @@ SOFTWARE.
 /* Useful Constants */
 #define SECS_PER_MIN  (60UL)
 #define SECS_PER_HOUR (3600UL)
-#define SECS_PER_DAY  (SECS_PER_HOUR * 24L)
 
 /* Useful Macros for getting elapsed time */
 #define numberOfSeconds(_time_) (_time_ % SECS_PER_MIN)  
 #define numberOfMinutes(_time_) ((_time_ / SECS_PER_MIN) % SECS_PER_MIN) 
-#define numberOfHours(_time_) (( _time_% SECS_PER_DAY) / SECS_PER_HOUR)
-#define elapsedDays(_time_) ( _time_ / SECS_PER_DAY)  
+#define numberOfHours(_time_) (_time_ / SECS_PER_HOUR)
 
 // Initialize the oled display for I2C_DISPLAY_ADDRESS
 // SDA_PIN and SCL_PIN
@@ -88,7 +86,7 @@ OctoPrintClient printerClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, O
 int printerCount = 0;
 
 // Weather Client
-OpenWeatherMapClient weatherClient(WeatherApiKey, CityIDs, 1, IS_METRIC);
+OpenWeatherMapClient weatherClient(WeatherApiKey, CityIDs, 1, IS_METRIC, WeatherLanguage);
 
 //declairing prototypes
 void configModeCallback (WiFiManager *myWiFiManager);
@@ -131,8 +129,43 @@ String WEATHER_FORM = "<form class='w3-container' action='/updateweatherconfig' 
                       "or full <a href='http://openweathermap.org/help/city_list.txt' target='_BLANK'>city list</a></label>"
                       "<input class='w3-input w3-border w3-margin-bottom' type='text' name='city1' value='%CITY1%' onkeypress='return isNumberKey(event)'></p>"
                       "<p><input name='metric' class='w3-check w3-margin-top' type='checkbox' %METRIC%> Use Metric (Celsius)</p>"
+                      "<p>Weather Language <select class='w3-option w3-padding' name='language'>%LANGUAGEOPTIONS%</select></p>"
                       "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>"
                       "<script>function isNumberKey(e){var h=e.which?e.which:event.keyCode;return!(h>31&&(h<48||h>57))}</script>";
+
+String LANG_OPTIONS = "<option>ar</option>"
+                      "<option>bg</option>"
+                      "<option>ca</option>"
+                      "<option>cz</option>"
+                      "<option>de</option>"
+                      "<option>el</option>"
+                      "<option>en</option>"
+                      "<option>fa</option>"
+                      "<option>fi</option>"
+                      "<option>fr</option>"
+                      "<option>gl</option>"
+                      "<option>hr</option>"
+                      "<option>hu</option>"
+                      "<option>it</option>"
+                      "<option>ja</option>"
+                      "<option>kr</option>"
+                      "<option>la</option>"
+                      "<option>lt</option>"
+                      "<option>mk</option>"
+                      "<option>nl</option>"
+                      "<option>pl</option>"
+                      "<option>pt</option>"
+                      "<option>ro</option>"
+                      "<option>ru</option>"
+                      "<option>se</option>"
+                      "<option>sk</option>"
+                      "<option>sl</option>"
+                      "<option>es</option>"
+                      "<option>tr</option>"
+                      "<option>ua</option>"
+                      "<option>vi</option>"
+                      "<option>zh_cn</option>"
+                      "<option>zh_tw</option>";
 
 String COLOR_THEMES = "<option>red</option>"
                       "<option>pink</option>"
@@ -158,9 +191,6 @@ String COLOR_THEMES = "<option>red</option>"
                       "<option>black</option>"
                       "<option>w3schools</option>";
                             
-
-// Change the externalLight to the pin you wish to use if other than the Built-in LED
-int externalLight = LED_BUILTIN; // LED_BUILTIN is is the built in LED on the Wemos
 
 void setup() {
   Serial.begin(115200);
@@ -404,6 +434,7 @@ void handleUpdateWeather() {
   WeatherApiKey = server.arg("openWeatherMapApiKey");
   CityIDs[0] = server.arg("city1").toInt();
   IS_METRIC = server.hasArg("metric");
+  WeatherLanguage = server.arg("language");
   writeSettings();
   isClockOn = false; // this will force a check for the display
   checkDisplay();
@@ -488,7 +519,9 @@ void handleWeatherConfigure() {
     checked = "checked='checked'";
   }
   form.replace("%METRIC%", checked);
-
+  String options = LANG_OPTIONS;
+  options.replace(">"+String(WeatherLanguage)+"<", " selected>"+String(WeatherLanguage)+"<");
+  form.replace("%LANGUAGEOPTIONS%", options);
   server.sendContent(form);
   
   html = getFooter();
@@ -599,6 +632,7 @@ String getHeader(boolean refresh) {
 
   String html = "<!DOCTYPE HTML>";
   html += "<html><head><title>Printer Monitor</title><link rel='icon' href='data:;base64,='>";
+  html += "<meta charset='UTF-8'>";
   html += "<meta name='viewport' content='width=device-width, initial-scale=1'>";
   if (refresh) {
     html += "<meta http-equiv=\"refresh\" content=\"30\">";
@@ -682,14 +716,12 @@ void displayPrinterStatus() {
     html += "Bed Temperature: " + printerClient.getTempBedActual() + "&#176; C<br>";
     
     int val = printerClient.getProgressPrintTimeLeft().toInt();
-    int days = elapsedDays(val);
     int hours = numberOfHours(val);
     int minutes = numberOfMinutes(val);
     int seconds = numberOfSeconds(val);
     html += "Est. Print Time Left: " + zeroPad(hours) + ":" + zeroPad(minutes) + ":" + zeroPad(seconds) + "<br>";
   
     val = printerClient.getProgressPrintTime().toInt();
-    days = elapsedDays(val);
     hours = numberOfHours(val);
     minutes = numberOfMinutes(val);
     seconds = numberOfSeconds(val);
@@ -787,7 +819,6 @@ void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
   //display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->setFont(ArialMT_Plain_24);
   int val = printerClient.getProgressPrintTimeLeft().toInt();
-  int days = elapsedDays(val);
   int hours = numberOfHours(val);
   int minutes = numberOfMinutes(val);
   int seconds = numberOfSeconds(val);
@@ -804,7 +835,6 @@ void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
   //display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->setFont(ArialMT_Plain_24);
   int val = printerClient.getProgressPrintTime().toInt();
-  int days = elapsedDays(val);
   int hours = numberOfHours(val);
   int minutes = numberOfMinutes(val);
   int seconds = numberOfSeconds(val);
@@ -973,6 +1003,7 @@ void writeSettings() {
     f.println("weatherKey=" + WeatherApiKey);
     f.println("CityID=" + String(CityIDs[0]));
     f.println("isMetric=" + String(IS_METRIC));
+    f.println("language=" + String(WeatherLanguage));
   }
   f.close();
   readSettings();
@@ -1077,10 +1108,16 @@ void readSettings() {
       IS_METRIC = line.substring(line.lastIndexOf("isMetric=") + 9).toInt();
       Serial.println("IS_METRIC=" + String(IS_METRIC));
     }
+    if (line.indexOf("language=") >= 0) {
+      WeatherLanguage = line.substring(line.lastIndexOf("language=") + 9);
+      WeatherLanguage.trim();
+      Serial.println("WeatherLanguage=" + WeatherLanguage);
+    }
   }
   fr.close();
   printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass);
   weatherClient.updateWeatherApiKey(WeatherApiKey);
+  weatherClient.updateLanguage(WeatherLanguage);
   weatherClient.setMetric(IS_METRIC);
   weatherClient.updateCityIdList(CityIDs, 1);
   timeClient.setUtcOffset(UtcOffset);
