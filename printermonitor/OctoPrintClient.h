@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// Additional Contributions:
 /* 15 Jan 2019 : Owen Carter : Add psucontrol query via POST api call */
 
 #pragma once
@@ -95,4 +96,3 @@ public:
   String getValueRounded(String value);
   String getError();
 };
-

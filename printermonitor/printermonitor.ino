@@ -20,7 +20,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
- 
+
+// Additional Contributions:
 /* 15 Jan 2019 : Owen Carter : Add psucontrol option and processing */
 
  /**********************************************
@@ -29,7 +30,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "2.3"
+#define VERSION "2.4"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
@@ -116,8 +117,9 @@ String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method=
                       "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
                       "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
                       "<p><input name='hasPSU' class='w3-check w3-margin-top' type='checkbox' %HAS_PSU_CHECKED%> Use OctoPrint PSU control plugin for clock/blank</p>"
-                      "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>"
-                      "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
+                      "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>";
+                      
+String THEME_FORM =   "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
                       "<p><label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'></p><hr>"
                       "<p><input name='isBasicAuth' class='w3-check w3-margin-top' type='checkbox' %IS_BASICAUTH_CHECKED%> Use Security Credentials for Configuration Changes</p>"
                       "<p><label>User ID (for this interface)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='userid' value='%USERID%' maxlength='20'></p>"
@@ -586,6 +588,11 @@ void handleConfigure() {
   String options = "<option>10</option><option>15</option><option>20</option><option>30</option><option>60</option>";
   options.replace(">"+String(minutesBetweenDataRefresh)+"<", " selected>"+String(minutesBetweenDataRefresh)+"<");
   form.replace("%OPTIONS%", options);
+
+  server.sendContent(form);
+
+  form = THEME_FORM;
+  
   String themeOptions = COLOR_THEMES;
   themeOptions.replace(">"+String(themeColor)+"<", " selected>"+String(themeColor)+"<");
   form.replace("%THEME_OPTIONS%", themeOptions);
