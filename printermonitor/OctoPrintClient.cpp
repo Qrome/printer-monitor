@@ -21,13 +21,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/* 15 Jan 2019 : Owen Carter : Add psucontrol query via POST api call */
+
 #include "OctoPrintClient.h"
 
-OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass) {
-  updateOctoPrintClient(ApiKey, server, port, user, pass);
+OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+  updateOctoPrintClient(ApiKey, server, port, user, pass, psu);
 }
 
-void OctoPrintClient::updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass) {
+void OctoPrintClient::updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
   server.toCharArray(myServer, 100);
   myApiKey = ApiKey;
   myPort = port;
@@ -37,6 +39,7 @@ void OctoPrintClient::updateOctoPrintClient(String ApiKey, String server, int po
     base64 b64;
     encodedAuth = b64.encode(userpass, true);
   }
+  pollPsu = psu;
 }
 
 boolean OctoPrintClient::validate() {
@@ -58,7 +61,7 @@ WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
   WiFiClient printClient;
   printClient.setTimeout(5000);
 
-  Serial.println("Getting Octoprint Data");
+  Serial.println("Getting Octoprint Data via GET");
   Serial.println(apiGetData);
   result = "";
   if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
@@ -109,18 +112,76 @@ WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
   return printClient;
 }
 
+WiFiClient OctoPrintClient::getPostRequest(String apiPostData, String apiPostBody) {
+  WiFiClient printClient;
+  printClient.setTimeout(5000);
+
+  Serial.println("Getting Octoprint Data via POST");
+  Serial.println(apiPostData + " | " + apiPostBody);
+  result = "";
+  if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
+    printClient.println(apiPostData);
+    printClient.println("Host: " + String(myServer) + ":" + String(myPort));
+    printClient.println("Connection: close");
+    printClient.println("X-Api-Key: " + myApiKey);
+    if (encodedAuth != "") {
+      printClient.print("Authorization: ");
+      printClient.println("Basic " + encodedAuth);
+    }
+    printClient.println("User-Agent: ArduinoWiFi/1.1");
+    printClient.println("Content-Type: application/json");
+    printClient.print("Content-Length: ");
+    printClient.println(apiPostBody.length());
+    printClient.println();
+    printClient.println(apiPostBody);
+    if (printClient.println() == 0) {
+      Serial.println("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
+      Serial.println();
+      resetPrintData();
+      printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
+      return printClient;
+    }
+  } 
+  else {
+    Serial.println("Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+    Serial.println();
+    resetPrintData();
+    printerData.error = "Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort);
+    return printClient;
+  }
+
+  // Check HTTP status
+  char status[32] = {0};
+  printClient.readBytesUntil('\r', status, sizeof(status));
+  if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
+    Serial.print(F("Unexpected response: "));
+    Serial.println(status);
+    printerData.state = "";
+    printerData.error = "Response: " + String(status);
+    return printClient;
+  }
+
+  // Skip HTTP headers
+  char endOfHeaders[] = "\r\n\r\n";
+  if (!printClient.find(endOfHeaders)) {
+    Serial.println(F("Invalid response"));
+    printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
+    printerData.state = "";
+  }
+
+  return printClient;
+}
+
 void OctoPrintClient::getPrinterJobResults() {
   if (!validate()) {
     return;
   }
+  //**** get the Printer Job status
   String apiGetData = "GET /api/job HTTP/1.1";
-
   WiFiClient printClient = getSubmitRequest(apiGetData);
-
   if (printerData.error != "") {
     return;
   }
-  
   const size_t bufferSize = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 2*JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + 710;
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
@@ -148,7 +209,7 @@ void OctoPrintClient::getPrinterJobResults() {
   if (isOperational()) {
     Serial.println("Status: " + printerData.state);
   } else {
-    Serial.println("Printer Not Opperational");
+    Serial.println("Printer Not Operational");
   }
 
   //**** get the Printer Temps and Stat
@@ -183,8 +244,42 @@ void OctoPrintClient::getPrinterJobResults() {
   if (isPrinting()) {
     Serial.println("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
   }
+}
+
+void OctoPrintClient::getPrinterPsuState() {
+  //**** get the PSU state (if enabled and printer operational)
+  if (pollPsu && isOperational()) {
+    if (!validate()) {
+      printerData.isPSUoff = false; // we do not know PSU state, so assume on.
+      return;
+    }
+    String apiPostData = "POST /api/plugin/psucontrol HTTP/1.1";
+    String apiPostBody = "{\"command\":\"getPSUState\"}";
+    WiFiClient printClient = getPostRequest(apiPostData,apiPostBody);
+    if (printerData.error != "") {
+      printerData.isPSUoff = false; // we do not know PSU state, so assume on.
+      return;
+    }
+    const size_t bufferSize3 = JSON_OBJECT_SIZE(2) + 300;
+    DynamicJsonBuffer jsonBuffer3(bufferSize3);
   
-  printClient.stop(); //stop client
+    // Parse JSON object
+    JsonObject& root3 = jsonBuffer3.parseObject(printClient);
+    if (!root3.success()) {
+      printerData.isPSUoff = false; // we do not know PSU state, so assume on
+      return;
+    }
+  
+    String psu = (const char*)root3["isPSUOn"];
+    if (psu == "true") {
+      printerData.isPSUoff = false; // PSU checked and is on
+    } else {
+      printerData.isPSUoff = true; // PSU checked and is off, set flag
+    }
+    printClient.stop(); //stop client
+  } else {
+    printerData.isPSUoff = false; // we are not checking PSU state, so assume on
+  }
 }
 
 // Reset all PrinterData
@@ -205,6 +300,7 @@ void OctoPrintClient::resetPrintData() {
   printerData.bedTemp = "";
   printerData.bedTargetTemp = "";
   printerData.isPrinting = false;
+  printerData.isPSUoff = false;
   printerData.error = "";
 }
 
@@ -254,6 +350,10 @@ String OctoPrintClient::getState() {
 
 boolean OctoPrintClient::isPrinting() {
   return printerData.isPrinting;
+}
+
+boolean OctoPrintClient::isPSUoff() {
+  return printerData.isPSUoff;
 }
 
 boolean OctoPrintClient::isOperational() {

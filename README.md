@@ -41,6 +41,7 @@ SOFTWARE.
 * Supports OTA (loading firmware over WiFi connection on same LAN)
 * Basic Authentication to protect your settings
 * Version 2.2 added the ability to update firmware through web interface from a compiled binary
+* Can query the Octoprint [PSU Control plugin](https://plugins.octoprint.org/plugins/psucontrol/) to enter clock or blank mode when PSU is off
 * Video: https://youtu.be/niRv9SCgAPk
 * Detailed build video by Chris Riley: https://youtu.be/Rm-l1FSuJpI
 
