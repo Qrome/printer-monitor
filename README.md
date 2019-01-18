@@ -115,9 +115,10 @@ Please do not feel obligated, but donations and tips are warmly welcomed.  I hav
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6VPMTLASLSKWE)
 
 ## Contributors
-David Payne  
+David Payne -- Principal developer and architect  
 Daniel Eichhorn -- Author of the TimeClient class and OLEDDisplayUi  
 Florian Schütte -- added flip display to web interface  
+Owen Carter -- Added psu control setting (v2.4) 
 
 Contributing to this software is warmly welcomed. You can do this basically by
 forking from master, committing modifications and then making a pulling requests to be reviewed (follow the links above
