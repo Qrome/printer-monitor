@@ -21,6 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// Additional Contributions:
+/* 15 Jan 2019 : Owen Carter : Add psucontrol query via POST api call */
+
 #pragma once
 #include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
@@ -33,11 +36,13 @@ private:
   int myPort = 80;
   String myApiKey = "";
   String encodedAuth = "";
+  boolean pollPsu;
 
   void resetPrintData();
   boolean validate();
   WiFiClient getSubmitRequest(String apiGetData);
-  
+  WiFiClient getPostRequest(String apiPostData, String apiPostBody);
+ 
   String result;
 
   typedef struct {
@@ -57,6 +62,7 @@ private:
     String bedTemp;
     String bedTargetTemp;
     boolean isPrinting;
+    boolean isPSUoff;
     String error;
   } PrinterStruct;
 
@@ -64,9 +70,10 @@ private:
 
   
 public:
-  OctoPrintClient(String ApiKey, String server, int port, String user, String pass);
+  OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
   void getPrinterJobResults();
-  void updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass);
+  void getPrinterPsuState();
+  void updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
 
   String getAveragePrintTime();
   String getEstimatedPrintTime();
@@ -80,6 +87,7 @@ public:
   String getState();
   boolean isPrinting();
   boolean isOperational();
+  boolean isPSUoff();
   String getTempBedActual();
   String getTempBedTarget();
   String getTempToolActual();
@@ -88,4 +96,3 @@ public:
   String getValueRounded(String value);
   String getError();
 };
-

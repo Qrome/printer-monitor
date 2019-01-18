@@ -41,6 +41,7 @@ SOFTWARE.
 * Supports OTA (loading firmware over WiFi connection on same LAN)
 * Basic Authentication to protect your settings
 * Version 2.2 added the ability to update firmware through web interface from a compiled binary
+* Can query the Octoprint [PSU Control plugin](https://plugins.octoprint.org/plugins/psucontrol/) to enter clock or blank mode when PSU is off
 * Video: https://youtu.be/niRv9SCgAPk
 * Detailed build video by Chris Riley: https://youtu.be/Rm-l1FSuJpI
 
@@ -114,9 +115,10 @@ Please do not feel obligated, but donations and tips are warmly welcomed.  I hav
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6VPMTLASLSKWE)
 
 ## Contributors
-David Payne  
+David Payne -- Principal developer and architect  
 Daniel Eichhorn -- Author of the TimeClient class and OLEDDisplayUi  
 Florian Schütte -- added flip display to web interface  
+Owen Carter -- Added psu control setting (v2.4) 
 
 Contributing to this software is warmly welcomed. You can do this basically by
 forking from master, committing modifications and then making a pulling requests to be reviewed (follow the links above

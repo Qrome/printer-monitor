@@ -21,6 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// Additional Contributions:
+/* 15 Jan 2019 : Owen Carter : Add psucontrol setting */
+
 /******************************************************************************
  * Printer Monitor is designed for the Wemos D1 ESP8266
  * Wemos D1 Mini:  https://amzn.to/2qLyKJd
@@ -71,11 +74,14 @@ boolean IS_METRIC = false; // false = Imperial and true = Metric
 // Languages: ar, bg, ca, cz, de, el, en, fa, fi, fr, gl, hr, hu, it, ja, kr, la, lt, mk, nl, pl, pt, ro, ru, se, sk, sl, es, tr, ua, vi, zh_cn, zh_tw
 String WeatherLanguage = "en";  //Default (en) English
 
+// Webserver
 const int WEBSERVER_PORT = 80; // The port you can access this device on over HTTP
 const boolean WEBSERVER_ENABLED = true;  // Device will provide a web interface via http://[ip]:[port]/
 boolean IS_BASIC_AUTH = true;  // true = require athentication to change configuration settings / false = no auth
 char* www_username = "admin";  // User account for the Web Interface
 char* www_password = "password";  // Password for the Web Interface
+
+// Date and Time
 float UtcOffset = -7; // Hour offset from GMT for your timezone
 boolean IS_24HOUR = false;     // 23:00 millitary 24 hour clock
 int minutesBetweenDataRefresh = 15;
@@ -91,8 +97,13 @@ boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bott
 // LED Settings
 const int externalLight = LED_BUILTIN; // Set to unused pin, like D1, to disable use of built-in LED (LED_BUILTIN)
 
+// PSU Control
+boolean HAS_PSU = false; // Set to true if https://github.com/kantlivelong/OctoPrint-PSUControl/ in use
+
+// OTA Updates
 boolean ENABLE_OTA = true;     // this will allow you to load firmware to the device over WiFi (see OTA for ESP8266)
 String OTA_Password = "";      // Set an OTA password here -- leave blank if you don't want to be prompted for password
+
 //******************************
 // End Settings
 //******************************

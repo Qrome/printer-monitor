@@ -20,14 +20,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
- 
+
+// Additional Contributions:
+/* 15 Jan 2019 : Owen Carter : Add psucontrol option and processing */
+
  /**********************************************
  * Edit Settings.h for personalization
  ***********************************************/
 
 #include "Settings.h"
 
-#define VERSION "2.3"
+#define VERSION "2.4"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
@@ -82,7 +85,7 @@ String lastReportStatus = "";
 boolean displayOn = true;
 
 // OctoPrint Client
-OctoPrintClient printerClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass);
+OctoPrintClient printerClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass, HAS_PSU);
 int printerCount = 0;
 
 // Weather Client
@@ -113,8 +116,10 @@ String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method=
                       "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
                       "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
                       "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
-                      "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>"
-                      "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
+                      "<p><input name='hasPSU' class='w3-check w3-margin-top' type='checkbox' %HAS_PSU_CHECKED%> Use OctoPrint PSU control plugin for clock/blank</p>"
+                      "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>";
+                      
+String THEME_FORM =   "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
                       "<p><label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'></p><hr>"
                       "<p><input name='isBasicAuth' class='w3-check w3-margin-top' type='checkbox' %IS_BASICAUTH_CHECKED%> Use Security Credentials for Configuration Changes</p>"
                       "<p><label>User ID (for this interface)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='userid' value='%USERID%' maxlength='20'></p>"
@@ -205,7 +210,7 @@ void setup() {
 
   readSettings();
 
-  // initialize dispaly
+  // initialize display
   display.init();
   if (INVERT_DISPLAY) {
     display.flipScreenVertically(); // connections at top of OLED display
@@ -367,6 +372,7 @@ void loop() {
     digitalWrite(externalLight, LOW);
     lastMinute = timeClient.getMinutes(); // reset the check value
     printerClient.getPrinterJobResults();
+    printerClient.getPrinterPsuState();
     digitalWrite(externalLight, HIGH);
   } else if (printerClient.isPrinting()) {
     if (lastSecond != timeClient.getSeconds() && timeClient.getSeconds().endsWith("0")) {
@@ -374,6 +380,7 @@ void loop() {
       // every 10 seconds while printing get an update
       digitalWrite(externalLight, LOW);
       printerClient.getPrinterJobResults();
+      printerClient.getPrinterPsuState();
       digitalWrite(externalLight, HIGH);
     }
   }
@@ -456,6 +463,7 @@ void handleUpdateConfig() {
   DISPLAYCLOCK = server.hasArg("isClockEnabled");
   IS_24HOUR = server.hasArg("is24hour");
   INVERT_DISPLAY = server.hasArg("invDisp");
+  HAS_PSU = server.hasArg("hasPSU");
   minutesBetweenDataRefresh = server.arg("refresh").toInt();
   themeColor = server.arg("theme");
   UtcOffset = server.arg("utcoffset").toFloat();
@@ -466,6 +474,7 @@ void handleUpdateConfig() {
   writeSettings();
   findMDNS();
   printerClient.getPrinterJobResults();
+  printerClient.getPrinterPsuState();
   if (INVERT_DISPLAY != flipOld) {
     ui.init();
     if(INVERT_DISPLAY)     
@@ -570,9 +579,20 @@ void handleConfigure() {
     isInvDisp = "checked='checked'";
   }
   form.replace("%IS_INVDISP_CHECKED%", isInvDisp);
+  String hasPSUchecked = "";
+  if (HAS_PSU) {
+    hasPSUchecked = "checked='checked'";
+  }
+  form.replace("%HAS_PSU_CHECKED%", hasPSUchecked);
+  
   String options = "<option>10</option><option>15</option><option>20</option><option>30</option><option>60</option>";
   options.replace(">"+String(minutesBetweenDataRefresh)+"<", " selected>"+String(minutesBetweenDataRefresh)+"<");
   form.replace("%OPTIONS%", options);
+
+  server.sendContent(form);
+
+  form = THEME_FORM;
+  
   String themeOptions = COLOR_THEMES;
   themeOptions.replace(">"+String(themeColor)+"<", " selected>"+String(themeColor)+"<");
   form.replace("%THEME_OPTIONS%", themeOptions);
@@ -695,10 +715,16 @@ void displayPrinterStatus() {
   html += "<div class='w3-cell w3-container' style='width:100%'><p>";
   html += "Host Name: " + OctoPrintHostName + "<br>";
   if (printerClient.getError() != "") {
-    html += "Error: " + printerClient.getError() + "<br>";
+    html += "Status: Offline<br>";
+    html += "Reason: " + printerClient.getError() + "<br>";
+  } else {
+    html += "Status: " + printerClient.getState();
+    if (printerClient.isPSUoff() && HAS_PSU) {  
+      html += ", PSU off";
+    }
+    html += "<br>";
   }
-  html += "Status: " + printerClient.getState() + "<br>";
-
+  
   if (printerClient.isPrinting()) {
     html += "File: " + printerClient.getFileName() + "<br>";
     float fileSize = printerClient.getFileSize().toFloat();
@@ -941,9 +967,17 @@ void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   if (!IS_24HOUR) {
     display->drawString(0, 48, timeClient.getAmPm());
     display->setTextAlignment(TEXT_ALIGN_CENTER);
-    display->drawString(64, 48, "offline");
+    if (printerClient.isPSUoff()) {
+      display->drawString(64, 47, "psu off");
+    } else {
+      display->drawString(64, 47, "offline");
+    }
   } else {
-    display->drawString(0,48, "offline");
+    if (printerClient.isPSUoff()) {
+      display->drawString(0, 47, "psu off");
+    } else {
+      display->drawString(0, 47, "offline");
+    }
   }
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawRect(0, 43, 128, 2);
@@ -1004,6 +1038,7 @@ void writeSettings() {
     f.println("CityID=" + String(CityIDs[0]));
     f.println("isMetric=" + String(IS_METRIC));
     f.println("language=" + String(WeatherLanguage));
+    f.println("hasPSU=" + String(HAS_PSU));
   }
   f.close();
   readSettings();
@@ -1091,6 +1126,10 @@ void readSettings() {
       INVERT_DISPLAY = line.substring(line.lastIndexOf("invertDisp=") + 11).toInt();
       Serial.println("INVERT_DISPLAY=" + String(INVERT_DISPLAY));
     }
+    if (line.indexOf("hasPSU=") >= 0) {
+      HAS_PSU = line.substring(line.lastIndexOf("hasPSU=") + 7).toInt();
+      Serial.println("HAS_PSU=" + String(HAS_PSU));
+    }
     if (line.indexOf("isWeather=") >= 0) {
       DISPLAYWEATHER = line.substring(line.lastIndexOf("isWeather=") + 10).toInt();
       Serial.println("DISPLAYWEATHER=" + String(DISPLAYWEATHER));
@@ -1115,7 +1154,7 @@ void readSettings() {
     }
   }
   fr.close();
-  printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass);
+  printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass, HAS_PSU);
   weatherClient.updateWeatherApiKey(WeatherApiKey);
   weatherClient.updateLanguage(WeatherLanguage);
   weatherClient.setMetric(IS_METRIC);
@@ -1167,7 +1206,7 @@ void checkDisplay() {
       return;
     }
   } else if (DISPLAYCLOCK) {
-    if (!printerClient.isOperational() && !isClockOn) {
+    if ((!printerClient.isOperational() || printerClient.isPSUoff()) && !isClockOn) {
       Serial.println("Clock Mode is turned on.");
       if (!DISPLAYWEATHER) {
         ui.disableAutoTransition();
@@ -1181,7 +1220,7 @@ void checkDisplay() {
       }
       ui.setOverlays(clockOverlay, numberOfOverlays);
       isClockOn = true;
-    } else if (printerClient.isOperational() && isClockOn) {
+    } else if (printerClient.isOperational() && !printerClient.isPSUoff() && isClockOn) {
       Serial.println("Printer Monitor is active.");
       ui.setFrames(frames, numberOfFrames);
       ui.setOverlays(overlays, numberOfOverlays);
