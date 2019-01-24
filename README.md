@@ -75,6 +75,7 @@ It is recommended to use Arduino IDE.  You will need to configure Arduino IDE to
 * Enter http://arduino.esp8266.com/stable/package_esp8266com_index.json into Additional Board Manager URLs field. You can add multiple URLs, separating them with commas.  This will add support for the Wemos D1 Mini to Arduino IDE.
 * Open Boards Manager from Tools > Board menu and install esp8266 platform (and don't forget to select your ESP8266 board from Tools > Board menu after installation).
 * Select Board:  "WeMos D1 R2 & mini"
+* Set 1M SPIFFS -- this project uses SPIFFS for saving and reading configuration settings.
 
 ## Loading Supporting Library Files in Arduino
 Use the Arduino guide for details on how to installing and manage libraries https://www.arduino.cc/en/Guide/Libraries  
