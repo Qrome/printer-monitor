@@ -739,7 +739,9 @@ void displayPrinterStatus() {
     }
   
     html += "Tool Temperature: " + printerClient.getTempToolActual() + "&#176; C<br>";
-    html += "Bed Temperature: " + printerClient.getTempBedActual() + "&#176; C<br>";
+    if ( printerClient.getTempBedActual() != 0 ) {
+        html += "Bed Temperature: " + printerClient.getTempBedActual() + "&#176; C<br>";
+    }
     
     int val = printerClient.getProgressPrintTimeLeft().toInt();
     int hours = numberOfHours(val);
@@ -826,15 +828,25 @@ void flashLED(int number, int delayTime) {
 }
 
 void drawScreen1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
-  display->setTextAlignment(TEXT_ALIGN_CENTER);
-  display->setFont(ArialMT_Plain_16);
-  display->drawString(64 + x, 0 + y, "Bed / Tool Temp");
-  display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->setFont(ArialMT_Plain_24);
   String bed = printerClient.getValueRounded(printerClient.getTempBedActual());
   String tool = printerClient.getValueRounded(printerClient.getTempToolActual());
-  display->drawString(2 + x, 14 + y, bed + "°");
-  display->drawString(64 + x, 14 + y, tool + "°");
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->setFont(ArialMT_Plain_16);
+  if (bed != "0") {
+    display->drawString(64 + x, 0 + y, "Bed / Tool Temp");
+  } else {
+    display->drawString(64 + x, 0 + y, "Tool Temp");
+  }
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->setFont(ArialMT_Plain_24);
+  if (bed != "0") {
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->drawString(2 + x, 14 + y, bed + "°");
+    display->drawString(64 + x, 14 + y, tool + "°");
+  } else {
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->drawString(64 + x, 14 + y, tool + "°");
+  }
 }
 
 void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
