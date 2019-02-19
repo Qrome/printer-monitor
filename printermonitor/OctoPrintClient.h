@@ -26,7 +26,7 @@ SOFTWARE.
 
 #pragma once
 #include <ESP8266WiFi.h>
-#include <ArduinoJson.h>
+#include "libs/ArduinoJson/ArduinoJson.h"
 #include <base64.h>
 
 class OctoPrintClient {

@@ -82,12 +82,13 @@ Use the Arduino guide for details on how to installing and manage libraries http
 **Packages** -- the following packages and libraries are used (download and install):  
 ESP8266WiFi.h  
 ESP8266WebServer.h  
-ArduinoJson.h  --> https://github.com/bblanchon/ArduinoJson (Version 5.13.X)  
 WiFiManager.h --> https://github.com/tzapu/WiFiManager  
 ESP8266mDNS.h  
 ArduinoOTA.h  --> Arduino OTA Library  
 "SSD1306Wire.h" --> https://github.com/ThingPulse/esp8266-oled-ssd1306  
 "OLEDDisplayUi.h"  
+
+Note Printer-Monitor version 2.5 and later include ArduinoJson (version 5.13.1).   
 
 ## Initial Configuration
 All settings may be managed from the Web Interface, however, you may update the **Settings.h** file manually -- but it is not required.  There is also an option to display current weather when the print is off-line.  

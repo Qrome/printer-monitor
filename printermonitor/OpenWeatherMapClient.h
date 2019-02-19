@@ -23,7 +23,7 @@ SOFTWARE.
 
 #pragma once
 #include <ESP8266WiFi.h>
-#include <ArduinoJson.h>
+#include "libs/ArduinoJson/ArduinoJson.h"
 
 class OpenWeatherMapClient {
 
@@ -87,4 +87,3 @@ public:
   String getWeatherIcon(int index);
   String getError();
 };
-
