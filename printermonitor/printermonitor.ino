@@ -116,6 +116,7 @@ String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method=
                       "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
                       "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
                       "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
+                      "<p><input name='useFlash' class='w3-check w3-margin-top' type='checkbox' %USEFLASH%> Flash System LED on Service Calls</p>"
                       "<p><input name='hasPSU' class='w3-check w3-margin-top' type='checkbox' %HAS_PSU_CHECKED%> Use OctoPrint PSU control plugin for clock/blank</p>"
                       "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>";
                       
@@ -368,19 +369,19 @@ void loop() {
 
   if (lastMinute != timeClient.getMinutes() && !printerClient.isPrinting()) {
     // Check status every 60 seconds
-    digitalWrite(externalLight, LOW);
+    ledOnOff(true);
     lastMinute = timeClient.getMinutes(); // reset the check value
     printerClient.getPrinterJobResults();
     printerClient.getPrinterPsuState();
-    digitalWrite(externalLight, HIGH);
+    ledOnOff(false);
   } else if (printerClient.isPrinting()) {
     if (lastSecond != timeClient.getSeconds() && timeClient.getSeconds().endsWith("0")) {
       lastSecond = timeClient.getSeconds();
       // every 10 seconds while printing get an update
-      digitalWrite(externalLight, LOW);
+      ledOnOff(true);
       printerClient.getPrinterJobResults();
       printerClient.getPrinterPsuState();
-      digitalWrite(externalLight, HIGH);
+      ledOnOff(false);
     }
   }
 
@@ -397,7 +398,7 @@ void loop() {
 }
 
 void getUpdateTime() {
-  digitalWrite(externalLight, LOW); // turn on the LED
+  ledOnOff(true); // turn on the LED
   Serial.println();
 
   if (displayOn && DISPLAYWEATHER) {
@@ -411,7 +412,7 @@ void getUpdateTime() {
   lastEpoch = timeClient.getCurrentEpoch();
   Serial.println("Local time: " + timeClient.getAmPmFormattedTime());
 
-  digitalWrite(externalLight, HIGH);  // turn off the LED
+  ledOnOff(false);  // turn off the LED
 }
 
 boolean authentication() {
@@ -462,6 +463,7 @@ void handleUpdateConfig() {
   DISPLAYCLOCK = server.hasArg("isClockEnabled");
   IS_24HOUR = server.hasArg("is24hour");
   INVERT_DISPLAY = server.hasArg("invDisp");
+  USE_FLASH = server.hasArg("useFlash");
   HAS_PSU = server.hasArg("hasPSU");
   minutesBetweenDataRefresh = server.arg("refresh").toInt();
   themeColor = server.arg("theme");
@@ -501,7 +503,7 @@ void handleWeatherConfigure() {
   if (!authentication()) {
     return server.requestAuthentication();
   }
-  digitalWrite(externalLight, LOW);
+  ledOnOff(true);
   String html = "";
 
   server.sendHeader("Cache-Control", "no-cache, no-store");
@@ -536,14 +538,14 @@ void handleWeatherConfigure() {
   server.sendContent(html);
   server.sendContent("");
   server.client().stop();
-  digitalWrite(externalLight, HIGH);
+  ledOnOff(false);
 }
 
 void handleConfigure() {
   if (!authentication()) {
     return server.requestAuthentication();
   }
-  digitalWrite(externalLight, LOW);
+  ledOnOff(true);
   String html = "";
 
   server.sendHeader("Cache-Control", "no-cache, no-store");
@@ -578,6 +580,11 @@ void handleConfigure() {
     isInvDisp = "checked='checked'";
   }
   form.replace("%IS_INVDISP_CHECKED%", isInvDisp);
+  String isFlashLED = "";
+  if (USE_FLASH) {
+    isFlashLED = "checked='checked'";
+  }
+  form.replace("%USEFLASH%", isFlashLED);
   String hasPSUchecked = "";
   if (HAS_PSU) {
     hasPSUchecked = "checked='checked'";
@@ -610,11 +617,11 @@ void handleConfigure() {
   server.sendContent(html);
   server.sendContent("");
   server.client().stop();
-  digitalWrite(externalLight, HIGH);
+  ledOnOff(false);
 }
 
 void displayMessage(String message) {
-  digitalWrite(externalLight, LOW);
+  ledOnOff(true);
 
   server.sendHeader("Cache-Control", "no-cache, no-store");
   server.sendHeader("Pragma", "no-cache");
@@ -629,7 +636,7 @@ void displayMessage(String message) {
   server.sendContent("");
   server.client().stop();
   
-  digitalWrite(externalLight, HIGH);
+  ledOnOff(false);
 }
 
 void redirectHome() {
@@ -695,7 +702,7 @@ String getFooter() {
 }
 
 void displayPrinterStatus() {
-  digitalWrite(externalLight, LOW);
+  ledOnOff(true);
   String html = "";
 
   server.sendHeader("Cache-Control", "no-cache, no-store");
@@ -791,7 +798,7 @@ void displayPrinterStatus() {
   server.sendContent(String(getFooter()));
   server.sendContent("");
   server.client().stop();
-  digitalWrite(externalLight, HIGH);
+  ledOnOff(false);
 }
 
 void configModeCallback (WiFiManager *myWiFiManager) {
@@ -816,12 +823,22 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   flashLED(20, 50);
 }
 
+void ledOnOff(boolean value) {
+  if (USE_FLASH) {
+    if (value) {
+      digitalWrite(externalLight, LOW); // LED ON
+    } else {
+      digitalWrite(externalLight, HIGH);  // LED OFF
+    }
+  }
+}
+
 void flashLED(int number, int delayTime) {
-  for (int inx = 0; inx < number; inx++) {
+  for (int inx = 0; inx <= number; inx++) {
       delay(delayTime);
-      digitalWrite(externalLight, LOW);
+      digitalWrite(externalLight, LOW); // ON
       delay(delayTime);
-      digitalWrite(externalLight, HIGH);
+      digitalWrite(externalLight, HIGH); // OFF
       delay(delayTime);
   }
 }
@@ -1044,6 +1061,7 @@ void writeSettings() {
     f.println("DISPLAYCLOCK=" + String(DISPLAYCLOCK));
     f.println("is24hour=" + String(IS_24HOUR));
     f.println("invertDisp=" + String(INVERT_DISPLAY));
+    f.println("USE_FLASH=" + String(USE_FLASH));
     f.println("isWeather=" + String(DISPLAYWEATHER));
     f.println("weatherKey=" + WeatherApiKey);
     f.println("CityID=" + String(CityIDs[0]));
@@ -1136,6 +1154,10 @@ void readSettings() {
     if(line.indexOf("invertDisp=") >= 0) {
       INVERT_DISPLAY = line.substring(line.lastIndexOf("invertDisp=") + 11).toInt();
       Serial.println("INVERT_DISPLAY=" + String(INVERT_DISPLAY));
+    }
+    if(line.indexOf("USE_FLASH=") >= 0) {
+      USE_FLASH = line.substring(line.lastIndexOf("USE_FLASH=") + 10).toInt();
+      Serial.println("USE_FLASH=" + String(USE_FLASH));
     }
     if (line.indexOf("hasPSU=") >= 0) {
       HAS_PSU = line.substring(line.lastIndexOf("hasPSU=") + 7).toInt();

@@ -95,7 +95,8 @@ boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bott
 //#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
 
 // LED Settings
-const int externalLight = LED_BUILTIN; // Set to unused pin, like D1, to disable use of built-in LED (LED_BUILTIN)
+const int externalLight = LED_BUILTIN; // LED will always flash on bootup or Wifi Errors
+boolean USE_FLASH = true; // true = System LED will Flash on Service Calls; false = disabled LED flashing
 
 // PSU Control
 boolean HAS_PSU = false; // Set to true if https://github.com/kantlivelong/OctoPrint-PSUControl/ in use
