@@ -30,7 +30,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "2.5"
+#define VERSION "2.6"
 
 #define HOSTNAME "OctMon-" 
 #define CONFIG "/conf.txt"
