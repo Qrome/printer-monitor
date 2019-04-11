@@ -93,7 +93,8 @@ Note Printer-Monitor version 2.5 and later include ArduinoJson (version 5.13.1).
 
 ## Initial Configuration
 All settings may be managed from the Web Interface, however, you may update the **Settings.h** file manually -- but it is not required.  There is also an option to display current weather when the print is off-line.  
-* Your OctoPrint API Key from your OctoPrint -> User Settings -> Current API Key  
+* By default OctoPrint client is selected.  If you wish to use Repetier then uncomment //#define USE_REPETIER_CLIENT in the Settings.h file.
+* Your OctoPrint API Key from your OctoPrint -> User Settings -> Current API Key  -- similar for Repetier API Key.
 * Optional OpenWeatherMap API Key -- if you want current weather when not printing.  Get the api key from: https://openweathermap.org/  
 
 NOTE: The settings in the Settings.h are the default settings for the first loading. After loading you will manage changes to the settings via the Web Interface. If you want to change settings again in the settings.h, you will need to erase the file system on the Wemos or use the “Reset Settings” option in the Web Interface.  
