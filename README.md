@@ -24,7 +24,7 @@ SOFTWARE.
 # Printer Monitor (OctoPrint 3D Printer Monitor)
 
 ## Features:
-* Displays the print status from OctoPrint Server
+* Displays the print status from OctoPrint or Repetier Server
 * Estimated time remaining
 * Time Printing
 * Percentage complete
@@ -42,6 +42,7 @@ SOFTWARE.
 * Basic Authentication to protect your settings
 * Version 2.2 added the ability to update firmware through web interface from a compiled binary
 * Can query the Octoprint [PSU Control plugin](https://plugins.octoprint.org/plugins/psucontrol/) to enter clock or blank mode when PSU is off
+* Repetier support added in version 3.0 -- define in Settings.h
 * Video: https://youtu.be/niRv9SCgAPk
 * Detailed build video by Chris Riley: https://youtu.be/Rm-l1FSuJpI
 
