@@ -46,6 +46,7 @@ SOFTWARE.
 #include <ESP8266HTTPUpdateServer.h>
 #include "TimeClient.h"
 #include "OctoPrintClient.h"
+#include "RepetierClient.h"
 #include "OpenWeatherMapClient.h"
 #include "WeatherStationFonts.h"
 #include "FS.h"
@@ -57,13 +58,14 @@ SOFTWARE.
 // Start Settings
 //******************************
 
-// OctoPrint Monitoring -- Monitor your 3D printer OctoPrint Server
-String OctoPrintApiKey = "";   // ApiKey from your User Account on OctoPrint
-String OctoPrintHostName = "octopi";// Default 'octopi' -- or hostname if different (optional if your IP changes)
-String OctoPrintServer = "";   // IP or Address of your OctoPrint Server (DO NOT include http://)
-int OctoPrintPort = 80;        // the port you are running your OctoPrint server on (usually 80);
-String OctoAuthUser = "";      // only used if you have haproxy or basic athentintication turned on (not default)
-String OctoAuthPass = "";      // only used with haproxy or basic auth (only needed if you must authenticate)
+// OctoPrint / Repetier Monitoring -- Monitor your 3D OctoPrint or Repetier Server
+#define USE_REPETIER_CLIENT       // Uncomment this line to use the Repetier Printer Server -- OctoPrint is used by default and is most common
+String PrinterApiKey = "";   // ApiKey from your User Account on OctoPrint / Repetier
+String PrinterHostName = "octopi";// Default 'octopi' -- or hostname if different (optional if your IP changes)
+String PrinterServer = "";   // IP or Address of your OctoPrint / Repetier Server (DO NOT include http://)
+int PrinterPort = 80;        // the port you are running your OctoPrint / Repetier server on (usually 80);
+String PrinterAuthUser = "";      // only used if you have haproxy or basic athentintication turned on (not default)
+String PrinterAuthPass = "";      // only used with haproxy or basic auth (only needed if you must authenticate)
 
 // Weather Configuration
 boolean DISPLAYWEATHER = true; // true = show weather when not printing / false = no weather

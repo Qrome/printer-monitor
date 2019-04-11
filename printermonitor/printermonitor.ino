@@ -30,9 +30,9 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "2.6"
+#define VERSION "3.0"
 
-#define HOSTNAME "OctMon-" 
+#define HOSTNAME "PrintMon-" 
 #define CONFIG "/conf.txt"
 
 /* Useful Constants */
@@ -84,8 +84,14 @@ String lastSecond = "xx";
 String lastReportStatus = "";
 boolean displayOn = true;
 
-// OctoPrint Client
-OctoPrintClient printerClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass, HAS_PSU);
+// Printer Client
+#if defined(USE_REPETIER_CLIENT)
+  RepetierClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
+  String printerType = "Repetier";
+#else
+  OctoPrintClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
+  String printerType = "OctoPrint";
+#endif
 int printerCount = 0;
 
 // Weather Client
@@ -107,12 +113,12 @@ String WEB_ACTIONS =  "<a class='w3-bar-item w3-button' href='/'><i class='fa fa
                       "<a class='w3-bar-item w3-button' href='https://github.com/Qrome' target='_blank'><i class='fa fa-question-circle'></i> About</a>";
                             
 String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
-                      "<p><label>OctoPrint API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintApiKey' value='%OCTOKEY%' maxlength='60'></p>"
-                      "<p><label>OctoPrint Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintHostName' value='%OCTOHOST%' maxlength='60'></p>"
-                      "<p><label>OctoPrint Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
-                      "<p><label>OctoPrint Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoPrintPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>"
-                      "<p><label>OctoPrint User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
-                      "<p><label>OctoPrint Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
+                      "<p><label>" + printerType + " API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>"
+                      "<p><label>" + printerType + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>"
+                      "<p><label>" + printerType + " Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
+                      "<p><label>" + printerType + " Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>"
+                      "<p><label>" + printerType + " User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
+                      "<p><label>" + printerType + " Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
                       "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
                       "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
                       "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
@@ -326,32 +332,32 @@ void setup() {
     display.display(); 
   }
   flashLED(5, 500);
-  findMDNS();  //go find Octoprint Server by the hostname
+  findMDNS();  //go find Printer Server by the hostname
   Serial.println("*** Leaving setup()");
 }
 
 void findMDNS() {
-  if (OctoPrintHostName == "" || ENABLE_OTA == false) {
+  if (PrinterHostName == "" || ENABLE_OTA == false) {
     return; // nothing to do here
   }
   // We now query our network for 'web servers' service
   // over tcp, and get the number of available devices
   int n = MDNS.queryService("http", "tcp");
   if (n == 0) {
-    Serial.println("no services found - make sure OctoPrint server is turned on");
+    Serial.println("no services found - make sure Printer server is turned on");
     return;
   }
-  Serial.println("*** Looking for " + OctoPrintHostName + " over mDNS");
+  Serial.println("*** Looking for " + PrinterHostName + " over mDNS");
   for (int i = 0; i < n; ++i) {
     // Going through every available service,
     // we're searching for the one whose hostname
     // matches what we want, and then get its IP
     Serial.println("Found: " + MDNS.hostname(i));
-    if (MDNS.hostname(i) == OctoPrintHostName) {
+    if (MDNS.hostname(i) == PrinterHostName) {
       IPAddress serverIp = MDNS.IP(i);
-      OctoPrintServer = serverIp.toString();
-      OctoPrintPort = MDNS.port(i); // save the port
-      Serial.println("*** Found OctoPrint Server " + OctoPrintHostName + " http://" + OctoPrintServer + ":" + OctoPrintPort);
+      PrinterServer = serverIp.toString();
+      PrinterPort = MDNS.port(i); // save the port
+      Serial.println("*** Found Printer Server " + PrinterHostName + " http://" + PrinterServer + ":" + PrinterPort);
       writeSettings(); // update the settings
     }
   }
@@ -454,12 +460,12 @@ void handleUpdateConfig() {
   if (!authentication()) {
     return server.requestAuthentication();
   }
-  OctoPrintApiKey = server.arg("octoPrintApiKey");
-  OctoPrintHostName = server.arg("octoPrintHostName");
-  OctoPrintServer = server.arg("octoPrintAddress");
-  OctoPrintPort = server.arg("octoPrintPort").toInt();
-  OctoAuthUser = server.arg("octoUser");
-  OctoAuthPass = server.arg("octoPass");
+  PrinterApiKey = server.arg("PrinterApiKey");
+  PrinterHostName = server.arg("PrinterHostName");
+  PrinterServer = server.arg("PrinterAddress");
+  PrinterPort = server.arg("PrinterPort").toInt();
+  PrinterAuthUser = server.arg("octoUser");
+  PrinterAuthPass = server.arg("octoPass");
   DISPLAYCLOCK = server.hasArg("isClockEnabled");
   IS_24HOUR = server.hasArg("is24hour");
   INVERT_DISPLAY = server.hasArg("invDisp");
@@ -559,12 +565,12 @@ void handleConfigure() {
   
   String form = CHANGE_FORM;
   
-  form.replace("%OCTOKEY%", OctoPrintApiKey);
-  form.replace("%OCTOHOST%", OctoPrintHostName);
-  form.replace("%OCTOADDRESS%", OctoPrintServer);
-  form.replace("%OCTOPORT%", String(OctoPrintPort));
-  form.replace("%OCTOUSER%", OctoAuthUser);
-  form.replace("%OCTOPASS%", OctoAuthPass);
+  form.replace("%OCTOKEY%", PrinterApiKey);
+  form.replace("%OCTOHOST%", PrinterHostName);
+  form.replace("%OCTOADDRESS%", PrinterServer);
+  form.replace("%OCTOPORT%", String(PrinterPort));
+  form.replace("%OCTOUSER%", PrinterAuthUser);
+  form.replace("%OCTOPASS%", PrinterAuthPass);
   String isClockChecked = "";
   if (DISPLAYCLOCK) {
     isClockChecked = "checked='checked'";
@@ -719,7 +725,7 @@ void displayPrinterStatus() {
   
   html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + displayTime + "</h2></div><div class='w3-cell-row'>";
   html += "<div class='w3-cell w3-container' style='width:100%'><p>";
-  html += "Host Name: " + OctoPrintHostName + "<br>";
+  html += printerType + " Host Name: " + PrinterHostName + "<br>";
   if (printerClient.getError() != "") {
     html += "Status: Offline<br>";
     html += "Reason: " + printerClient.getError() + "<br>";
@@ -905,7 +911,7 @@ void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16
     displayTime = timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds(); 
   }
   display->setFont(ArialMT_Plain_16);
-  display->drawString(64 + x, 0 + y, OctoPrintHostName);
+  display->drawString(64 + x, 0 + y, PrinterHostName);
   display->setFont(ArialMT_Plain_24);
   display->drawString(64 + x, 17 + y, displayTime);
 }
@@ -1047,12 +1053,12 @@ void writeSettings() {
   } else {
     Serial.println("Saving settings now...");
     f.println("UtcOffset=" + String(UtcOffset));
-    f.println("octoKey=" + OctoPrintApiKey);
-    f.println("octoHost=" + OctoPrintHostName);
-    f.println("octoServer=" + OctoPrintServer);
-    f.println("octoPort=" + String(OctoPrintPort));
-    f.println("octoUser=" + OctoAuthUser);
-    f.println("octoPass=" + OctoAuthPass);
+    f.println("printerApiKey=" + PrinterApiKey);
+    f.println("printerHostName=" + PrinterHostName);
+    f.println("printerServer=" + PrinterServer);
+    f.println("printerPort=" + String(PrinterPort));
+    f.println("printerAuthUser=" + PrinterAuthUser);
+    f.println("printerAuthPass=" + PrinterAuthPass);
     f.println("refreshRate=" + String(minutesBetweenDataRefresh));
     f.println("themeColor=" + themeColor);
     f.println("IS_BASIC_AUTH=" + String(IS_BASIC_AUTH));
@@ -1089,34 +1095,34 @@ void readSettings() {
       UtcOffset = line.substring(line.lastIndexOf("UtcOffset=") + 10).toFloat();
       Serial.println("UtcOffset=" + String(UtcOffset));
     }
-    if (line.indexOf("octoKey=") >= 0) {
-      OctoPrintApiKey = line.substring(line.lastIndexOf("octoKey=") + 8);
-      OctoPrintApiKey.trim();
-      Serial.println("OctoPrintApiKey=" + OctoPrintApiKey);
+    if (line.indexOf("printerApiKey=") >= 0) {
+      PrinterApiKey = line.substring(line.lastIndexOf("printerApiKey=") + 14);
+      PrinterApiKey.trim();
+      Serial.println("PrinterApiKey=" + PrinterApiKey);
     }
-    if (line.indexOf("octoHost=") >= 0) {
-      OctoPrintHostName = line.substring(line.lastIndexOf("octoHost=") + 9);
-      OctoPrintHostName.trim();
-      Serial.println("OctoPrintHostName=" + OctoPrintHostName);
+    if (line.indexOf("printerHostName=") >= 0) {
+      PrinterHostName = line.substring(line.lastIndexOf("printerHostName=") + 16);
+      PrinterHostName.trim();
+      Serial.println("PrinterHostName=" + PrinterHostName);
     }
-    if (line.indexOf("octoServer=") >= 0) {
-      OctoPrintServer = line.substring(line.lastIndexOf("octoServer=") + 11);
-      OctoPrintServer.trim();
-      Serial.println("OctoPrintServer=" + OctoPrintServer);
+    if (line.indexOf("printerServer=") >= 0) {
+      PrinterServer = line.substring(line.lastIndexOf("printerServer=") + 14);
+      PrinterServer.trim();
+      Serial.println("PrinterServer=" + PrinterServer);
     }
-    if (line.indexOf("octoPort=") >= 0) {
-      OctoPrintPort = line.substring(line.lastIndexOf("octoPort=") + 9).toInt();
-      Serial.println("OctoPrintPort=" + String(OctoPrintPort));
+    if (line.indexOf("printerPort=") >= 0) {
+      PrinterPort = line.substring(line.lastIndexOf("printerPort=") + 12).toInt();
+      Serial.println("PrinterPort=" + String(PrinterPort));
     }
-    if (line.indexOf("octoUser=") >= 0) {
-      OctoAuthUser = line.substring(line.lastIndexOf("octoUser=") + 9);
-      OctoAuthUser.trim();
-      Serial.println("OctoAuthUser=" + OctoAuthUser);
+    if (line.indexOf("printerAuthUser=") >= 0) {
+      PrinterAuthUser = line.substring(line.lastIndexOf("printerAuthUser=") + 16);
+      PrinterAuthUser.trim();
+      Serial.println("PrinterAuthUser=" + PrinterAuthUser);
     }
-    if (line.indexOf("octoPass=") >= 0) {
-      OctoAuthPass = line.substring(line.lastIndexOf("octoPass=") + 9);
-      OctoAuthPass.trim();
-      Serial.println("OctoAuthPass=" + OctoAuthPass);
+    if (line.indexOf("printerAuthPass=") >= 0) {
+      PrinterAuthPass = line.substring(line.lastIndexOf("printerAuthPass=") + 16);
+      PrinterAuthPass.trim();
+      Serial.println("PrinterAuthPass=" + PrinterAuthPass);
     }
     if (line.indexOf("refreshRate=") >= 0) {
       minutesBetweenDataRefresh = line.substring(line.lastIndexOf("refreshRate=") + 12).toInt();
@@ -1187,7 +1193,7 @@ void readSettings() {
     }
   }
   fr.close();
-  printerClient.updateOctoPrintClient(OctoPrintApiKey, OctoPrintServer, OctoPrintPort, OctoAuthUser, OctoAuthPass, HAS_PSU);
+  printerClient.updatePrintClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
   weatherClient.updateWeatherApiKey(WeatherApiKey);
   weatherClient.updateLanguage(WeatherLanguage);
   weatherClient.setMetric(IS_METRIC);

@@ -27,10 +27,10 @@ SOFTWARE.
 #include "OctoPrintClient.h"
 
 OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
-  updateOctoPrintClient(ApiKey, server, port, user, pass, psu);
+  updatePrintClient(ApiKey, server, port, user, pass, psu);
 }
 
-void OctoPrintClient::updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+void OctoPrintClient::updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
   server.toCharArray(myServer, 100);
   myApiKey = ApiKey;
   myPort = port;

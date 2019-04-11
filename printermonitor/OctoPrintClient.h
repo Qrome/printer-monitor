@@ -73,7 +73,7 @@ public:
   OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
   void getPrinterJobResults();
   void getPrinterPsuState();
-  void updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
+  void updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
 
   String getAveragePrintTime();
   String getEstimatedPrintTime();

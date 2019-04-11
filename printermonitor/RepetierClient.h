@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Additional Contributions:
-/* 15 Jan 2019 : Owen Carter : Add psucontrol query via POST api call */
+/* 07 April 2019 : Jon Smith : added class for Repetier Server (kg4iae@github)*/
+
 
 #pragma once
 #include <ESP8266WiFi.h>
@@ -73,7 +73,7 @@ public:
   RepetierClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
   void getPrinterJobResults();
   void getPrinterPsuState();
-  void updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
+  void updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
 
   String getAveragePrintTime();
   String getEstimatedPrintTime();
