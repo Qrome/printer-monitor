@@ -87,10 +87,8 @@ boolean displayOn = true;
 // Printer Client
 #if defined(USE_REPETIER_CLIENT)
   RepetierClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
-  String printerType = "Repetier";
 #else
   OctoPrintClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
-  String printerType = "OctoPrint";
 #endif
 int printerCount = 0;
 
@@ -113,12 +111,12 @@ String WEB_ACTIONS =  "<a class='w3-bar-item w3-button' href='/'><i class='fa fa
                       "<a class='w3-bar-item w3-button' href='https://github.com/Qrome' target='_blank'><i class='fa fa-question-circle'></i> About</a>";
                             
 String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
-                      "<p><label>" + printerType + " API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>"
-                      "<p><label>" + printerType + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>"
-                      "<p><label>" + printerType + " Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
-                      "<p><label>" + printerType + " Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>"
-                      "<p><label>" + printerType + " User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
-                      "<p><label>" + printerType + " Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
+                      "<p><label>" + printerClient.getPrinterType() + " API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>"
+                      "<p><label>" + printerClient.getPrinterType() + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>"
+                      "<p><label>" + printerClient.getPrinterType() + " Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
+                      "<p><label>" + printerClient.getPrinterType() + " Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>"
+                      "<p><label>" + printerClient.getPrinterType() + " User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
+                      "<p><label>" + printerClient.getPrinterType() + " Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
                       "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
                       "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
                       "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
@@ -725,7 +723,7 @@ void displayPrinterStatus() {
   
   html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + displayTime + "</h2></div><div class='w3-cell-row'>";
   html += "<div class='w3-cell w3-container' style='width:100%'><p>";
-  html += printerType + " Host Name: " + PrinterHostName + "<br>";
+  html += printerClient.getPrinterType() + " Host Name: " + PrinterHostName + "<br>";
   if (printerClient.getError() != "") {
     html += "Status: Offline<br>";
     html += "Reason: " + printerClient.getError() + "<br>";

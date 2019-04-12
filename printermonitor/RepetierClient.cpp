@@ -339,3 +339,7 @@ String RepetierClient::getValueRounded(String value) {
   int rounded = (int)(f+0.5f);
   return String(rounded);
 }
+
+String RepetierClient::getPrinterType() {
+  return printerType;
+}

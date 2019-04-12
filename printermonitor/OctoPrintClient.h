@@ -37,6 +37,7 @@ private:
   String myApiKey = "";
   String encodedAuth = "";
   boolean pollPsu;
+  const String printerType = "OctoPrint";
 
   void resetPrintData();
   boolean validate();
@@ -95,4 +96,5 @@ public:
   String getFilamentLength();
   String getValueRounded(String value);
   String getError();
+  String getPrinterType();
 };
