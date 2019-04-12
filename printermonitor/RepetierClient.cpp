@@ -85,7 +85,7 @@ WiFiClient RepetierClient::getSubmitRequest(String apiGetData) {
     }
   } 
   else {
-    Serial.println("Connection to Repeteir failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+    Serial.println("Connection to Repetier failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
     Serial.println();
     resetPrintData();
     printerData.error = "Connection to Repetier failed: " + String(myServer) + ":" + String(myPort);
@@ -157,27 +157,30 @@ void RepetierClient::getPrinterJobResults() {
   long timeTot=0;
   long timeElap=0;
   long timeLeft=0;
-  if (printerData.estimatedPrintTime != "" )
-  {timeTot = atol(pr["printTime"]);}
-  if (printerData.progressPrintTime != "")
-  {timeElap= atol(pr["printedTimeComp"]);}
+  if (printerData.estimatedPrintTime != "" ) {
+    timeTot = atol(pr["printTime"]);
+  }
+  if (printerData.progressPrintTime != "") {
+    timeElap= atol(pr["printedTimeComp"]);
+  }
   timeLeft = timeTot-timeElap; 
-  printerData.progressPrintTimeLeft =String(timeLeft);
+  printerData.progressPrintTimeLeft = String(timeLeft);
 
-  
- 
   String printing = (const char*) pr["job"];
   if (printing != "none") {
     printerData.isPrinting = true;
-  }else {printerData.isPrinting=false;}
+  } else {
+    printerData.isPrinting=false;
+  }
 
-Serial.println("PT:"+printerData.progressPrintTime);
-Serial.println("PTC:"+ printerData.estimatedPrintTime);
-Serial.println("ST:"+ printerData.lastPrintTime);
-Serial.println("TimeLeft: "+printerData.progressPrintTimeLeft);
+  Serial.println("PT: " + printerData.progressPrintTime);
+  Serial.println("PTC: " + printerData.estimatedPrintTime);
+  Serial.println("ST: " + printerData.lastPrintTime);
+  Serial.println("TimeLeft: " + printerData.progressPrintTimeLeft);
 
-  if (printerData.isPrinting)
-    {  Serial.println("I think I am printing");}
+  if (printerData.isPrinting) {  
+    Serial.println("I think I am printing");
+  }
   
   if (isOperational()) {
     Serial.println("Status: " + printerData.state);
@@ -210,7 +213,6 @@ Serial.println("TimeLeft: "+printerData.progressPrintTimeLeft);
     return;
   }
 
- 
   printerData.toolTemp = (const char*) pr2["extruder"][0]["tempRead"];
   printerData.toolTargetTemp = (const char*) pr2["extruder"][0]["tempSet"];
   printerData.bedTemp = (const char*) pr2["heatedBeds"][0]["tempRead"];
