@@ -59,7 +59,7 @@ SOFTWARE.
 //******************************
 
 // OctoPrint / Repetier Monitoring -- Monitor your 3D OctoPrint or Repetier Server
-//#define USE_REPETIER_CLIENT       // Uncomment this line to use the Repetier Printer Server -- OctoPrint is used by default and is most common
+#define USE_REPETIER_CLIENT       // Uncomment this line to use the Repetier Printer Server -- OctoPrint is used by default and is most common
 String PrinterApiKey = "";   // ApiKey from your User Account on OctoPrint / Repetier
 String PrinterHostName = "octopi";// Default 'octopi' -- or hostname if different (optional if your IP changes)
 String PrinterServer = "";   // IP or Address of your OctoPrint / Repetier Server (DO NOT include http://)

@@ -109,21 +109,9 @@ String WEB_ACTIONS =  "<a class='w3-bar-item w3-button' href='/'><i class='fa fa
                       "<a class='w3-bar-item w3-button' href='/forgetwifi' onclick='return confirm(\"Do you want to forget to WiFi connection?\")'><i class='fa fa-wifi'></i> Forget WiFi</a>"
                       "<a class='w3-bar-item w3-button' href='/update'><i class='fa fa-wrench'></i> Firmware Update</a>"
                       "<a class='w3-bar-item w3-button' href='https://github.com/Qrome' target='_blank'><i class='fa fa-question-circle'></i> About</a>";
+
+String CHANGE_FORM =  ""; // moved to setup to make it dynamic
                             
-String CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
-                      "<p><label>" + printerClient.getPrinterType() + " API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>"
-                      "<p><label>" + printerClient.getPrinterType() + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>"
-                      "<p><label>" + printerClient.getPrinterType() + " Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
-                      "<p><label>" + printerClient.getPrinterType() + " Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>"
-                      "<p><label>" + printerClient.getPrinterType() + " User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
-                      "<p><label>" + printerClient.getPrinterType() + " Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
-                      "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
-                      "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
-                      "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
-                      "<p><input name='useFlash' class='w3-check w3-margin-top' type='checkbox' %USEFLASH%> Flash System LED on Service Calls</p>"
-                      "<p><input name='hasPSU' class='w3-check w3-margin-top' type='checkbox' %HAS_PSU_CHECKED%> Use OctoPrint PSU control plugin for clock/blank</p>"
-                      "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>";
-                      
 String THEME_FORM =   "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
                       "<p><label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'></p><hr>"
                       "<p><input name='isBasicAuth' class='w3-check w3-margin-top' type='checkbox' %IS_BASICAUTH_CHECKED%> Use Security Credentials for Configuration Changes</p>"
@@ -202,6 +190,22 @@ String COLOR_THEMES = "<option>red</option>"
                             
 
 void setup() {
+  CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
+                      "<p><label>" + printerClient.getPrinterType() + " API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>";
+  if (printerClient.getPrinterType() != "Repetier") {
+    CHANGE_FORM +=      "<p><label>" + printerClient.getPrinterType() + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>";                        
+  }
+  CHANGE_FORM +=      "<p><label>" + printerClient.getPrinterType() + " Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
+                      "<p><label>" + printerClient.getPrinterType() + " Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>"
+                      "<p><label>" + printerClient.getPrinterType() + " User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
+                      "<p><label>" + printerClient.getPrinterType() + " Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
+                      "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
+                      "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
+                      "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
+                      "<p><input name='useFlash' class='w3-check w3-margin-top' type='checkbox' %USEFLASH%> Flash System LED on Service Calls</p>"
+                      "<p><input name='hasPSU' class='w3-check w3-margin-top' type='checkbox' %HAS_PSU_CHECKED%> Use OctoPrint PSU control plugin for clock/blank</p>"
+                      "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>";
+  
   Serial.begin(115200);
   SPIFFS.begin();
   delay(10);
@@ -211,6 +215,9 @@ void setup() {
   
   // Initialize digital pin for LED (little blue light on the Wemos D1 Mini)
   pinMode(externalLight, OUTPUT);
+
+  //Some Defaults before loading from Config.txt
+  PrinterPort = printerClient.getPrinterPort();
 
   readSettings();
 
@@ -223,12 +230,18 @@ void setup() {
   display.display();
 
   //display.flipScreenVertically();
-  display.setFont(ArialMT_Plain_16);
+
   display.setTextAlignment(TEXT_ALIGN_CENTER);
   display.setContrast(255); // default is 255
-  display.drawString(64, 5, "Printer Monitor\nBy Qrome\nV" + String(VERSION));
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(64, 1, "Printer Monitor");
+  display.setFont(ArialMT_Plain_10);
+  display.drawString(64, 18, "for " + printerClient.getPrinterType());
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(64, 30, "By Qrome");
+  display.drawString(64, 46, "V" + String(VERSION));
   display.display();
-
+ 
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
   WiFiManager wifiManager;
@@ -723,7 +736,12 @@ void displayPrinterStatus() {
   
   html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + displayTime + "</h2></div><div class='w3-cell-row'>";
   html += "<div class='w3-cell w3-container' style='width:100%'><p>";
-  html += printerClient.getPrinterType() + " Host Name: " + PrinterHostName + "<br>";
+  if (printerClient.getPrinterType() == "Repetier") {
+    html += printerClient.getPrinterType() + " Printer Name: " + printerClient.getPrinterName() + "<br>";
+  } else {
+    html += printerClient.getPrinterType() + " Host Name: " + PrinterHostName + "<br>";
+  }
+ 
   if (printerClient.getError() != "") {
     html += "Status: Offline<br>";
     html += "Reason: " + printerClient.getError() + "<br>";
@@ -908,8 +926,12 @@ void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16
   if (IS_24HOUR) {
     displayTime = timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds(); 
   }
+  String displayName = PrinterHostName;
+  if (printerClient.getPrinterType() == "Repetier") {
+    displayName = printerClient.getPrinterName();
+  }
   display->setFont(ArialMT_Plain_16);
-  display->drawString(64 + x, 0 + y, PrinterHostName);
+  display->drawString(64 + x, 0 + y, displayName);
   display->setFont(ArialMT_Plain_24);
   display->drawString(64 + x, 17 + y, displayTime);
 }

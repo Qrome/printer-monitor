@@ -65,6 +65,7 @@ private:
     boolean isPrinting;
     boolean isPSUoff;
     String error;
+    String printerName;
   } PrinterStruct;
 
   PrinterStruct printerData;
@@ -97,4 +98,6 @@ public:
   String getValueRounded(String value);
   String getError();
   String getPrinterType();
+  int getPrinterPort();
+  String getPrinterName();
 };

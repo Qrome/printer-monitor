@@ -398,3 +398,11 @@ String OctoPrintClient::getValueRounded(String value) {
 String OctoPrintClient::getPrinterType() {
   return printerType;
 }
+
+int OctoPrintClient::getPrinterPort() {
+  return myPort;
+}
+
+String OctoPrintClient::getPrinterName() {
+  return printerData.printerName;
+}
