@@ -561,7 +561,7 @@ void handleConfigure() {
   html = getHeader();
   server.sendContent(html);
 
-  CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
+  CHANGE_FORM =       "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
                       "<p><label>" + printerClient.getPrinterType() + " API Key (get from your server)</label>"
                       "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' id='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>";
   if (printerClient.getPrinterType() == "OctoPrint") {
@@ -822,7 +822,7 @@ void displayPrinterStatus() {
 
   html += "</p></div></div>";
 
-  html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + displayTime + "</h2></div><div class='w3-cell-row'>";
+  html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + displayTime + "</h2></div>";
 
   server.sendContent(html); // spit out what we got
   html = "";
