@@ -110,7 +110,7 @@ String WEB_ACTIONS =  "<a class='w3-bar-item w3-button' href='/'><i class='fa fa
                       "<a class='w3-bar-item w3-button' href='/update'><i class='fa fa-wrench'></i> Firmware Update</a>"
                       "<a class='w3-bar-item w3-button' href='https://github.com/Qrome' target='_blank'><i class='fa fa-question-circle'></i> About</a>";
 
-String CHANGE_FORM =  ""; // moved to setup to make it dynamic
+String CHANGE_FORM =  ""; // moved to config to make it dynamic
                             
 String THEME_FORM =   "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
                       "<p><label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'></p><hr>"
@@ -189,23 +189,7 @@ String COLOR_THEMES = "<option>red</option>"
                       "<option>w3schools</option>";
                             
 
-void setup() {
-  CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
-                      "<p><label>" + printerClient.getPrinterType() + " API Key (get from your server)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>";
-  if (printerClient.getPrinterType() != "Repetier") {
-    CHANGE_FORM +=      "<p><label>" + printerClient.getPrinterType() + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>";                        
-  }
-  CHANGE_FORM +=      "<p><label>" + printerClient.getPrinterType() + " Address (do not include http://)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
-                      "<p><label>" + printerClient.getPrinterType() + " Port</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>"
-                      "<p><label>" + printerClient.getPrinterType() + " User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
-                      "<p><label>" + printerClient.getPrinterType() + " Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>"
-                      "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
-                      "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
-                      "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
-                      "<p><input name='useFlash' class='w3-check w3-margin-top' type='checkbox' %USEFLASH%> Flash System LED on Service Calls</p>"
-                      "<p><input name='hasPSU' class='w3-check w3-margin-top' type='checkbox' %HAS_PSU_CHECKED%> Use OctoPrint PSU control plugin for clock/blank</p>"
-                      "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>";
-  
+void setup() {  
   Serial.begin(115200);
   SPIFFS.begin();
   delay(10);
@@ -375,7 +359,7 @@ void findMDNS() {
 }
 
 //************************************************************
-// Main Looop
+// Main Loop
 //************************************************************
 void loop() {
   
@@ -470,6 +454,9 @@ void handleUpdateConfig() {
   boolean flipOld = INVERT_DISPLAY;
   if (!authentication()) {
     return server.requestAuthentication();
+  }
+  if (server.hasArg("printer")) {
+    printerClient.setPrinterName(server.arg("printer"));
   }
   PrinterApiKey = server.arg("PrinterApiKey");
   PrinterHostName = server.arg("PrinterHostName");
@@ -573,6 +560,46 @@ void handleConfigure() {
 
   html = getHeader();
   server.sendContent(html);
+
+  CHANGE_FORM =  "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
+                      "<p><label>" + printerClient.getPrinterType() + " API Key (get from your server)</label>"
+                      "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' id='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>";
+  if (printerClient.getPrinterType() == "OctoPrint") {
+    CHANGE_FORM +=      "<p><label>" + printerClient.getPrinterType() + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>";                        
+  }
+  CHANGE_FORM +=      "<p><label>" + printerClient.getPrinterType() + " Address (do not include http://)</label>"
+                      "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterAddress' id='PrinterAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
+                      "<p><label>" + printerClient.getPrinterType() + " Port</label>"
+                      "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterPort' id='PrinterPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>";
+  if (printerClient.getPrinterType() == "Repetier") {
+    CHANGE_FORM +=    "<input type='button' value='Test Connection' onclick='testRepetier()'>"
+                      "<input type='hidden' id='selectedPrinter' value='" + printerClient.getPrinterName() + "'><p id='RepetierTest'></p>"
+                      "<script>testRepetier();</script>";                        
+  }           
+  CHANGE_FORM +=      "<p><label>" + printerClient.getPrinterType() + " User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
+                      "<p><label>" + printerClient.getPrinterType() + " Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p><hr>";
+            
+  String Clock_Form = "<p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
+                      "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
+                      "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
+                      "<p><input name='useFlash' class='w3-check w3-margin-top' type='checkbox' %USEFLASH%> Flash System LED on Service Calls</p>"
+                      "<p><input name='hasPSU' class='w3-check w3-margin-top' type='checkbox' %HAS_PSU_CHECKED%> Use OctoPrint PSU control plugin for clock/blank</p>"
+                      "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>";
+
+  if (printerClient.getPrinterType() == "Repetier") {
+    html = "<script>function testRepetier(){var e=document.getElementById(\"RepetierTest\"),r=document.getElementById(\"PrinterAddress\").value,"
+           "t=document.getElementById(\"PrinterPort\").value;if(\"\"==r||\"\"==t)return e.innerHTML=\"* Address and Port are required\","
+           "void(e.style.background=\"\");var n=\"http://\"+r+\":\"+t;n+=\"/printer/api/?a=listPrinter&apikey=\"+document.getElementById(\"PrinterApiKey\").value,"
+           "console.log(n);var o=new XMLHttpRequest;o.open(\"GET\",n,!0),o.onload=function(){if(200===o.status){var r=JSON.parse(o.responseText);"
+           "if(!r.error&&r.length>0){var t=\"<label>Connected -- Select Printer</label> \";t+=\"<select class='w3-option w3-padding' name='printer'>\";"
+           "var n=document.getElementById(\"selectedPrinter\").value,i=\"\";for(printer in r)i=r[printer].slug==n?\"selected\":\"\","
+           "t+=\"<option value='\"+r[printer].slug+\"' \"+i+\">\"+r[printer].name+\"</option>\";t+=\"</select>\","
+           "e.innerHTML=t,e.style.background=\"lime\"}else e.innerHTML=\"Error invalid API Key: \"+r.error,"
+           "e.style.background=\"red\"}else e.innerHTML=\"Error: \"+o.statusText,e.style.background=\"red\"},"
+           "o.onerror=function(){e.innerHTML=\"Error connecting to server -- check IP and Port\",e.style.background=\"red\"},o.send(null)}</script>";
+
+    server.sendContent(html);
+  }
   
   String form = CHANGE_FORM;
   
@@ -582,6 +609,11 @@ void handleConfigure() {
   form.replace("%OCTOPORT%", String(PrinterPort));
   form.replace("%OCTOUSER%", PrinterAuthUser);
   form.replace("%OCTOPASS%", PrinterAuthPass);
+
+  server.sendContent(form);
+
+  form = Clock_Form;
+  
   String isClockChecked = "";
   if (DISPLAYCLOCK) {
     isClockChecked = "checked='checked'";
@@ -734,12 +766,12 @@ void displayPrinterStatus() {
     displayTime = timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
   }
   
-  html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + displayTime + "</h2></div><div class='w3-cell-row'>";
+  html += "<div class='w3-cell-row' style='width:100%'><h2>" + printerClient.getPrinterType() + " Printer Monitor</h2></div><div class='w3-cell-row'>";
   html += "<div class='w3-cell w3-container' style='width:100%'><p>";
   if (printerClient.getPrinterType() == "Repetier") {
-    html += printerClient.getPrinterType() + " Printer Name: " + printerClient.getPrinterName() + "<br>";
+    html += "Printer Name: " + printerClient.getPrinterName() + " <a href='/configure' title='Configure'><i class='fa fa-cog'></i></a><br>";
   } else {
-    html += printerClient.getPrinterType() + " Host Name: " + PrinterHostName + "<br>";
+    html += "Host Name: " + PrinterHostName + " <a href='/configure' title='Configure'><i class='fa fa-cog'></i></a><br>";
   }
  
   if (printerClient.getError() != "") {
@@ -790,9 +822,11 @@ void displayPrinterStatus() {
 
   html += "</p></div></div>";
 
+  html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + displayTime + "</h2></div><div class='w3-cell-row'>";
+
   server.sendContent(html); // spit out what we got
   html = "";
-
+  
   if (DISPLAYWEATHER) {
     if (weatherClient.getCity(0) == "") {
       html += "<p>Please <a href='/configureweather'>Configure Weather</a> API</p>";
@@ -1077,6 +1111,7 @@ void writeSettings() {
     f.println("printerHostName=" + PrinterHostName);
     f.println("printerServer=" + PrinterServer);
     f.println("printerPort=" + String(PrinterPort));
+    f.println("printerName=" + printerClient.getPrinterName());
     f.println("printerAuthUser=" + PrinterAuthUser);
     f.println("printerAuthPass=" + PrinterAuthPass);
     f.println("refreshRate=" + String(minutesBetweenDataRefresh));
@@ -1133,6 +1168,12 @@ void readSettings() {
     if (line.indexOf("printerPort=") >= 0) {
       PrinterPort = line.substring(line.lastIndexOf("printerPort=") + 12).toInt();
       Serial.println("PrinterPort=" + String(PrinterPort));
+    }
+    if (line.indexOf("printerName=") >= 0) {
+      String printer = line.substring(line.lastIndexOf("printerName=") + 12);
+      printer.trim();
+      printerClient.setPrinterName(printer);
+      Serial.println("PrinterName=" + printerClient.getPrinterName());
     }
     if (line.indexOf("printerAuthUser=") >= 0) {
       PrinterAuthUser = line.substring(line.lastIndexOf("printerAuthUser=") + 16);

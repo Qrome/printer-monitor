@@ -100,4 +100,5 @@ public:
   String getPrinterType();
   int getPrinterPort();
   String getPrinterName();
+  void setPrinterName(String printer);
 };

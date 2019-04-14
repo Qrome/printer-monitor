@@ -406,3 +406,7 @@ int OctoPrintClient::getPrinterPort() {
 String OctoPrintClient::getPrinterName() {
   return printerData.printerName;
 }
+
+void OctoPrintClient::setPrinterName(String printer) {
+  printerData.printerName = printer;
+}

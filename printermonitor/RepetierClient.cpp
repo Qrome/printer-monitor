@@ -138,8 +138,18 @@ void RepetierClient::getPrinterJobResults() {
     return;
   }
 
-  //Selecting First printer
-  JsonObject& pr = root[0];
+  int inx = 0;
+  int count = root.size();
+  Serial.println("Size of root: " + String(count));
+  for (int i = 0; i < count; i++) {
+    Serial.println("Printer: " + String((const char*)root[i]["slug"]));
+    if (String((const char*)root[i]["slug"]) == printerData.printerName) {
+      inx = i;
+      break;
+    }
+  }
+  
+  JsonObject& pr = root[inx];
   
   //printerData.averagePrintTime = (const char*)pr[""];
   printerData.estimatedPrintTime = (const char*)pr["printTime"];
@@ -151,7 +161,6 @@ void RepetierClient::getPrinterJobResults() {
   printerData.progressCompletion = (const char*) pr["done"];
   printerData.progressFilepos = (const char*) pr["linesSend"];
   printerData.progressPrintTime = (const char*) pr["printedTimeComp"];
-  printerData.printerName = (const char*) pr["slug"];
 
 //Figure out Time Left
   long timeTot=0;
@@ -241,7 +250,6 @@ void RepetierClient::resetPrintData() {
   printerData.isPrinting = false;
   printerData.isPSUoff = false;
   printerData.error = "";
-  printerData.printerName = "";
 }
 
 String RepetierClient::getAveragePrintTime(){
@@ -285,7 +293,11 @@ String RepetierClient::getProgressPrintTimeLeft() {
 }
 
 String RepetierClient::getState() {
-  return printerData.state;
+  String rtnValue = "Printer is OFF";
+  if (printerData.state == "1") {
+    rtnValue = "Printer is ON";
+  }
+  return rtnValue;
 }
 
 boolean RepetierClient::isPrinting() {
@@ -344,4 +356,8 @@ int RepetierClient::getPrinterPort() {
 
 String RepetierClient::getPrinterName() {
   return printerData.printerName;
+}
+
+void RepetierClient::setPrinterName(String printer) {
+  printerData.printerName = printer;
 }
