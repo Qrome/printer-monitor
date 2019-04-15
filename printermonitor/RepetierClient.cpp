@@ -293,9 +293,9 @@ String RepetierClient::getProgressPrintTimeLeft() {
 }
 
 String RepetierClient::getState() {
-  String rtnValue = "Printer is OFF";
+  String rtnValue = "Offline";
   if (printerData.state == "1") {
-    rtnValue = "Printer is ON";
+    rtnValue = "Operational";
   }
   return rtnValue;
 }
@@ -310,7 +310,7 @@ boolean RepetierClient::isPSUoff() {
 
 boolean RepetierClient::isOperational() {
   boolean operational = false;
-  if (printerData.state == "Operational" || isPrinting()) {
+  if (printerData.state == "1" || isPrinting()) {
     operational = true;
   }
   return operational;

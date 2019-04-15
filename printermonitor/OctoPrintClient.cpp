@@ -236,6 +236,8 @@ void OctoPrintClient::getPrinterJobResults() {
   String printing = (const char*)root2["state"]["flags"]["printing"];
   if (printing == "true") {
     printerData.isPrinting = true;
+  } else {
+    printerData.isPrinting = false;
   }
   printerData.toolTemp = (const char*)root2["temperature"]["tool0"]["actual"];
   printerData.toolTargetTemp = (const char*)root2["temperature"]["tool0"]["target"];
