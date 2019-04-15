@@ -773,7 +773,7 @@ void displayPrinterStatus() {
     displayTime = timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
   }
   
-  html += "<div class='w3-cell-row' style='width:100%'><h2>" + printerClient.getPrinterType() + " Printer Monitor</h2></div><div class='w3-cell-row'>";
+  html += "<div class='w3-cell-row' style='width:100%'><h2>" + printerClient.getPrinterType() + " Monitor</h2></div><div class='w3-cell-row'>";
   html += "<div class='w3-cell w3-container' style='width:100%'><p>";
   if (printerClient.getPrinterType() == "Repetier") {
     html += "Printer Name: " + printerClient.getPrinterName() + " <a href='/configure' title='Configure'><i class='fa fa-cog'></i></a><br>";
