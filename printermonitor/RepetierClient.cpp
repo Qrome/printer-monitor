@@ -317,7 +317,9 @@ boolean RepetierClient::isOperational() {
 }
 
 String RepetierClient::getTempBedActual() {
-  return printerData.bedTemp;
+  String temp = printerData.bedTemp;
+  temp.remove(temp.indexOf(".") + 3);
+  return temp;
 }
 
 String RepetierClient::getTempBedTarget() {
@@ -325,7 +327,9 @@ String RepetierClient::getTempBedTarget() {
 }
 
 String RepetierClient::getTempToolActual() {
-  return printerData.toolTemp;
+  String temp = printerData.toolTemp;
+  temp.remove(temp.indexOf(".") + 3);
+  return temp;
 }
 
 String RepetierClient::getTempToolTarget() {
