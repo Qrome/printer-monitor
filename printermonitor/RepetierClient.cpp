@@ -91,11 +91,11 @@ WiFiClient RepetierClient::getSubmitRequest(String apiGetData) {
     printerData.error = "Connection to Repetier failed: " + String(myServer) + ":" + String(myPort);
     return printClient;
   }
-
+/*
   // Check HTTP status
   char status[32] = {0};
   printClient.readBytesUntil('\r', status, sizeof(status));
-  if (strcmp(status, "Host: 200 OK") != 0) {
+  if (strcmp(status, "HTTP/1.1 200 OK") != 0) {
     Serial.print(F("Unexpected response: "));
     Serial.println(status);
     printerData.state = "";
@@ -110,7 +110,7 @@ WiFiClient RepetierClient::getSubmitRequest(String apiGetData) {
     printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
     printerData.state = "";
   }
-
+*/
   return printClient;
 }
 
@@ -120,7 +120,7 @@ void RepetierClient::getPrinterJobResults() {
     return;
   }
   //**** get the Printer Job status
-  String apiGetData = "GET /printer/api/?a=listPrinter";
+  String apiGetData = "GET /printer/api/?a=listPrinter&apikey=" + myApiKey;
   WiFiClient printClient = getSubmitRequest(apiGetData);
   if (printerData.error != "") {
     return;
@@ -132,8 +132,8 @@ void RepetierClient::getPrinterJobResults() {
   JsonArray& root = jsonBuffer.parseArray(printClient);
     
   if (!root.success()) {
-    Serial.println("Repetier Data Parsing failed: " + String(myServer) + ":" + String(myPort));
     printerData.error = "Repetier Data Parsing failed: " + String(myServer) + ":" + String(myPort);
+    Serial.println(printerData.error);
     printerData.state = "";
     return;
   }
@@ -192,7 +192,7 @@ void RepetierClient::getPrinterJobResults() {
   }
 
   //**** get the Printer Temps and Stat
-  apiGetData = "GET /printer/api/?a=stateList";
+  apiGetData = "GET /printer/api/?a=stateList&apikey=" + myApiKey;
   printClient = getSubmitRequest(apiGetData);
   if (printerData.error != "") {
     return;
