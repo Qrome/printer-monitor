@@ -45,8 +45,8 @@ SOFTWARE.
 #include <ArduinoOTA.h>
 #include <ESP8266HTTPUpdateServer.h>
 #include "TimeClient.h"
-#include "OctoPrintClient.h"
 #include "RepetierClient.h"
+#include "OctoPrintClient.h"
 #include "OpenWeatherMapClient.h"
 #include "WeatherStationFonts.h"
 #include "FS.h"
