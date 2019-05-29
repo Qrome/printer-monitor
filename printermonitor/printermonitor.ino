@@ -526,7 +526,7 @@ void handleWeatherConfigure() {
   html = getHeader();
   server.sendContent(html);
   
-  String form = (const char*)WEATHER_FORM;
+  String form = FPSTR(WEATHER_FORM);
   String isWeatherChecked = "";
   if (DISPLAYWEATHER) {
     isWeatherChecked = "checked='checked'";
@@ -540,7 +540,7 @@ void handleWeatherConfigure() {
     checked = "checked='checked'";
   }
   form.replace("%METRIC%", checked);
-  String options = (const char*)LANG_OPTIONS;
+  String options = FPSTR(LANG_OPTIONS);
   options.replace(">"+String(WeatherLanguage)+"<", " selected>"+String(WeatherLanguage)+"<");
   form.replace("%LANGUAGEOPTIONS%", options);
   server.sendContent(form);
@@ -621,7 +621,7 @@ void handleConfigure() {
 
   server.sendContent(form);
 
-  form = (const char*)CLOCK_FORM;
+  form = FPSTR(CLOCK_FORM);
   
   String isClockChecked = "";
   if (DISPLAYCLOCK) {
@@ -655,9 +655,9 @@ void handleConfigure() {
 
   server.sendContent(form);
 
-  form = (const char*)THEME_FORM;
+  form = FPSTR(THEME_FORM);
   
-  String themeOptions = (const char*)COLOR_THEMES;
+  String themeOptions = FPSTR(COLOR_THEMES);
   themeOptions.replace(">"+String(themeColor)+"<", " selected>"+String(themeColor)+"<");
   form.replace("%THEME_OPTIONS%", themeOptions);
   form.replace("%UTCOFFSET%", String(UtcOffset));
@@ -712,7 +712,7 @@ String getHeader() {
 }
 
 String getHeader(boolean refresh) {
-  String menu = (const char*)WEB_ACTIONS;
+  String menu = FPSTR(WEB_ACTIONS);
 
   String html = "<!DOCTYPE HTML>";
   html += "<html><head><title>Printer Monitor</title><link rel='icon' href='data:;base64,='>";
