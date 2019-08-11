@@ -49,10 +49,29 @@ SOFTWARE.
 #include "OctoPrintClient.h"
 #include "OpenWeatherMapClient.h"
 #include "WeatherStationFonts.h"
+#include "Menu/MenuFonts.h"
 #include "FS.h"
 #include "SH1106Wire.h"
 #include "SSD1306Wire.h"
 #include "OLEDDisplayUi.h"
+#include "libs/Keypad_tw/Keypad_tw.h"
+#include "Menu/Menu.h"
+
+#define KEYPAD_I2CADDR 0x27  // keypad on PCF8574A
+
+const byte KEYPAD_ROWS = 4; //four rows
+const byte KEYPAD_COLS = 4; //three columns
+char KEYPAD_KEYS[KEYPAD_ROWS][KEYPAD_COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+// Digitran keypad, bit numbers of PCF8574 i/o port
+byte KEYPAD_ROWPINS[KEYPAD_ROWS] = {0, 1, 2, 3}; //connect to the row pinouts of the keypad
+byte KEYPAD_COLPINS[KEYPAD_COLS] = {4, 5, 6, 7}; //connect to the column pinouts of the keypad
+
+
 
 //******************************
 // Start Settings
@@ -68,7 +87,7 @@ String PrinterAuthUser = "";      // only used if you have haproxy or basic athe
 String PrinterAuthPass = "";      // only used with haproxy or basic auth (only needed if you must authenticate)
 
 // Weather Configuration
-boolean DISPLAYWEATHER = true; // true = show weather when not printing / false = no weather
+boolean DISPLAYWEATHER = false; // true = show weather when not printing / false = no weather
 String WeatherApiKey = ""; // Your API Key from http://openweathermap.org/
 // Default City Location (use http://openweathermap.org/find to find city ID)
 int CityIDs[] = { 5304391 }; //Only USE ONE for weather marquee
@@ -86,7 +105,7 @@ char* www_password = "password";  // Password for the Web Interface
 // Date and Time
 float UtcOffset = -7; // Hour offset from GMT for your timezone
 boolean IS_24HOUR = false;     // 23:00 millitary 24 hour clock
-int minutesBetweenDataRefresh = 15;
+int minutesBetweenDataRefresh = 1;
 boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = turn off display when not printing
 
 // Display Settings
@@ -104,7 +123,7 @@ boolean USE_FLASH = true; // true = System LED will Flash on Service Calls; fals
 boolean HAS_PSU = false; // Set to true if https://github.com/kantlivelong/OctoPrint-PSUControl/ in use
 
 // OTA Updates
-boolean ENABLE_OTA = true;     // this will allow you to load firmware to the device over WiFi (see OTA for ESP8266)
+boolean ENABLE_OTA = false;     // this will allow you to load firmware to the device over WiFi (see OTA for ESP8266)
 String OTA_Password = "";      // Set an OTA password here -- leave blank if you don't want to be prompted for password
 
 //******************************

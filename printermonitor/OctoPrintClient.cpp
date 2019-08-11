@@ -27,6 +27,7 @@ SOFTWARE.
 #include "OctoPrintClient.h"
 
 OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+  temperaturePresets = LinkedList<TemperaturePreset *>();
   updatePrintClient(ApiKey, server, port, user, pass, psu);
 }
 
@@ -283,6 +284,53 @@ void OctoPrintClient::getPrinterPsuState() {
   } else {
     printerData.isPSUoff = false; // we are not checking PSU state, so assume on
   }
+}
+
+void OctoPrintClient::getTemperaturePresets()
+{
+  if (!validate())
+  {
+    return;
+  }
+
+  String apiPostData = "GET /api/settings HTTP/1.1";
+  WiFiClient printClient = getSubmitRequest(apiPostData);
+  if (printerData.error != "")
+  {
+    return;
+  }
+  const size_t bufferSize3 = JSON_ARRAY_SIZE(4) + JSON_OBJECT_SIZE(1) + 20 * JSON_OBJECT_SIZE(4) + 245;
+  DynamicJsonBuffer jsonBuffer3(bufferSize3);
+
+  printClient.find("\"temperature\": ");
+  do
+  {
+    JsonObject &root3 = jsonBuffer3.parseObject(printClient);
+
+    if (!root3.success())
+    {
+      Serial.println("Not succssful");
+    }
+    else
+    {
+      temperaturePresets.clear();
+
+      JsonArray &temperature_profiles = root3["profiles"];
+
+      for (int i = 0; i < temperature_profiles.size(); i++)
+      {
+        TemperaturePreset *preset = new TemperaturePreset();
+
+        preset->bed = temperature_profiles[i]["bed"];
+        preset->chamber = temperature_profiles[i]["chamber"];
+        preset->extruder = temperature_profiles[i]["extruder"];
+
+        preset->PresetName = temperature_profiles[i]["name"].as<String>();
+      }
+    }
+  } while (printClient.findUntil(",", "]"));
+
+  printClient.stop(); //stop client
 }
 
 // Reset all PrinterData

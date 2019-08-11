@@ -28,6 +28,8 @@ SOFTWARE.
 #include <ESP8266WiFi.h>
 #include "libs/ArduinoJson/ArduinoJson.h"
 #include <base64.h>
+#include <LinkedList.h>
+#include "TemperaturePreset.h"
 
 class OctoPrintClient {
 
@@ -76,6 +78,9 @@ public:
   void getPrinterJobResults();
   void getPrinterPsuState();
   void updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
+  void getTemperaturePresets();
+
+LinkedList<TemperaturePreset *> temperaturePresets;
 
   String getAveragePrintTime();
   String getEstimatedPrintTime();
