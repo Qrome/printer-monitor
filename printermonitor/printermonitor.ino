@@ -77,7 +77,9 @@ FrameCallback clockFrame[2];
 FrameCallback menuFrame[1];
 boolean isClockOn = false;
 
-Menu* temperatureMenu;
+PreheatMenu* preheatMenu;
+CooldownMenu* cooldownMenu;
+
 Menu* activeMenu;
 OverlayCallback overlays[] = {drawHeaderOverlay};
 OverlayCallback clockOverlay[] = {drawClockHeaderOverlay};
@@ -278,15 +280,11 @@ void setup()
   menuFrame[0] = drawMenu;
   ui.setOverlays(overlays, numberOfOverlays);
 
-temperatureMenu = new Menu("Preheat Menu");
-temperatureMenu->menuItems.add(new MenuItem("LangesFilament"));
-temperatureMenu->menuItems.add(new MenuItem("ABS"));
-temperatureMenu->menuItems.add(new MenuItem("PET"));
-temperatureMenu->menuItems.add(new MenuItem("PLA"));
+preheatMenu = new PreheatMenu();
+preheatMenu->client = &printerClient;
 
-temperatureMenu->menuItems.add(new MenuItem("Dingsda"));
-
-displayMenu(temperatureMenu);
+cooldownMenu = new CooldownMenu();
+cooldownMenu->client = &printerClient;
 
   // Inital UI takes care of initalising the display too.
   ui.init();
@@ -415,10 +413,12 @@ void menuExitCallback () {
 }
 
 void displayMenu (Menu *menu) {
-  printerClient.getTemperaturePresets();
+  
   Serial.println("Display Menu");
   menu->displayMillis = millis();
   menu->exitCallback = menuExitCallback;
+  menu->startPage = 0;
+  menu->beforeShow();
   activeMenu = menu;
 }
 //************************************************************
@@ -439,7 +439,10 @@ void loop()
     
     switch (key) {
       case 'A':
-      displayMenu(temperatureMenu);
+      displayMenu(preheatMenu);
+      break;
+      case 'B':
+      displayMenu(cooldownMenu);
       break;
     }
     }
@@ -458,6 +461,7 @@ void loop()
     lastMinute = timeClient.getMinutes(); // reset the check value
     printerClient.getPrinterJobResults();
     printerClient.getPrinterPsuState();
+    printerClient.updateTemperaturePresets();
     ledOnOff(false);
   }
   else if (printerClient.isPrinting())
@@ -581,6 +585,7 @@ void handleUpdateConfig()
   findMDNS();
   printerClient.getPrinterJobResults();
   printerClient.getPrinterPsuState();
+  printerClient.updateTemperaturePresets();
   if (INVERT_DISPLAY != flipOld)
   {
     ui.init();

@@ -26,17 +26,20 @@ SOFTWARE.
 
 #include "OctoPrintClient.h"
 
-OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu)
+{
   temperaturePresets = LinkedList<TemperaturePreset *>();
   updatePrintClient(ApiKey, server, port, user, pass, psu);
 }
 
-void OctoPrintClient::updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+void OctoPrintClient::updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu)
+{
   server.toCharArray(myServer, 100);
   myApiKey = ApiKey;
   myPort = port;
   encodedAuth = "";
-  if (user != "") {
+  if (user != "")
+  {
     String userpass = user + ":" + pass;
     base64 b64;
     encodedAuth = b64.encode(userpass, true);
@@ -44,47 +47,56 @@ void OctoPrintClient::updatePrintClient(String ApiKey, String server, int port, 
   pollPsu = psu;
 }
 
-boolean OctoPrintClient::validate() {
+boolean OctoPrintClient::validate()
+{
   boolean rtnValue = false;
   printerData.error = "";
-  if (String(myServer) == "") {
+  if (String(myServer) == "")
+  {
     printerData.error += "Server address is required; ";
   }
-  if (myApiKey == "") {
+  if (myApiKey == "")
+  {
     printerData.error += "ApiKey is required; ";
   }
-  if (printerData.error == "") {
+  if (printerData.error == "")
+  {
     rtnValue = true;
   }
   return rtnValue;
 }
 
-WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
+WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData)
+{
   WiFiClient printClient;
   printClient.setTimeout(5000);
 
   Serial.println("Getting Octoprint Data via GET");
   Serial.println(apiGetData);
   result = "";
-  if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
+  if (printClient.connect(myServer, myPort))
+  { //starts client connection, checks for connection
     printClient.println(apiGetData);
     printClient.println("Host: " + String(myServer) + ":" + String(myPort));
     printClient.println("X-Api-Key: " + myApiKey);
-    if (encodedAuth != "") {
+    if (encodedAuth != "")
+    {
       printClient.print("Authorization: ");
       printClient.println("Basic " + encodedAuth);
     }
     printClient.println("User-Agent: ArduinoWiFi/1.1");
     printClient.println("Connection: close");
-    if (printClient.println() == 0) {
+    if (printClient.println() == 0)
+    {
       Serial.println("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
       Serial.println();
       resetPrintData();
       printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
       return printClient;
     }
-  } 
-  else {
+  }
+  else
+  {
     Serial.println("Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
     Serial.println();
     resetPrintData();
@@ -95,7 +107,8 @@ WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
   // Check HTTP status
   char status[32] = {0};
   printClient.readBytesUntil('\r', status, sizeof(status));
-  if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
+  if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0)
+  {
     Serial.print(F("Unexpected response: "));
     Serial.println(status);
     printerData.state = "";
@@ -105,7 +118,8 @@ WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
 
   // Skip HTTP headers
   char endOfHeaders[] = "\r\n\r\n";
-  if (!printClient.find(endOfHeaders)) {
+  if (!printClient.find(endOfHeaders))
+  {
     Serial.println(F("Invalid response"));
     printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
     printerData.state = "";
@@ -114,19 +128,22 @@ WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
   return printClient;
 }
 
-WiFiClient OctoPrintClient::getPostRequest(String apiPostData, String apiPostBody) {
+WiFiClient OctoPrintClient::getPostRequest(String apiPostData, String apiPostBody)
+{
   WiFiClient printClient;
   printClient.setTimeout(5000);
 
   Serial.println("Getting Octoprint Data via POST");
   Serial.println(apiPostData + " | " + apiPostBody);
   result = "";
-  if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
+  if (printClient.connect(myServer, myPort))
+  { //starts client connection, checks for connection
     printClient.println(apiPostData);
     printClient.println("Host: " + String(myServer) + ":" + String(myPort));
     printClient.println("Connection: close");
     printClient.println("X-Api-Key: " + myApiKey);
-    if (encodedAuth != "") {
+    if (encodedAuth != "")
+    {
       printClient.print("Authorization: ");
       printClient.println("Basic " + encodedAuth);
     }
@@ -136,15 +153,17 @@ WiFiClient OctoPrintClient::getPostRequest(String apiPostData, String apiPostBod
     printClient.println(apiPostBody.length());
     printClient.println();
     printClient.println(apiPostBody);
-    if (printClient.println() == 0) {
+    if (printClient.println() == 0)
+    {
       Serial.println("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
       Serial.println();
       resetPrintData();
       printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
       return printClient;
     }
-  } 
-  else {
+  }
+  else
+  {
     Serial.println("Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
     Serial.println();
     resetPrintData();
@@ -155,7 +174,8 @@ WiFiClient OctoPrintClient::getPostRequest(String apiPostData, String apiPostBod
   // Check HTTP status
   char status[32] = {0};
   printClient.readBytesUntil('\r', status, sizeof(status));
-  if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
+  if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0)
+  {
     Serial.print(F("Unexpected response: "));
     Serial.println(status);
     printerData.state = "";
@@ -165,7 +185,8 @@ WiFiClient OctoPrintClient::getPostRequest(String apiPostData, String apiPostBod
 
   // Skip HTTP headers
   char endOfHeaders[] = "\r\n\r\n";
-  if (!printClient.find(endOfHeaders)) {
+  if (!printClient.find(endOfHeaders))
+  {
     Serial.println(F("Invalid response"));
     printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
     printerData.state = "";
@@ -174,119 +195,193 @@ WiFiClient OctoPrintClient::getPostRequest(String apiPostData, String apiPostBod
   return printClient;
 }
 
-void OctoPrintClient::getPrinterJobResults() {
-  if (!validate()) {
+void OctoPrintClient::preheatTool(int tool, int temperature)
+{
+  if (!validate())
+  {
+    return;
+  }
+
+  char stringBuffer[255];
+
+  String apiPostData = "POST /api/printer/tool HTTP/1.1";
+
+  sprintf(stringBuffer, "{\"command\":\"target\", \"targets\":{\"tool%d\":%d}}", tool, temperature);
+
+  Serial.println(stringBuffer);
+  WiFiClient printClient = getPostRequest(apiPostData, stringBuffer);
+}
+
+void OctoPrintClient::preheatBed(int temperature)
+{
+  if (!validate())
+  {
+    return;
+  }
+
+  char stringBuffer[255];
+
+  String apiPostData = "POST /api/printer/bed HTTP/1.1";
+
+  sprintf(stringBuffer, "{\"command\":\"target\", \"target\": %d}", temperature);
+
+  Serial.println(stringBuffer);
+  WiFiClient printClient = getPostRequest(apiPostData, stringBuffer);
+}
+
+void OctoPrintClient::preheatChamber(int temperature)
+{
+  if (!validate())
+  {
+    return;
+  }
+
+  char stringBuffer[255];
+
+  String apiPostData = "POST /api/printer/chamber HTTP/1.1";
+
+  sprintf(stringBuffer, "{\"command\":\"target\", \"target\": %d}", temperature);
+
+  Serial.println(stringBuffer);
+  WiFiClient printClient = getPostRequest(apiPostData, stringBuffer);
+}
+
+void OctoPrintClient::getPrinterJobResults()
+{
+  if (!validate())
+  {
     return;
   }
   //**** get the Printer Job status
   String apiGetData = "GET /api/job HTTP/1.1";
   WiFiClient printClient = getSubmitRequest(apiGetData);
-  if (printerData.error != "") {
+  if (printerData.error != "")
+  {
     return;
   }
-  const size_t bufferSize = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 2*JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + 710;
+  const size_t bufferSize = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 2 * JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + 710;
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   // Parse JSON object
-  JsonObject& root = jsonBuffer.parseObject(printClient);
-  if (!root.success()) {
+  JsonObject &root = jsonBuffer.parseObject(printClient);
+  if (!root.success())
+  {
     Serial.println("OctoPrint Data Parsing failed: " + String(myServer) + ":" + String(myPort));
     printerData.error = "OctoPrint Data Parsing failed: " + String(myServer) + ":" + String(myPort);
     printerData.state = "";
     return;
   }
-  
-  printerData.averagePrintTime = (const char*)root["job"]["averagePrintTime"];
-  printerData.estimatedPrintTime = (const char*)root["job"]["estimatedPrintTime"];
-  printerData.fileName = (const char*)root["job"]["file"]["name"];
-  printerData.fileSize = (const char*)root["job"]["file"]["size"];
-  printerData.lastPrintTime = (const char*)root["job"]["lastPrintTime"];
-  printerData.progressCompletion = (const char*)root["progress"]["completion"];
-  printerData.progressFilepos = (const char*)root["progress"]["filepos"];
-  printerData.progressPrintTime = (const char*)root["progress"]["printTime"];
-  printerData.progressPrintTimeLeft = (const char*)root["progress"]["printTimeLeft"];
-  printerData.filamentLength = (const char*)root["job"]["filament"]["tool0"]["length"];
-  printerData.state = (const char*)root["state"];
 
-  if (isOperational()) {
+  printerData.averagePrintTime = (const char *)root["job"]["averagePrintTime"];
+  printerData.estimatedPrintTime = (const char *)root["job"]["estimatedPrintTime"];
+  printerData.fileName = (const char *)root["job"]["file"]["name"];
+  printerData.fileSize = (const char *)root["job"]["file"]["size"];
+  printerData.lastPrintTime = (const char *)root["job"]["lastPrintTime"];
+  printerData.progressCompletion = (const char *)root["progress"]["completion"];
+  printerData.progressFilepos = (const char *)root["progress"]["filepos"];
+  printerData.progressPrintTime = (const char *)root["progress"]["printTime"];
+  printerData.progressPrintTimeLeft = (const char *)root["progress"]["printTimeLeft"];
+  printerData.filamentLength = (const char *)root["job"]["filament"]["tool0"]["length"];
+  printerData.state = (const char *)root["state"];
+
+  if (isOperational())
+  {
     Serial.println("Status: " + printerData.state);
-  } else {
+  }
+  else
+  {
     Serial.println("Printer Not Operational");
   }
 
   //**** get the Printer Temps and Stat
   apiGetData = "GET /api/printer?exclude=sd,history HTTP/1.1";
   printClient = getSubmitRequest(apiGetData);
-  if (printerData.error != "") {
+  if (printerData.error != "")
+  {
     return;
   }
-  const size_t bufferSize2 = 3*JSON_OBJECT_SIZE(2) + 2*JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(9) + 300;
+  const size_t bufferSize2 = 3 * JSON_OBJECT_SIZE(2) + 2 * JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(9) + 300;
   DynamicJsonBuffer jsonBuffer2(bufferSize2);
 
   // Parse JSON object
-  JsonObject& root2 = jsonBuffer2.parseObject(printClient);
-  if (!root2.success()) {
+  JsonObject &root2 = jsonBuffer2.parseObject(printClient);
+  if (!root2.success())
+  {
     printerData.isPrinting = false;
     printerData.toolTemp = "";
     printerData.toolTargetTemp = "";
     printerData.bedTemp = "";
-    printerData.bedTargetTemp = (const char*)root2["temperature"]["bed"]["target"];
+    printerData.bedTargetTemp = (const char *)root2["temperature"]["bed"]["target"];
     return;
   }
 
-  String printing = (const char*)root2["state"]["flags"]["printing"];
-  if (printing == "true") {
+  String printing = (const char *)root2["state"]["flags"]["printing"];
+  if (printing == "true")
+  {
     printerData.isPrinting = true;
-  } else {
+  }
+  else
+  {
     printerData.isPrinting = false;
   }
-  printerData.toolTemp = (const char*)root2["temperature"]["tool0"]["actual"];
-  printerData.toolTargetTemp = (const char*)root2["temperature"]["tool0"]["target"];
-  printerData.bedTemp = (const char*)root2["temperature"]["bed"]["actual"];
-  printerData.bedTargetTemp = (const char*)root2["temperature"]["bed"]["target"];
+  printerData.toolTemp = (const char *)root2["temperature"]["tool0"]["actual"];
+  printerData.toolTargetTemp = (const char *)root2["temperature"]["tool0"]["target"];
+  printerData.bedTemp = (const char *)root2["temperature"]["bed"]["actual"];
+  printerData.bedTargetTemp = (const char *)root2["temperature"]["bed"]["target"];
 
-  if (isPrinting()) {
+  if (isPrinting())
+  {
     Serial.println("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
   }
 }
 
-void OctoPrintClient::getPrinterPsuState() {
+void OctoPrintClient::getPrinterPsuState()
+{
   //**** get the PSU state (if enabled and printer operational)
-  if (pollPsu && isOperational()) {
-    if (!validate()) {
+  if (pollPsu && isOperational())
+  {
+    if (!validate())
+    {
       printerData.isPSUoff = false; // we do not know PSU state, so assume on.
       return;
     }
     String apiPostData = "POST /api/plugin/psucontrol HTTP/1.1";
     String apiPostBody = "{\"command\":\"getPSUState\"}";
-    WiFiClient printClient = getPostRequest(apiPostData,apiPostBody);
-    if (printerData.error != "") {
+    WiFiClient printClient = getPostRequest(apiPostData, apiPostBody);
+    if (printerData.error != "")
+    {
       printerData.isPSUoff = false; // we do not know PSU state, so assume on.
       return;
     }
     const size_t bufferSize3 = JSON_OBJECT_SIZE(2) + 300;
     DynamicJsonBuffer jsonBuffer3(bufferSize3);
-  
+
     // Parse JSON object
-    JsonObject& root3 = jsonBuffer3.parseObject(printClient);
-    if (!root3.success()) {
+    JsonObject &root3 = jsonBuffer3.parseObject(printClient);
+    if (!root3.success())
+    {
       printerData.isPSUoff = false; // we do not know PSU state, so assume on
       return;
     }
-  
-    String psu = (const char*)root3["isPSUOn"];
-    if (psu == "true") {
+
+    String psu = (const char *)root3["isPSUOn"];
+    if (psu == "true")
+    {
       printerData.isPSUoff = false; // PSU checked and is on
-    } else {
+    }
+    else
+    {
       printerData.isPSUoff = true; // PSU checked and is off, set flag
     }
     printClient.stop(); //stop client
-  } else {
+  }
+  else
+  {
     printerData.isPSUoff = false; // we are not checking PSU state, so assume on
   }
 }
 
-void OctoPrintClient::getTemperaturePresets()
+void OctoPrintClient::updateTemperaturePresets()
 {
   if (!validate())
   {
@@ -302,6 +397,8 @@ void OctoPrintClient::getTemperaturePresets()
   const size_t bufferSize3 = JSON_ARRAY_SIZE(4) + JSON_OBJECT_SIZE(1) + 20 * JSON_OBJECT_SIZE(4) + 245;
   DynamicJsonBuffer jsonBuffer3(bufferSize3);
 
+  temperaturePresets.clear();
+
   printClient.find("\"temperature\": ");
   do
   {
@@ -313,8 +410,6 @@ void OctoPrintClient::getTemperaturePresets()
     }
     else
     {
-      temperaturePresets.clear();
-
       JsonArray &temperature_profiles = root3["profiles"];
 
       for (int i = 0; i < temperature_profiles.size(); i++)
@@ -326,6 +421,8 @@ void OctoPrintClient::getTemperaturePresets()
         preset->extruder = temperature_profiles[i]["extruder"];
 
         preset->PresetName = temperature_profiles[i]["name"].as<String>();
+
+        temperaturePresets.add(preset);
       }
     }
   } while (printClient.findUntil(",", "]"));
@@ -334,7 +431,8 @@ void OctoPrintClient::getTemperaturePresets()
 }
 
 // Reset all PrinterData
-void OctoPrintClient::resetPrintData() {
+void OctoPrintClient::resetPrintData()
+{
   printerData.averagePrintTime = "";
   printerData.estimatedPrintTime = "";
   printerData.fileName = "";
@@ -355,108 +453,134 @@ void OctoPrintClient::resetPrintData() {
   printerData.error = "";
 }
 
-String OctoPrintClient::getAveragePrintTime(){
+String OctoPrintClient::getAveragePrintTime()
+{
   return printerData.averagePrintTime;
 }
 
-String OctoPrintClient::getEstimatedPrintTime() {
+String OctoPrintClient::getEstimatedPrintTime()
+{
   return printerData.estimatedPrintTime;
 }
 
-String OctoPrintClient::getFileName() {
+String OctoPrintClient::getFileName()
+{
   return printerData.fileName;
 }
 
-String OctoPrintClient::getFileSize() {
+String OctoPrintClient::getFileSize()
+{
   return printerData.fileSize;
 }
 
-String OctoPrintClient::getLastPrintTime(){
+String OctoPrintClient::getLastPrintTime()
+{
   return printerData.lastPrintTime;
 }
 
-String OctoPrintClient::getProgressCompletion() {
+String OctoPrintClient::getProgressCompletion()
+{
   return String(printerData.progressCompletion.toInt());
 }
 
-String OctoPrintClient::getProgressFilepos() {
-  return printerData.progressFilepos;  
+String OctoPrintClient::getProgressFilepos()
+{
+  return printerData.progressFilepos;
 }
 
-String OctoPrintClient::getProgressPrintTime() {
+String OctoPrintClient::getProgressPrintTime()
+{
   return printerData.progressPrintTime;
 }
 
-String OctoPrintClient::getProgressPrintTimeLeft() {
+String OctoPrintClient::getProgressPrintTimeLeft()
+{
   String rtnValue = printerData.progressPrintTimeLeft;
-  if (getProgressCompletion() == "100") {
+  if (getProgressCompletion() == "100")
+  {
     rtnValue = "0"; // Print is done so this should be 0 this is a fix for OctoPrint
   }
   return rtnValue;
 }
 
-String OctoPrintClient::getState() {
+String OctoPrintClient::getState()
+{
   return printerData.state;
 }
 
-boolean OctoPrintClient::isPrinting() {
+boolean OctoPrintClient::isPrinting()
+{
   return printerData.isPrinting;
 }
 
-boolean OctoPrintClient::isPSUoff() {
+boolean OctoPrintClient::isPSUoff()
+{
   return printerData.isPSUoff;
 }
 
-boolean OctoPrintClient::isOperational() {
+boolean OctoPrintClient::isOperational()
+{
   boolean operational = false;
-  if (printerData.state == "Operational" || isPrinting()) {
+  if (printerData.state == "Operational" || isPrinting())
+  {
     operational = true;
   }
   return operational;
 }
 
-String OctoPrintClient::getTempBedActual() {
+String OctoPrintClient::getTempBedActual()
+{
   return printerData.bedTemp;
 }
 
-String OctoPrintClient::getTempBedTarget() {
+String OctoPrintClient::getTempBedTarget()
+{
   return printerData.bedTargetTemp;
 }
 
-String OctoPrintClient::getTempToolActual() {
+String OctoPrintClient::getTempToolActual()
+{
   return printerData.toolTemp;
 }
 
-String OctoPrintClient::getTempToolTarget() {
+String OctoPrintClient::getTempToolTarget()
+{
   return printerData.toolTargetTemp;
 }
 
-String OctoPrintClient::getFilamentLength() {
+String OctoPrintClient::getFilamentLength()
+{
   return printerData.filamentLength;
 }
 
-String OctoPrintClient::getError() {
+String OctoPrintClient::getError()
+{
   return printerData.error;
 }
 
-String OctoPrintClient::getValueRounded(String value) {
+String OctoPrintClient::getValueRounded(String value)
+{
   float f = value.toFloat();
-  int rounded = (int)(f+0.5f);
+  int rounded = (int)(f + 0.5f);
   return String(rounded);
 }
 
-String OctoPrintClient::getPrinterType() {
+String OctoPrintClient::getPrinterType()
+{
   return printerType;
 }
 
-int OctoPrintClient::getPrinterPort() {
+int OctoPrintClient::getPrinterPort()
+{
   return myPort;
 }
 
-String OctoPrintClient::getPrinterName() {
+String OctoPrintClient::getPrinterName()
+{
   return printerData.printerName;
 }
 
-void OctoPrintClient::setPrinterName(String printer) {
+void OctoPrintClient::setPrinterName(String printer)
+{
   printerData.printerName = printer;
 }

@@ -56,6 +56,8 @@ SOFTWARE.
 #include "OLEDDisplayUi.h"
 #include "libs/Keypad_tw/Keypad_tw.h"
 #include "Menu/Menu.h"
+#include "Menu/PreheatMenu.h"
+#include "Menu/CooldownMenu.h"
 
 #define KEYPAD_I2CADDR 0x27  // keypad on PCF8574A
 

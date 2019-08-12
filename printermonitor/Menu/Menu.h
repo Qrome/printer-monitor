@@ -1,3 +1,4 @@
+#pragma once
 
 #include <Arduino.h>
 #include "MenuItem.h"
@@ -31,14 +32,19 @@ public:
     Menu(String menuTitle);
     String MenuTitle;
     void drawMenu(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
-    void processKey(char c);
+    virtual void beforeShow();
+    virtual void processKey(char c);
+    MenuItem* getItemForKey (char c);
     int getMaxPage();
     void (*exitCallback)(void) = NULL;
     int startPage = 0;
     LinkedList<MenuItem *> menuItems;
     unsigned long displayMillis;
+
+    protected:
+    void doExit (void);
 private:
-void doExit (void);
+
     void drawRegularKeyboardButtonIcon(OLEDDisplay *display, int16_t x, int16_t y, char keyButton, bool inverted, bool filled);
     void drawSmallKeyboardButtonIcon(OLEDDisplay *display, int16_t x, int16_t y, char keyButton, bool inverted, bool filled);
     void drawKeyboardButtonIcon(OLEDDisplay *display, int16_t x, int16_t y, char keyButton, const uint8_t *font, int16_t iconWidth, int16_t iconHeight, int16_t xOffset, int16_t yOffset, bool inverted, bool filled);

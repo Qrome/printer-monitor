@@ -77,10 +77,13 @@ public:
   OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
   void getPrinterJobResults();
   void getPrinterPsuState();
+  void preheatTool(int toolIndex, int temperature);
+  void preheatBed(int temperature);
+  void preheatChamber (int temperature);
   void updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
-  void getTemperaturePresets();
+  void updateTemperaturePresets();
 
-LinkedList<TemperaturePreset *> temperaturePresets;
+  LinkedList<TemperaturePreset *> temperaturePresets;
 
   String getAveragePrintTime();
   String getEstimatedPrintTime();

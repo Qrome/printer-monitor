@@ -12,6 +12,25 @@ Menu::Menu(String menuTitle)
     Menu();
 }
 
+void Menu::beforeShow() {
+}
+
+MenuItem* Menu::getItemForKey (char c) {
+    if (c >= '1' && c <= '6') {
+        int offset = c - '1';
+
+        if (offset < MENU_MAX_DISPLAY_ITEMS) {
+            int itemNum = startPage * MENU_MAX_DISPLAY_ITEMS + offset;
+
+            if (itemNum < menuItems.size()) {
+                return menuItems[itemNum];
+            }
+        }
+    }
+
+    return NULL;
+}
+
 void Menu::processKey(char c)
 {
     switch (c)
@@ -32,6 +51,8 @@ void Menu::processKey(char c)
         }
         break;
     }
+
+    displayMillis = millis();
 }
 
 void Menu::doExit(void)
@@ -105,6 +126,7 @@ void Menu::drawMenu(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, 
             yPos = MENU_ITEM_START_POS_Y;
             xPos = MENU_ITEM_SECOND_COLUMN_START_X;
         }
+    }
 
         display->fillRect(0, MENU_BOTTOM_BAR_LINE, 128, 64 - MENU_BOTTOM_BAR_LINE + 1);
 
@@ -146,7 +168,7 @@ void Menu::drawMenu(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, 
         display->drawString(44 + SMALL_KEYPAD_BUTTON_ICON_WIDTH + 1, bottomBarStart - 2, "Exit");
 
         drawSmallKeyboardButtonIcon(display, 45, bottomBarStart, '0', true, true);
-    }
+    
 }
 
 void Menu::drawKeyboardButtonIcon(OLEDDisplay *display, int16_t x, int16_t y, char keyButton, const uint8_t *font, int16_t iconWidth, int16_t iconHeight, int16_t xOffset, int16_t yOffset, bool inverted, bool filled)
