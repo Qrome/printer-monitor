@@ -444,6 +444,15 @@ void loop()
       case 'B':
       displayMenu(cooldownMenu);
       break;
+      case '1':
+      printerClient.homeAxis(true, false, false);
+      break;
+      case '2':
+      printerClient.homeAxis(false, true, false);
+      break;
+      case '3':
+      printerClient.homeAxis(false, false, true);
+      break;
     }
     }
   }

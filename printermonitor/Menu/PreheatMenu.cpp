@@ -53,20 +53,22 @@ void PreheatMenu::processKey(char c)
     Menu::processKey(c);
 }
 
-void PreheatMenu::TriggerPreheat(TemperatureMenuItem *item) {
-    if (item->preheatBed) {
+void PreheatMenu::TriggerPreheat(TemperatureMenuItem *item)
+{
+    if (item->preheatBed)
+    {
         client->preheatBed(item->preset->bed);
-
     }
 
-    if (item->preheatChamber) {
+    if (item->preheatChamber)
+    {
         client->preheatChamber(item->preset->chamber);
     }
 
-    if (item->preheatExtruder) {
+    if (item->preheatExtruder)
+    {
         client->preheatTool(0, item->preset->extruder);
     }
-    
 }
 
 void PreheatMenu::CreateTemperatureMenu(TemperatureMenuItem *item)

@@ -79,6 +79,7 @@ public:
   void getPrinterPsuState();
   void preheatTool(int toolIndex, int temperature);
   void preheatBed(int temperature);
+  void homeAxis(boolean x, boolean y, boolean z);
   void preheatChamber (int temperature);
   void updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
   void updateTemperaturePresets();

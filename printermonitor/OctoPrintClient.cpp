@@ -229,6 +229,45 @@ void OctoPrintClient::preheatBed(int temperature)
   WiFiClient printClient = getPostRequest(apiPostData, stringBuffer);
 }
 
+void OctoPrintClient::homeAxis(boolean x, boolean y, boolean z)
+{
+  if (!validate())
+  {
+    return;
+  }
+
+  String apiPostData = "POST /api/printer/printhead HTTP/1.1";
+
+  const size_t capacity = JSON_ARRAY_SIZE(3) + JSON_OBJECT_SIZE(2);
+  DynamicJsonBuffer jsonBuffer(capacity);
+
+  JsonObject &root = jsonBuffer.createObject();
+
+  JsonArray &axes = root.createNestedArray("axes");
+  if (x)
+  {
+    axes.add("x");
+  }
+
+  if (y)
+  {
+    axes.add("y");
+  }
+
+  if (z)
+  {
+    axes.add("z");
+  }
+  root["command"] = "home";
+
+  String json;
+
+  root.printTo(json);
+
+  Serial.println(json);
+  WiFiClient printClient = getPostRequest(apiPostData, json);
+}
+
 void OctoPrintClient::preheatChamber(int temperature)
 {
   if (!validate())
