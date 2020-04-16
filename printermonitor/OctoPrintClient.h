@@ -87,6 +87,7 @@ public:
   String getState();
   boolean isPrinting();
   boolean isOperational();
+  boolean isIdle();
   boolean isPSUoff();
   String getTempBedActual();
   String getTempBedTarget();

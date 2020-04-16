@@ -209,6 +209,8 @@ void OctoPrintClient::getPrinterJobResults() {
 
   if (isOperational()) {
     Serial.println("Status: " + printerData.state);
+  } else if (isIdle()) {
+    Serial.println("Printer Is Idle");
   } else {
     Serial.println("Printer Not Operational");
   }
@@ -351,6 +353,10 @@ String OctoPrintClient::getState() {
 
 boolean OctoPrintClient::isPrinting() {
   return printerData.isPrinting;
+}
+
+boolean OctoPrintClient::isIdle() {
+  return isOperational() && !isPrinting();
 }
 
 boolean OctoPrintClient::isPSUoff() {
