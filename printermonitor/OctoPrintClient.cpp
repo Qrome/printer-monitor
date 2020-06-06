@@ -27,10 +27,10 @@ SOFTWARE.
 #include "OctoPrintClient.h"
 
 OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
-  updateOctoPrintClient(ApiKey, server, port, user, pass, psu);
+  updatePrintClient(ApiKey, server, port, user, pass, psu);
 }
 
-void OctoPrintClient::updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+void OctoPrintClient::updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
   server.toCharArray(myServer, 100);
   myApiKey = ApiKey;
   myPort = port;
@@ -82,7 +82,7 @@ WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
       printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
       return printClient;
     }
-  } 
+  }
   else {
     Serial.println("Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
     Serial.println();
@@ -142,7 +142,7 @@ WiFiClient OctoPrintClient::getPostRequest(String apiPostData, String apiPostBod
       printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
       return printClient;
     }
-  } 
+  }
   else {
     Serial.println("Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
     Serial.println();
@@ -194,7 +194,7 @@ void OctoPrintClient::getPrinterJobResults() {
     printerData.state = "";
     return;
   }
-  
+
   printerData.averagePrintTime = (const char*)root["job"]["averagePrintTime"];
   printerData.estimatedPrintTime = (const char*)root["job"]["estimatedPrintTime"];
   printerData.fileName = (const char*)root["job"]["file"]["name"];
@@ -236,6 +236,8 @@ void OctoPrintClient::getPrinterJobResults() {
   String printing = (const char*)root2["state"]["flags"]["printing"];
   if (printing == "true") {
     printerData.isPrinting = true;
+  } else {
+    printerData.isPrinting = false;
   }
   printerData.toolTemp = (const char*)root2["temperature"]["tool0"]["actual"];
   printerData.toolTargetTemp = (const char*)root2["temperature"]["tool0"]["target"];
@@ -263,14 +265,14 @@ void OctoPrintClient::getPrinterPsuState() {
     }
     const size_t bufferSize3 = JSON_OBJECT_SIZE(2) + 300;
     DynamicJsonBuffer jsonBuffer3(bufferSize3);
-  
+
     // Parse JSON object
     JsonObject& root3 = jsonBuffer3.parseObject(printClient);
     if (!root3.success()) {
       printerData.isPSUoff = false; // we do not know PSU state, so assume on
       return;
     }
-  
+
     String psu = (const char*)root3["isPSUOn"];
     if (psu == "true") {
       printerData.isPSUoff = false; // PSU checked and is on
@@ -330,7 +332,7 @@ String OctoPrintClient::getProgressCompletion() {
 }
 
 String OctoPrintClient::getProgressFilepos() {
-  return printerData.progressFilepos;  
+  return printerData.progressFilepos;
 }
 
 String OctoPrintClient::getProgressPrintTime() {
@@ -393,4 +395,20 @@ String OctoPrintClient::getValueRounded(String value) {
   float f = value.toFloat();
   int rounded = (int)(f+0.5f);
   return String(rounded);
+}
+
+String OctoPrintClient::getPrinterType() {
+  return printerType;
+}
+
+int OctoPrintClient::getPrinterPort() {
+  return myPort;
+}
+
+String OctoPrintClient::getPrinterName() {
+  return printerData.printerName;
+}
+
+void OctoPrintClient::setPrinterName(String printer) {
+  printerData.printerName = printer;
 }

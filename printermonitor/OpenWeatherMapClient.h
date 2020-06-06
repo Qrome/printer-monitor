@@ -32,7 +32,7 @@ private:
   String myApiKey = "";
   String units = "";
   String lang = "";
-  
+
   const char* servername = "api.openweathermap.org";  // remote server we will connect to
   String result;
 
@@ -56,7 +56,7 @@ private:
   weather weathers[5];
 
   String roundValue(String value);
-  
+
 public:
   OpenWeatherMapClient(String ApiKey, int CityIDs[], int cityCount, boolean isMetric, String language);
   void updateWeather();

@@ -33,7 +33,7 @@ TimeClient::TimeClient(float utcOffset) {
 
 void TimeClient::updateTime() {
   WiFiClient client;
-  
+
   if (!client.connect(ntpServerName, httpPort)) {
     Serial.println("connection failed");
     return;

@@ -31,10 +31,10 @@ SOFTWARE.
  * OLED Display:  https://amzn.to/2JDEAUF
  ******************************************************************************/
 /******************************************************************************
- * NOTE: The settings here are the default settings for the first loading.  
- * After loading you will manage changes to the settings via the Web Interface.  
- * If you want to change settings again in the settings.h, you will need to 
- * erase the file system on the Wemos or use the “Reset Settings” option in 
+ * NOTE: The settings here are the default settings for the first loading.
+ * After loading you will manage changes to the settings via the Web Interface.
+ * If you want to change settings again in the settings.h, you will need to
+ * erase the file system on the Wemos or use the “Reset Settings” option in
  * the Web Interface.
  ******************************************************************************/
 
@@ -45,6 +45,7 @@ SOFTWARE.
 #include <ArduinoOTA.h>
 #include <ESP8266HTTPUpdateServer.h>
 #include "TimeClient.h"
+#include "RepetierClient.h"
 #include "OctoPrintClient.h"
 #include "OpenWeatherMapClient.h"
 #include "WeatherStationFonts.h"
@@ -57,13 +58,14 @@ SOFTWARE.
 // Start Settings
 //******************************
 
-// OctoPrint Monitoring -- Monitor your 3D printer OctoPrint Server
-String OctoPrintApiKey = "";   // ApiKey from your User Account on OctoPrint
-String OctoPrintHostName = "octopi";// Default 'octopi' -- or hostname if different (optional if your IP changes)
-String OctoPrintServer = "";   // IP or Address of your OctoPrint Server (DO NOT include http://)
-int OctoPrintPort = 80;        // the port you are running your OctoPrint server on (usually 80);
-String OctoAuthUser = "";      // only used if you have haproxy or basic athentintication turned on (not default)
-String OctoAuthPass = "";      // only used with haproxy or basic auth (only needed if you must authenticate)
+// OctoPrint / Repetier Monitoring -- Monitor your 3D OctoPrint or Repetier Server
+//#define USE_REPETIER_CLIENT       // Uncomment this line to use the Repetier Printer Server -- OctoPrint is used by default and is most common
+String PrinterApiKey = "";   // ApiKey from your User Account on OctoPrint / Repetier
+String PrinterHostName = "octopi";// Default 'octopi' -- or hostname if different (optional if your IP changes)
+String PrinterServer = "";   // IP or Address of your OctoPrint / Repetier Server (DO NOT include http://)
+int PrinterPort = 80;        // the port you are running your OctoPrint / Repetier server on (usually 80);
+String PrinterAuthUser = "";      // only used if you have haproxy or basic athentintication turned on (not default)
+String PrinterAuthPass = "";      // only used with haproxy or basic auth (only needed if you must authenticate)
 
 // Weather Configuration
 boolean DISPLAYWEATHER = true; // true = show weather when not printing / false = no weather
@@ -87,6 +89,9 @@ boolean IS_24HOUR = false;     // 23:00 millitary 24 hour clock
 int minutesBetweenDataRefresh = 15;
 boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = turn off display when not printing
 
+// Nightmode
+boolean USE_NIGHT = false; // Dim the Screen if enabled
+
 // Display Settings
 const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)
 const int SDA_PIN = D2;
@@ -95,7 +100,8 @@ boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bott
 //#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
 
 // LED Settings
-const int externalLight = LED_BUILTIN; // Set to unused pin, like D1, to disable use of built-in LED (LED_BUILTIN)
+const int externalLight = LED_BUILTIN; // LED will always flash on bootup or Wifi Errors
+boolean USE_FLASH = true; // true = System LED will Flash on Service Calls; false = disabled LED flashing
 
 // PSU Control
 boolean HAS_PSU = false; // Set to true if https://github.com/kantlivelong/OctoPrint-PSUControl/ in use

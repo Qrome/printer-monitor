@@ -54,7 +54,7 @@ void OpenWeatherMapClient::updateWeather() {
     weatherClient.println("User-Agent: ArduinoWiFi/1.1");
     weatherClient.println("Connection: close");
     weatherClient.println();
-  } 
+  }
   else {
     Serial.println("connection for weather data failed"); //error message if no client connect
     Serial.println();
@@ -62,7 +62,7 @@ void OpenWeatherMapClient::updateWeather() {
   }
 
   while(weatherClient.connected() && !weatherClient.available()) delay(1); //waits for data
- 
+
   Serial.println("Waiting for data");
 
   // Check HTTP status
@@ -133,7 +133,7 @@ void OpenWeatherMapClient::updateWeather() {
     Serial.println("description: " + weathers[inx].description);
     Serial.println("icon: " + weathers[inx].icon);
     Serial.println();
-    
+
   }
 }
 
@@ -150,7 +150,7 @@ void OpenWeatherMapClient::updateCityIdList(int CityIDs[], int cityCount) {
       if (myCityIDs != "") {
         myCityIDs = myCityIDs + ",";
       }
-      myCityIDs = myCityIDs + String(CityIDs[inx]); 
+      myCityIDs = myCityIDs + String(CityIDs[inx]);
     }
   }
 }
@@ -250,7 +250,7 @@ String OpenWeatherMapClient::getWeatherIcon(int index)
     case 802: W = "H"; break;
     case 803: W = "H"; break;
     case 804: W = "Y"; break;
-    
+
     case 200: W = "0"; break;
     case 201: W = "0"; break;
     case 202: W = "0"; break;
@@ -261,7 +261,7 @@ String OpenWeatherMapClient::getWeatherIcon(int index)
     case 230: W = "0"; break;
     case 231: W = "0"; break;
     case 232: W = "0"; break;
-    
+
     case 300: W = "R"; break;
     case 301: W = "R"; break;
     case 302: W = "R"; break;
@@ -271,7 +271,7 @@ String OpenWeatherMapClient::getWeatherIcon(int index)
     case 313: W = "R"; break;
     case 314: W = "R"; break;
     case 321: W = "R"; break;
-    
+
     case 500: W = "R"; break;
     case 501: W = "R"; break;
     case 502: W = "R"; break;
@@ -282,7 +282,7 @@ String OpenWeatherMapClient::getWeatherIcon(int index)
     case 521: W = "R"; break;
     case 522: W = "R"; break;
     case 531: W = "R"; break;
-    
+
     case 600: W = "W"; break;
     case 601: W = "W"; break;
     case 602: W = "W"; break;
@@ -293,7 +293,7 @@ String OpenWeatherMapClient::getWeatherIcon(int index)
     case 620: W = "W"; break;
     case 621: W = "W"; break;
     case 622: W = "W"; break;
-    
+
     case 701: W = "M"; break;
     case 711: W = "M"; break;
     case 721: W = "M"; break;
@@ -304,8 +304,8 @@ String OpenWeatherMapClient::getWeatherIcon(int index)
     case 762: W = "M"; break;
     case 771: W = "M"; break;
     case 781: W = "M"; break;
-    
-    default:break; 
+
+    default:break;
   }
   return W;
 }

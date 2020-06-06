@@ -21,29 +21,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Additional Contributions:
-/* 15 Jan 2019 : Owen Carter : Add psucontrol query via POST api call */
+/* 07 April 2019 : Jon Smith : added class for Repetier Server (kg4iae@github)*/
+
 
 #pragma once
 #include <ESP8266WiFi.h>
 #include "libs/ArduinoJson/ArduinoJson.h"
 #include <base64.h>
 
-class OctoPrintClient {
+class RepetierClient {
 
 private:
   char myServer[100];
-  int myPort = 80;
+  int myPort = 3344;
   String myApiKey = "";
   String encodedAuth = "";
   boolean pollPsu;
-  const String printerType = "OctoPrint";
+  const String printerType = "Repetier";
 
   void resetPrintData();
   boolean validate();
   WiFiClient getSubmitRequest(String apiGetData);
   WiFiClient getPostRequest(String apiPostData, String apiPostBody);
-
+ 
   String result;
 
   typedef struct {
@@ -70,9 +70,9 @@ private:
 
   PrinterStruct printerData;
 
-
+  
 public:
-  OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
+  RepetierClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
   void getPrinterJobResults();
   void getPrinterPsuState();
   void updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
