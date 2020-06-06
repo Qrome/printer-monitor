@@ -358,7 +358,7 @@ void findMDNS() {
 }
 
 //************************************************************
-// Main Looop
+// Main Loop
 //************************************************************
 void loop() {
   
@@ -981,12 +981,16 @@ void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     if (printerClient.isPSUoff()) {
       display->drawString(64, 47, "psu off");
+    } else if (printerClient.isIdle()) {
+      display->drawString(64, 47, "idle");
     } else {
       display->drawString(64, 47, "offline");
     }
   } else {
     if (printerClient.isPSUoff()) {
       display->drawString(0, 47, "psu off");
+    } else if (printerClient.isIdle()) {
+      display->drawString(0, 47, "idle");
     } else {
       display->drawString(0, 47, "offline");
     }
@@ -1218,7 +1222,7 @@ void checkDisplay() {
       return;
     }
   } else if (DISPLAYCLOCK) {
-    if ((!printerClient.isOperational() || printerClient.isPSUoff()) && !isClockOn) {
+    if ((!printerClient.isOperational() || printerClient.isIdle() || printerClient.isPSUoff()) && !isClockOn) {
       Serial.println("Clock Mode is turned on.");
       if (!DISPLAYWEATHER) {
         ui.disableAutoTransition();
@@ -1232,7 +1236,7 @@ void checkDisplay() {
       }
       ui.setOverlays(clockOverlay, numberOfOverlays);
       isClockOn = true;
-    } else if (printerClient.isOperational() && !printerClient.isPSUoff() && isClockOn) {
+    } else if (printerClient.isOperational() && !printerClient.isIdle() && !printerClient.isPSUoff() && isClockOn) {
       Serial.println("Printer Monitor is active.");
       ui.setFrames(frames, numberOfFrames);
       ui.setOverlays(overlays, numberOfOverlays);
