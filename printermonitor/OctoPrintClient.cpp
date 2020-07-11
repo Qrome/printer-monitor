@@ -27,10 +27,10 @@ SOFTWARE.
 #include "OctoPrintClient.h"
 
 OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
-  updateOctoPrintClient(ApiKey, server, port, user, pass, psu);
+  updatePrintClient(ApiKey, server, port, user, pass, psu);
 }
 
-void OctoPrintClient::updateOctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+void OctoPrintClient::updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
   server.toCharArray(myServer, 100);
   myApiKey = ApiKey;
   myPort = port;
@@ -236,6 +236,8 @@ void OctoPrintClient::getPrinterJobResults() {
   String printing = (const char*)root2["state"]["flags"]["printing"];
   if (printing == "true") {
     printerData.isPrinting = true;
+  } else {
+    printerData.isPrinting = false;
   }
   printerData.toolTemp = (const char*)root2["temperature"]["tool0"]["actual"];
   printerData.toolTargetTemp = (const char*)root2["temperature"]["tool0"]["target"];
@@ -393,4 +395,20 @@ String OctoPrintClient::getValueRounded(String value) {
   float f = value.toFloat();
   int rounded = (int)(f+0.5f);
   return String(rounded);
+}
+
+String OctoPrintClient::getPrinterType() {
+  return printerType;
+}
+
+int OctoPrintClient::getPrinterPort() {
+  return myPort;
+}
+
+String OctoPrintClient::getPrinterName() {
+  return printerData.printerName;
+}
+
+void OctoPrintClient::setPrinterName(String printer) {
+  printerData.printerName = printer;
 }

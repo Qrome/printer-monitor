@@ -1,30 +1,14 @@
-/* The MIT License (MIT)
-
-Copyright (c) 2018 David Payne
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
 # Printer Monitor (OctoPrint 3D Printer Monitor)
 
+## New Easy Monitor Board Kit:
+Now available is the Pre Loaded Monitor Board Kit that comes ready to plug and play on your network.  
+* Kit on Etsy: https://www.etsy.com/listing/823257424  
+* New 3D printed case design for Monitor Board kit: https://www.thingiverse.com/thing:4538747
+* Configuration video: https://www.youtube.com/watch?v=kcBspqWhpIU
+
 ## Features:
-* Displays the print status from OctoPrint Server
+* Displays the print status from OctoPrint or Repetier Server
+* Option to display time and weather when printer is idle
 * Estimated time remaining
 * Time Printing
 * Percentage complete
@@ -42,6 +26,7 @@ SOFTWARE.
 * Basic Authentication to protect your settings
 * Version 2.2 added the ability to update firmware through web interface from a compiled binary
 * Can query the Octoprint [PSU Control plugin](https://plugins.octoprint.org/plugins/psucontrol/) to enter clock or blank mode when PSU is off
+* Repetier support added in version 3.0 -- define in Settings.h
 * Video: https://youtu.be/niRv9SCgAPk
 * Detailed build video by Chris Riley: https://youtu.be/Rm-l1FSuJpI
 
@@ -49,12 +34,13 @@ SOFTWARE.
 * Wemos D1 Mini: https://amzn.to/2ImqD1n
 * 0.96" OLED I2C 128x64 Display (12864) SSD1306:  https://amzn.to/3cyJekU
 * (optional) 1.3" I2C OLED Display: https://amzn.to/2IP0gRU (must uncomment #define DISPLAY_SH1106 in the Settings.h to use the 1.3" SSH1106 display)  
+* (optional) Pre loaded Monitor Board kit: https://www.etsy.com/listing/823257424  
 
 Note: Using the links provided here help to support these types of projects. Thank you for the support.  
 
 ## Wiring for the Wemos D1 Mini to the I2C SSD1306 OLED
 SDA -> D2  
-SCL -> D5  
+SCL -> D5 / D1 -- for Easy Monitor Board
 VCC -> 5V+  
 GND -> GND-  
 
@@ -62,12 +48,17 @@ GND -> GND-
 
 ## 3D Printed Case by Qrome:  
 https://www.thingiverse.com/thing:2884823 -- for the 0.96" OLED Display  
-https://www.thingiverse.com/thing:2934049 -- for the 1.3" OLED Display
+https://www.thingiverse.com/thing:2934049 -- for the 1.3" OLED Display  
+https://www.thingiverse.com/thing:4538747 -- for 0.96" With Easy Monitor Board
 
 ## Upgrading from version 2.2 or Higher
 Version 2.2 introduced the ability to upgrade pre-compiled firmware from a binary file.  In version 2.3 and on you should find binary files that can be uploaded to your printer monitor via the web interface.  From the main menu in the web interface select "Firmware Update" and follow the prompts.
 * **printermonitor.ino.d1_mini_SSD1306.bin** - compiled for Wemos D1 Mini for the smaller 0.96" SSD1306 OLED (default)
 * **printermonitor.ino.d1_mini_SH1106.bin** - compiled for Wemos D1 Mini for the larger 1.3" SH1106 OLED
+* **printermonitor.ino.d1_mini_repetier_SSD1306.bin** - Repetier version compiled for Wemos D1 Mini for the smaller 0.96" SSD1306 OLED (default)
+* **printermonitor.ino.d1_mini_repetier_SH1106.bin** - Repetier version compiled for Wemos D1 Mini for the larger 1.3" SH1106 OLED
+* **printermonitor.ino.d1_mini_easyboard.bin** - Version compiled for Easy Monitor Board for the smaller 0.96" SSD1306 OLED (SDA -> D2 and SCL -> D1) 
+* **printermonitor.ino.d1_mini_easyboard_repetier.bin** - Repetier version compiled for Easy Monitor Board for the smaller 0.96" SSD1306 OLED (SDA -> D2 and SCL -> D1)
 
 ## Compiling and Loading to Wemos D1 Mini
 It is recommended to use Arduino IDE.  You will need to configure Arduino IDE to work with the Wemos board and USB port and installed the required USB drivers etc.  
@@ -92,7 +83,9 @@ Note Printer-Monitor version 2.5 and later include ArduinoJson (version 5.13.1).
 
 ## Initial Configuration
 All settings may be managed from the Web Interface, however, you may update the **Settings.h** file manually -- but it is not required.  There is also an option to display current weather when the print is off-line.  
-* Your OctoPrint API Key from your OctoPrint -> User Settings -> Current API Key  
+* If you are using the Easy Monitor Board you must set the const int SCL_PIN = D1 in the Settings.h file.
+* By default OctoPrint client is selected.  If you wish to use Repetier then uncomment //#define USE_REPETIER_CLIENT in the Settings.h file.
+* Your OctoPrint API Key from your OctoPrint -> User Settings -> Current API Key  -- similar for Repetier API Key.
 * Optional OpenWeatherMap API Key -- if you want current weather when not printing.  Get the api key from: https://openweathermap.org/  
 
 NOTE: The settings in the Settings.h are the default settings for the first loading. After loading you will manage changes to the settings via the Web Interface. If you want to change settings again in the settings.h, you will need to erase the file system on the Wemos or use the “Reset Settings” option in the Web Interface.  
@@ -133,3 +126,26 @@ Thanks for your contribution.
 ![Printer Monitor Temps](/images/temperatures.jpg)  
 ![Printer Monitor Time Remaining](/images/time_remaining.jpg)  
 ![Printer Monitor Printing Time](/images/printing_time.jpg)
+
+/* The MIT License (MIT)
+
+Copyright (c) 2018 David Payne
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
