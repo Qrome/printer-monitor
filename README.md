@@ -48,7 +48,7 @@ GND -> GND-
 
 ## 3D Printed Case by Qrome:  
 https://www.thingiverse.com/thing:2884823 -- for the 0.96" OLED Display  
-https://www.thingiverse.com/thing:2934049 -- for the 1.3" OLED Display
+https://www.thingiverse.com/thing:2934049 -- for the 1.3" OLED Display  
 https://www.thingiverse.com/thing:4538747 -- for 0.96" With Easy Monitor Board
 
 ## Upgrading from version 2.2 or Higher
