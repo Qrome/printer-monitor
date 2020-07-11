@@ -92,7 +92,7 @@ boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = 
 // Display Settings
 const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)
 const int SDA_PIN = D2;
-const int SCL_PIN = D5;
+const int SCL_PIN = D5; // original code D5 -- Monitor Easy Board use D1
 boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bottom
 //#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
 

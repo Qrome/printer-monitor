@@ -876,9 +876,9 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   display.drawString(64, 0, "Wifi Manager");
   display.drawString(64, 10, "Please connect to AP");
   display.setFont(ArialMT_Plain_16);
-  display.drawString(64, 23, myWiFiManager->getConfigPortalSSID());
+  display.drawString(64, 26, myWiFiManager->getConfigPortalSSID());
   display.setFont(ArialMT_Plain_10);
-  display.drawString(64, 42, "To setup Wifi connection");
+  display.drawString(64, 46, "To setup Wifi connection");
   display.display();
   
   Serial.println("Wifi Manager");
