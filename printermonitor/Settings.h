@@ -73,7 +73,7 @@ String WeatherApiKey = ""; // Your API Key from http://openweathermap.org/
 // Default City Location (use http://openweathermap.org/find to find city ID)
 int CityIDs[] = { 5304391 }; //Only USE ONE for weather marquee
 boolean IS_METRIC = false; // false = Imperial and true = Metric
-// Languages: ar, bg, ca, cz, de, el, en, fa, fi, fr, gl, hr, hu, it, ja, kr, la, lt, mk, nl, pl, pt, ro, ru, se, sk, sl, es, tr, ua, vi, zh_cn, zh_tw
+// Languages: ar, bg, ca, cz, de, el, en, fa, fi, fr, gl, hr, hu, it, ja, kr, la, lt, mk, nl, pl, pt, pt_br, ro, ru, se, sk, sl, es, tr, ua, vi, zh_cn, zh_tw
 String WeatherLanguage = "en";  //Default (en) English
 
 // Webserver
@@ -95,6 +95,16 @@ const int SDA_PIN = D2;
 const int SCL_PIN = D5; // original code D5 -- Monitor Easy Board use D1
 boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bottom
 //#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
+
+// Display Advanced Settings
+boolean DISPLAY_SLEEP = false;   // true = Turn off or change display brightness / false = don't change display operation
+int BeginSleepHour = 0;
+int BeginSleepMin = 0;
+int EndSleepHour = 0;
+int EndSleepMin = 0;
+boolean DISPLAY_SLEEP_TURNOFF = true;  // true = Turno off display / false = change brightness
+int SLEEP_BRIGHTNESS = 50;    // Sleep Mode Display Brightness
+int DISPLAY_BRIGHTNESS = 255; // Default Display Brightness
 
 // LED Settings
 const int externalLight = LED_BUILTIN; // LED will always flash on bootup or Wifi Errors

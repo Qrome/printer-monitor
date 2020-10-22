@@ -30,7 +30,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "3.0"
+#define VERSION "3.1"
 
 #define HOSTNAME "PrintMon-" 
 #define CONFIG "/conf.txt"
@@ -83,6 +83,7 @@ String lastMinute = "xx";
 String lastSecond = "xx";
 String lastReportStatus = "";
 boolean displayOn = true;
+bool displaySleepOn = false;
 
 // Printer Client
 #if defined(USE_REPETIER_CLIENT)
@@ -119,6 +120,13 @@ static const char CLOCK_FORM[] PROGMEM = "<hr><p><input name='isClockEnabled' cl
                       "<p><input name='hasPSU' class='w3-check w3-margin-top' type='checkbox' %HAS_PSU_CHECKED%> Use OctoPrint PSU control plugin for clock/blank</p>"
                       "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>";
                             
+static const char SLEEP_FORM[] PROGMEM = "<hr><p><input name='isDisplaySleepEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_DISPSLEEP_CHECKED%> Display Sleep Mode (Set Brightness or Turn Off)</p>"
+                      "<p>Sleep Starts at (hour:minute) <select class='w3-option w3-padding' name='BeginSleepHour'>%BEGIN_HOUR_OPTIONS%</select>:<select class='w3-option w3-padding' name='BeginSleepMin'>%BEGIN_MINUTE_OPTIONS%</select></p>"
+                      "<p>Sleep Stops at (hour:minute) <select class='w3-option w3-padding' name='EndSleepHour'>%END_HOUR_OPTIONS%</select>:<select class='w3-option w3-padding' name='EndSleepMin'>%END_MINUTE_OPTIONS%</select></p>"
+                      "<p><input name='isDisplaySleepTurnOff' class='w3-check w3-margin-top' type='checkbox' %IS_DISPSLEEPTURNOFF_CHECKED%> Display Sleep will Turn Off Display</p>"
+                      "<p>Display Sleep Brightness <select class='w3-option w3-padding' name='SleepBrightness'>%DISPLAY_BRI_OPTIONS%</select></p>"
+                      "<p>Display Brightness Default <select class='w3-option w3-padding' name='DefaultBrightness'>%DISPLAY_DEF_BRI_OPTIONS%</select></p><hr>";
+
 static const char THEME_FORM[] PROGMEM =   "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
                       "<p><label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'></p><hr>"
                       "<p><input name='isBasicAuth' class='w3-check w3-margin-top' type='checkbox' %IS_BASICAUTH_CHECKED%> Use Security Credentials for Configuration Changes</p>"
@@ -159,6 +167,7 @@ static const char LANG_OPTIONS[] PROGMEM = "<option>ar</option>"
                       "<option>nl</option>"
                       "<option>pl</option>"
                       "<option>pt</option>"
+                      "<option>pt_br</option>"
                       "<option>ro</option>"
                       "<option>ru</option>"
                       "<option>se</option>"
@@ -483,6 +492,13 @@ void handleUpdateConfig() {
   temp.toCharArray(www_username, sizeof(temp));
   temp = server.arg("stationpassword");
   temp.toCharArray(www_password, sizeof(temp));
+  DISPLAY_SLEEP = server.hasArg("isDisplaySleepEnabled");
+  BeginSleepHour = server.arg("BeginSleepHour").toInt();
+  BeginSleepMin = server.arg("BeginSleepMin").toInt();
+  EndSleepHour = server.arg("EndSleepHour").toInt();
+  EndSleepMin = server.arg("EndSleepMin").toInt();
+  DISPLAY_SLEEP_TURNOFF = server.hasArg("isDisplaySleepTurnOff");
+  SLEEP_BRIGHTNESS = server.arg("SleepBrightness").toInt();
   writeSettings();
   findMDNS();
   printerClient.getPrinterJobResults();
@@ -652,6 +668,39 @@ void handleConfigure() {
   String options = "<option>10</option><option>15</option><option>20</option><option>30</option><option>60</option>";
   options.replace(">"+String(minutesBetweenDataRefresh)+"<", " selected>"+String(minutesBetweenDataRefresh)+"<");
   form.replace("%OPTIONS%", options);
+
+  server.sendContent(form);
+
+  form = FPSTR(SLEEP_FORM);
+  String isDisplaySleepEnabledChecked="";
+  if (DISPLAY_SLEEP) {
+    isDisplaySleepEnabledChecked="checked='checked'";
+  }
+  form.replace("%IS_DISPSLEEP_CHECKED%", isDisplaySleepEnabledChecked);
+  String isDisplaySleepTurnOffChecked="";
+  if (DISPLAY_SLEEP_TURNOFF) {
+    isDisplaySleepTurnOffChecked="checked='checked'";
+  }
+  form.replace("%IS_DISPSLEEPTURNOFF_CHECKED%", isDisplaySleepTurnOffChecked);
+
+  String optionsBeginSleepHour = "<option>00</option><option>01</option><option>02</option><option>03</option><option>04</option><option>05</option><option>06</option><option>07</option><option>08</option><option>09</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option>";
+  optionsBeginSleepHour.replace(">"+String(zeroPad(BeginSleepHour))+"<", " selected>"+String(zeroPad(BeginSleepHour))+"<");
+  form.replace("%BEGIN_HOUR_OPTIONS%", optionsBeginSleepHour);
+  String optionsEndSleepHour = "<option>00</option><option>01</option><option>02</option><option>03</option><option>04</option><option>05</option><option>06</option><option>07</option><option>08</option><option>09</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option><option>21</option><option>22</option><option>23</option>";
+  optionsEndSleepHour.replace(">"+String(zeroPad(EndSleepHour))+"<", " selected>"+String(zeroPad(EndSleepHour))+"<");
+  form.replace("%END_HOUR_OPTIONS%", optionsEndSleepHour);
+  String optionsBeginSleepMin = genOptions(0,59,1,true);
+  optionsBeginSleepMin.replace(">"+String(zeroPad(BeginSleepMin))+"<", " selected>"+String(zeroPad(BeginSleepMin))+"<");
+  form.replace("%BEGIN_MINUTE_OPTIONS%", optionsBeginSleepMin);
+  String optionsEndSleepMin = genOptions(0,59,1,true);
+  optionsEndSleepMin.replace(">"+String(zeroPad(EndSleepMin))+"<", " selected>"+String(zeroPad(EndSleepMin))+"<");
+  form.replace("%END_MINUTE_OPTIONS%", optionsEndSleepMin);
+  String optionsSleepBrightness = genOptions(0,255,15,false);
+  optionsSleepBrightness.replace(">"+String(SLEEP_BRIGHTNESS)+"<", " selected>"+String(SLEEP_BRIGHTNESS)+"<");
+  form.replace("%DISPLAY_BRI_OPTIONS%", optionsSleepBrightness);
+  String optionsDefaultBrightness = genOptions(0,255,15,false);
+  optionsDefaultBrightness.replace(">"+String(DISPLAY_BRIGHTNESS)+"<", " selected>"+String(DISPLAY_BRIGHTNESS)+"<");
+  form.replace("%DISPLAY_DEF_BRI_OPTIONS%", optionsDefaultBrightness);
 
   server.sendContent(form);
 
@@ -1143,6 +1192,14 @@ void writeSettings() {
     f.println("isMetric=" + String(IS_METRIC));
     f.println("language=" + String(WeatherLanguage));
     f.println("hasPSU=" + String(HAS_PSU));
+    f.println("DISPLAY_SLEEP=" + String(DISPLAY_SLEEP));
+    f.println("BeginSleepHour=" + String(BeginSleepHour));
+    f.println("BeginSleepMin=" + String(BeginSleepMin));
+    f.println("EndSleepHour=" + String(EndSleepHour));
+    f.println("EndSleepMin=" + String(EndSleepMin));
+    f.println("DISPLAY_SLEEP_TURNOFF=" + String(DISPLAY_SLEEP_TURNOFF));
+    f.println("SLEEP_BRIGHTNESS=" + String(SLEEP_BRIGHTNESS));
+    f.println("DISPLAY_BRIGHTNESS=" + String(DISPLAY_BRIGHTNESS));
   }
   f.close();
   readSettings();
@@ -1266,6 +1323,15 @@ void readSettings() {
       WeatherLanguage.trim();
       Serial.println("WeatherLanguage=" + WeatherLanguage);
     }
+    if (line.indexOf("DISPLAY_SLEEP=") >= 0) { DISPLAY_SLEEP = line.substring(line.lastIndexOf("DISPLAY_SLEEP=") + sizeof("DISPLAY_SLEEP=")-1).toInt(); Serial.println("DISPLAY_SLEEP=" + String(DISPLAY_SLEEP) ); }
+    if (line.indexOf("BeginSleepHour=") >= 0) { BeginSleepHour = line.substring(line.lastIndexOf("BeginSleepHour=") + sizeof("BeginSleepHour=")-1).toInt(); Serial.println("BeginSleepHour=" + String(BeginSleepHour) ); }
+    if (line.indexOf("BeginSleepMin=") >= 0) { BeginSleepMin = line.substring(line.lastIndexOf("BeginSleepMin=") + sizeof("BeginSleepMin=")-1).toInt(); Serial.println("BeginSleepMin=" + String(BeginSleepMin) ); }
+    if (line.indexOf("EndSleepHour=") >= 0) { EndSleepHour = line.substring(line.lastIndexOf("EndSleepHour=") + sizeof("EndSleepHour=")-1).toInt(); Serial.println("EndSleepHour=" + String(EndSleepHour) ); }
+    if (line.indexOf("EndSleepMin=") >= 0) { EndSleepMin = line.substring(line.lastIndexOf("EndSleepMin=") + sizeof("EndSleepMin=")-1).toInt(); Serial.println("EndSleepMin=" + String(EndSleepMin) ); }
+    if (line.indexOf("DISPLAY_SLEEP_TURNOFF=") >= 0) { DISPLAY_SLEEP_TURNOFF = line.substring(line.lastIndexOf("DISPLAY_SLEEP_TURNOFF=") + sizeof("DISPLAY_SLEEP_TURNOFF=")-1).toInt(); Serial.println("DISPLAY_SLEEP_TURNOFF=" + String(DISPLAY_SLEEP_TURNOFF) ); }
+    if (line.indexOf("SLEEP_BRIGHTNESS=") >= 0) { SLEEP_BRIGHTNESS = line.substring(line.lastIndexOf("SLEEP_BRIGHTNESS=") + sizeof("SLEEP_BRIGHTNESS=")-1).toInt(); Serial.println("SLEEP_BRIGHTNESS=" + String(SLEEP_BRIGHTNESS) ); }
+    if (line.indexOf("DISPLAY_BRIGHTNESS=") >= 0) { DISPLAY_BRIGHTNESS = line.substring(line.lastIndexOf("DISPLAY_BRIGHTNESS=") + sizeof("DISPLAY_BRIGHTNESS=")-1).toInt(); Serial.println("DISPLAY_BRIGHTNESS=" + String(DISPLAY_BRIGHTNESS) ); }
+    
   }
   fr.close();
   printerClient.updatePrintClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
@@ -1288,8 +1354,16 @@ int getMinutesFromLastDisplay() {
 
 // Toggle on and off the display if user defined times
 void checkDisplay() {
+  // Enable or disable Display Sleep mode
+  checkSleepDisplay();
   if (!displayOn && DISPLAYCLOCK) {
-    enableDisplay(true);
+    if (displaySleepOn) {
+      if (!DISPLAY_SLEEP_TURNOFF) { // Turn on display in brightness sleep mode, otherwise display stays off
+        enableDisplay(true);
+      }
+    } else {
+      enableDisplay(true);
+    }
   }
   if (displayOn && !printerClient.isPrinting() && !DISPLAYCLOCK) {
     // Put Display to sleep
@@ -1320,6 +1394,18 @@ void checkDisplay() {
       return;
     }
   } else if (DISPLAYCLOCK) {
+    if (displayOn && (!printerClient.isPrinting() || printerClient.isPSUoff()) && displaySleepOn && DISPLAY_SLEEP_TURNOFF) {
+      isClockOn = true;
+      display.clear();
+      display.display();
+      display.setFont(ArialMT_Plain_16);
+      display.setTextAlignment(TEXT_ALIGN_CENTER);
+      display.drawString(64, 5, "Printer Offline\nDisplay\nSleep Mode");
+      display.display();
+      Serial.println("Printer Offline and Display Sleep mode on, going down to sleep..");
+      delay(5000);
+      enableDisplay(false);
+    }
     if ((!printerClient.isPrinting() || printerClient.isPSUoff()) && !isClockOn) {
       Serial.println("Clock Mode is turned on.");
       if (!DISPLAYWEATHER) {
@@ -1335,6 +1421,17 @@ void checkDisplay() {
       ui.setOverlays(clockOverlay, numberOfOverlays);
       isClockOn = true;
     } else if (printerClient.isPrinting() && !printerClient.isPSUoff() && isClockOn) {
+      if (displaySleepOn && DISPLAY_SLEEP_TURNOFF) {
+        enableDisplay(true);
+        display.clear();
+        display.display();
+        display.setFont(ArialMT_Plain_16);
+        display.setTextAlignment(TEXT_ALIGN_CENTER);
+        display.drawString(64, 5, "Printer Online\nDisplay\nSleep Mode");
+        display.display();
+        Serial.println("Printer Online and Display Sleep mode on, waking up...");
+        delay(5000);
+      }
       Serial.println("Printer Monitor is active.");
       ui.setFrames(frames, numberOfFrames);
       ui.setOverlays(overlays, numberOfOverlays);
@@ -1359,4 +1456,74 @@ void enableDisplay(boolean enable) {
     Serial.println("Display was turned OFF: " + timeClient.getFormattedTime());
     displayOffEpoch = lastEpoch;
   }
+}
+
+void checkSleepDisplay() {
+  if (displaySleepOn) {
+    if(!enableSleepDisplay()) {
+      // Disable Sleep Display
+      Serial.println("Display Sleep FINISH: " + timeClient.getFormattedTime());
+      display.setBrightness(DISPLAY_BRIGHTNESS);
+      Serial.println("Display Brightness NORMAL: " + String(DISPLAY_BRIGHTNESS));
+      enableDisplay(true);
+      display.clear();
+      display.display();
+      display.setFont(ArialMT_Plain_16);
+      display.setTextAlignment(TEXT_ALIGN_CENTER);
+      display.setContrast(255); // default is 255
+      display.drawString(64, 5, "Display\nWake up...");
+      display.display();
+      Serial.println("Display waking up...");
+      delay(5000);
+    }
+  } else if (enableSleepDisplay()) {
+    // Enable Sleep Display
+    Serial.println("Display Sleep START: " + timeClient.getFormattedTime());
+    display.setBrightness(SLEEP_BRIGHTNESS);
+    Serial.println("Display Brightness SLEEP MODE: " + String(SLEEP_BRIGHTNESS));
+  }  
+}
+
+bool enableSleepDisplay() {
+    displaySleepOn=isSleepTime(DISPLAY_SLEEP,BeginSleepHour,BeginSleepMin,EndSleepHour,EndSleepMin);
+    return displaySleepOn;
+}
+
+bool isSleepTime(bool DISPLAY_SLEEP,int BeginSleepHour,int BeginSleepMin,int EndSleepHour,int EndSleepMin) {
+  if (DISPLAY_SLEEP) {
+    int curHour = timeClient.getHours().toInt();
+    int curMin = timeClient.getMinutes().toInt();
+    int curTime = curHour * 60 + curMin;
+    int beginTime = BeginSleepHour * 60 + BeginSleepMin;
+    int endTime = EndSleepHour * 60 + EndSleepMin;
+    if (beginTime < endTime ) {
+      if ((curTime >= beginTime) && (curTime < endTime)) {
+        
+        return true;
+      } else {
+        return false;
+      }
+    } else if (beginTime > endTime ) {
+      if ((curTime >= beginTime) || (curTime < endTime)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+  return false;
+}
+
+String genOptions(int start,int end, int step, bool pad) {
+  String temp = "";
+  for (int i=start; i<=end; i = i + step) {
+    temp += "<option>";
+    if (pad) {
+      temp += String(zeroPad(i));
+    } else {
+      temp += String(i);
+    }
+    temp += "</option>";
+  }
+  return temp;
 }
