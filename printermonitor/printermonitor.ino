@@ -1454,27 +1454,10 @@ void enableDisplay(boolean enable) {
       displayOffEpoch = 0;  // reset
     }
     display.displayOn();
-    Serial.println("Display was turned ON: " + timeClient.getFormattedTime());
-    Serial.println("enableDisplayOn displayOn: " + String(displayOn));
-    Serial.println("enableDisplayOn DISPLAYCLOCK: " + String(DISPLAYCLOCK));
-    Serial.println("enableDisplayOn isSleepTime: " + String(isSleepTime));
-    Serial.println("enableDisplayOn displaySleepOn: " + String(displaySleepOn));
-    Serial.println("enableDisplayOn DISPLAY_SLEEP_TURNOFF: " + String(DISPLAY_SLEEP_TURNOFF));
-    Serial.println("enableDisplayOn isClockOn: " + String(isClockOn));
-    Serial.println("enableDisplayOn printerClient.isPrinting(): " + String(printerClient.isPrinting()));
-    Serial.println("enableDisplayOn printerClient.isPSUoff(): " + String(printerClient.isPSUoff()));
   } else {
     display.displayOff();
     Serial.println("Display was turned OFF: " + timeClient.getFormattedTime());
     displayOffEpoch = lastEpoch;
-    Serial.println("enableDisplayOff displayOn: " + String(displayOn));
-    Serial.println("enableDisplayOff DISPLAYCLOCK: " + String(DISPLAYCLOCK));
-    Serial.println("enableDisplayOff isSleepTime: " + String(isSleepTime));
-    Serial.println("enableDisplayOff displaySleepOn: " + String(displaySleepOn));
-    Serial.println("enableDisplayOff DISPLAY_SLEEP_TURNOFF: " + String(DISPLAY_SLEEP_TURNOFF));
-    Serial.println("enableDisplayOff isClockOn: " + String(isClockOn));
-    Serial.println("enableDisplayOff printerClient.isPrinting(): " + String(printerClient.isPrinting()));
-    Serial.println("enableDisplayOff printerClient.isPSUoff(): " + String(printerClient.isPSUoff()));
   }
 }
 
@@ -1498,16 +1481,6 @@ void checkSleepDisplay() {
         display.drawString(64, 5, "Display\nWake up...");
         display.display();
         Serial.println("Display waking up...");
-        
-        Serial.println("checkSleepDisplay Display Brightness SLEEP MODE: " + String(SLEEP_BRIGHTNESS));
-        Serial.println("checkSleepDisplay displayOn: " + String(displayOn));
-        Serial.println("checkSleepDisplay DISPLAYCLOCK: " + String(DISPLAYCLOCK));
-        Serial.println("checkSleepDisplay isSleepTime: " + String(isSleepTime));
-        Serial.println("checkSleepDisplay displaySleepOn: " + String(displaySleepOn));
-        Serial.println("checkSleepDisplay DISPLAY_SLEEP_TURNOFF: " + String(DISPLAY_SLEEP_TURNOFF));
-        Serial.println("checkSleepDisplay isClockOn: " + String(isClockOn));
-        Serial.println("checkSleepDisplay printerClient.isPrinting(): " + String(printerClient.isPrinting()));
-        Serial.println("checkSleepDisplay printerClient.isPSUoff(): " + String(printerClient.isPSUoff()));   
         delay(5000);
       }
     }
@@ -1516,14 +1489,6 @@ void checkSleepDisplay() {
     Serial.println("Display Sleep START: " + timeClient.getFormattedTime());
     display.setBrightness(SLEEP_BRIGHTNESS);
     Serial.println("checkSleepDisplay Display Brightness SLEEP MODE: " + String(SLEEP_BRIGHTNESS));
-    Serial.println("checkSleepDisplay displayOn: " + String(displayOn));
-    Serial.println("checkSleepDisplay DISPLAYCLOCK: " + String(DISPLAYCLOCK));
-    Serial.println("checkSleepDisplay isSleepTime: " + String(isSleepTime));
-    Serial.println("checkSleepDisplay displaySleepOn: " + String(displaySleepOn));
-    Serial.println("checkSleepDisplay DISPLAY_SLEEP_TURNOFF: " + String(DISPLAY_SLEEP_TURNOFF));
-    Serial.println("checkSleepDisplay isClockOn: " + String(isClockOn));
-    Serial.println("checkSleepDisplay printerClient.isPrinting(): " + String(printerClient.isPrinting()));
-    Serial.println("checkSleepDisplay printerClient.isPSUoff(): " + String(printerClient.isPSUoff()));   
   }  
 }
 
