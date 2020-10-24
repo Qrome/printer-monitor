@@ -85,7 +85,7 @@ String lastReportStatus = "";
 boolean displayOn = true;
 boolean displaySleepOn = false;
 boolean isSleepTime = false;
-boolean enableDebug = false;
+boolean enableDebug = true;
 
 // Printer Client
 #if defined(USE_REPETIER_CLIENT)
@@ -1427,6 +1427,8 @@ void checkDisplay() {
       } else if (!DISPLAY_SLEEP_TURNOFF) {   // Set display sleep mode without changing display (Already set brightness to sleep mode)
         enableSleepDisplay(true);
       }
+    } else if (displayOn && isSleepTime && displaySleepOn && DISPLAY_SLEEP_TURNOFF && !printerClient.isPrinting()) {
+      enableDisplay(false);
     } else if (!displayOn && !DISPLAY_SLEEP_TURNOFF) {  // Turn on display
       enableDisplay(true);
     } else if ((!printerClient.isPrinting() || printerClient.isPSUoff()) && !isClockOn) {   // Set Clock mode if not printing
