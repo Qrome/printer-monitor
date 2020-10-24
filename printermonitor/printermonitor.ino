@@ -85,7 +85,7 @@ String lastReportStatus = "";
 boolean displayOn = true;
 boolean displaySleepOn = false;
 boolean isSleepTime = false;
-boolean enableDebug = true;
+boolean enableDebug = false;
 
 // Printer Client
 #if defined(USE_REPETIER_CLIENT)
