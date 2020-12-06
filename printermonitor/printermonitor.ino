@@ -23,6 +23,7 @@ SOFTWARE.
 
 // Additional Contributions:
 /* 15 Jan 2019 : Owen Carter : Add psucontrol option and processing */
+/* 12/6/20 : Matthias Grimm : Add Duet Monitor */
 
  /**********************************************
  * Edit Settings.h for personalization
@@ -87,6 +88,8 @@ boolean displayOn = true;
 // Printer Client
 #if defined(USE_REPETIER_CLIENT)
   RepetierClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
+#elif defined(USE_DUET_CLIENT)
+  DuetClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
 #else
   OctoPrintClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
 #endif

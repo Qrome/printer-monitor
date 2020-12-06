@@ -1,0 +1,157 @@
+{
+    "status": "I",
+    "coords": {
+        "axesHomed": [
+            0,
+            0,
+            0
+        ],
+        "wpl": 1,
+        "xyz": [
+            0.000,
+            0.000,
+            0.000
+        ],
+        "machine": [
+            0.000,
+            0.000,
+            0.000
+        ],
+        "extr": [
+            0.0
+        ]
+    },
+    "speeds": {
+        "requested": 0.0,
+        "top": 0.0
+    },
+    "currentTool": 0,
+    "params": {
+        "atxPower": -1,
+        "fanPercent": [
+            0,
+            100,
+            100
+        ],
+        "fanNames": [
+            "Parts Cooler",
+            "Hotend Cooler",
+            "Board Cooler"
+        ],
+        "speedFactor": 100.0,
+        "extrFactors": [
+            100.0
+        ],
+        "babystep": 0.000
+    },
+    "seq": 1,
+    "sensors": {
+        "probeValue": 0,
+        "fanRPM": [
+            -1,
+            -1,
+            -1
+        ]
+    },
+    "temps": {
+        "bed": {
+            "current": 22.7,
+            "active": 0.0,
+            "standby": 0.0,
+            "state": 0,
+            "heater": 0
+        },
+        "current": [
+            22.7,
+            30.0
+        ],
+        "state": [
+            0,
+            2
+        ],
+        "names": [
+            "",
+            ""
+        ],
+        "tools": {
+            "active": [
+                [
+                    30.0
+                ]
+            ],
+            "standby": [
+                [
+                    0.0
+                ]
+            ]
+        },
+        "extra": [
+            {
+                "name": "*DRIVERS",
+                "temp": 0.0
+            },
+            {
+                "name": "*MCU",
+                "temp": 36.6
+            }
+        ]
+    },
+    "time": 27989.0,
+    "coldExtrudeTemp": 160.0,
+    "coldRetractTemp": 90.0,
+    "compensation": "None",
+    "controllableFans": 1,
+    "tempLimit": 285.0,
+    "endstops": 0,
+    "firmwareName": "RepRapFirmware for Duet 2 WiFi/Ethernet",
+    "firmwareVersion": "3.2-beta4",
+    "geometry": "coreXY",
+    "axes": 3,
+    "totalAxes": 3,
+    "axisNames": "XYZ",
+    "volumes": 2,
+    "mountedVolumes": 1,
+    "mode": "FFF",
+    "name": "Sapphire",
+    "probe": {
+        "threshold": 500,
+        "height": 2.28,
+        "type": 9
+    },
+    "tools": [
+        {
+            "number": 0,
+            "heaters": [
+                1
+            ],
+            "drives": [
+                0
+            ],
+            "axisMap": [
+                [
+                    0
+                ],
+                [
+                    1
+                ]
+            ],
+            "fans": 1,
+            "filament": "Atomic Red PLA",
+            "offsets": [
+                0.00,
+                0.00,
+                0.00
+            ]
+        }
+    ],
+    "mcutemp": {
+        "min": 19.4,
+        "cur": 36.5,
+        "max": 37.1
+    },
+    "vin": {
+        "min": 23.9,
+        "cur": 24.1,
+        "max": 24.3
+    }
+}
