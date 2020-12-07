@@ -23,7 +23,7 @@ SOFTWARE.
 
 // Additional Contributions:
 /* 15 Jan 2019 : Owen Carter : Add psucontrol setting */
-/* 12/6/20 : Matthias Grimm : Add Duet Monitor */
+/* 12/6/20 : Matthias Grimm : Add Duet & Klipper Monitor */
 
 /******************************************************************************
  * Printer Monitor is designed for the Wemos D1 ESP8266
@@ -46,6 +46,7 @@ SOFTWARE.
 #include <ArduinoOTA.h>
 #include <ESP8266HTTPUpdateServer.h>
 #include "TimeClient.h"
+#include "KlipperClient.h"
 #include "DuetClient.h"
 #include "RepetierClient.h"
 #include "OctoPrintClient.h"
@@ -60,8 +61,9 @@ SOFTWARE.
 // Start Settings
 //******************************
 
-// OctoPrint / Repetier / Duet Monitoring -- Monitor your 3D OctoPrint or Repetier Server
+// OctoPrint / Repetier / Klipper/  Duet Monitoring -- Monitor your 3D OctoPrint or Repetier Server
 #define USE_DUET_CLIENT       // Uncomment this line to use the Duet Printer Server -- OctoPrint is used by default and is most common
+#define USE_KLIPPER_CLIENT       // Uncomment this line to use the Duet Printer Server -- OctoPrint is used by default and is most common
 //#define USE_REPETIER_CLIENT       // Uncomment this line to use the Repetier Printer Server -- OctoPrint is used by default and is most common
 String PrinterApiKey = "";   // ApiKey from your User Account on OctoPrint / Repetier
 String PrinterHostName = "";// Default 'octopi' -- or hostname if different (optional if your IP changes)
