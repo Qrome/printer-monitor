@@ -29,7 +29,7 @@ SOFTWARE.
 #include "libs/ArduinoJson/ArduinoJson.h"
 #include <base64.h>
 
-class OctoPrintClient {
+class KlipperPrintClient {
 
 private:
   char myServer[100];
@@ -72,7 +72,7 @@ private:
 
   
 public:
-  OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
+  KlipperPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
   void getPrinterJobResults();
   void getPrinterPsuState();
   void updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);

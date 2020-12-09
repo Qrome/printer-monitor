@@ -24,13 +24,13 @@ SOFTWARE.
 // Additional Contributions:
 /* 15 Jan 2019 : Owen Carter : Add psucontrol query via POST api call */
 
-#include "OctoPrintClient.h"
+#include "KlipperPrintClient.h"
 
-OctoPrintClient::OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+KlipperPrintClient::KlipperPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
   updatePrintClient(ApiKey, server, port, user, pass, psu);
 }
 
-void OctoPrintClient::updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+void KlipperPrintClient::updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
   server.toCharArray(myServer, 100);
   myApiKey = ApiKey;
   myPort = port;
@@ -43,7 +43,7 @@ void OctoPrintClient::updatePrintClient(String ApiKey, String server, int port, 
   pollPsu = psu;
 }
 
-boolean OctoPrintClient::validate() {
+boolean KlipperPrintClient::validate() {
   boolean rtnValue = false;
   printerData.error = "";
   if (String(myServer) == "") {
@@ -58,7 +58,7 @@ boolean OctoPrintClient::validate() {
   return rtnValue;
 }
 
-WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
+WiFiClient KlipperPrintClient::getSubmitRequest(String apiGetData) {
   WiFiClient printClient;
   printClient.setTimeout(5000);
 
@@ -113,7 +113,7 @@ WiFiClient OctoPrintClient::getSubmitRequest(String apiGetData) {
   return printClient;
 }
 
-WiFiClient OctoPrintClient::getPostRequest(String apiPostData, String apiPostBody) {
+WiFiClient KlipperPrintClient::getPostRequest(String apiPostData, String apiPostBody) {
   WiFiClient printClient;
   printClient.setTimeout(5000);
 
@@ -173,7 +173,7 @@ WiFiClient OctoPrintClient::getPostRequest(String apiPostData, String apiPostBod
   return printClient;
 }
 
-void OctoPrintClient::getPrinterJobResults() {
+void KlipperPrintClient::getPrinterJobResults() {
   if (!validate()) {
     return;
   }
@@ -249,7 +249,7 @@ void OctoPrintClient::getPrinterJobResults() {
   }
 }
 
-void OctoPrintClient::getPrinterPsuState() {
+void KlipperPrintClient::getPrinterPsuState() {
   //**** get the PSU state (if enabled and printer operational)
   if (pollPsu && isOperational()) {
     if (!validate()) {
@@ -286,7 +286,7 @@ void OctoPrintClient::getPrinterPsuState() {
 }
 
 // Reset all PrinterData
-void OctoPrintClient::resetPrintData() {
+void KlipperPrintClient::resetPrintData() {
   printerData.averagePrintTime = "";
   printerData.estimatedPrintTime = "";
   printerData.fileName = "";
@@ -307,39 +307,39 @@ void OctoPrintClient::resetPrintData() {
   printerData.error = "";
 }
 
-String OctoPrintClient::getAveragePrintTime(){
+String KlipperPrintClient::getAveragePrintTime(){
   return printerData.averagePrintTime;
 }
 
-String OctoPrintClient::getEstimatedPrintTime() {
+String KlipperPrintClient::getEstimatedPrintTime() {
   return printerData.estimatedPrintTime;
 }
 
-String OctoPrintClient::getFileName() {
+String KlipperPrintClient::getFileName() {
   return printerData.fileName;
 }
 
-String OctoPrintClient::getFileSize() {
+String KlipperPrintClient::getFileSize() {
   return printerData.fileSize;
 }
 
-String OctoPrintClient::getLastPrintTime(){
+String KlipperPrintClient::getLastPrintTime(){
   return printerData.lastPrintTime;
 }
 
-String OctoPrintClient::getProgressCompletion() {
+String KlipperPrintClient::getProgressCompletion() {
   return String(printerData.progressCompletion.toInt());
 }
 
-String OctoPrintClient::getProgressFilepos() {
+String KlipperPrintClient::getProgressFilepos() {
   return printerData.progressFilepos;  
 }
 
-String OctoPrintClient::getProgressPrintTime() {
+String KlipperPrintClient::getProgressPrintTime() {
   return printerData.progressPrintTime;
 }
 
-String OctoPrintClient::getProgressPrintTimeLeft() {
+String KlipperPrintClient::getProgressPrintTimeLeft() {
   String rtnValue = printerData.progressPrintTimeLeft;
   if (getProgressCompletion() == "100") {
     rtnValue = "0"; // Print is done so this should be 0 this is a fix for OctoPrint
@@ -347,19 +347,19 @@ String OctoPrintClient::getProgressPrintTimeLeft() {
   return rtnValue;
 }
 
-String OctoPrintClient::getState() {
+String KlipperPrintClient::getState() {
   return printerData.state;
 }
 
-boolean OctoPrintClient::isPrinting() {
+boolean KlipperPrintClient::isPrinting() {
   return printerData.isPrinting;
 }
 
-boolean OctoPrintClient::isPSUoff() {
+boolean KlipperPrintClient::isPSUoff() {
   return printerData.isPSUoff;
 }
 
-boolean OctoPrintClient::isOperational() {
+boolean KlipperPrintClient::isOperational() {
   boolean operational = false;
   if (printerData.state == "Operational" || isPrinting()) {
     operational = true;
@@ -367,48 +367,48 @@ boolean OctoPrintClient::isOperational() {
   return operational;
 }
 
-String OctoPrintClient::getTempBedActual() {
+String KlipperPrintClient::getTempBedActual() {
   return printerData.bedTemp;
 }
 
-String OctoPrintClient::getTempBedTarget() {
+String KlipperPrintClient::getTempBedTarget() {
   return printerData.bedTargetTemp;
 }
 
-String OctoPrintClient::getTempToolActual() {
+String KlipperPrintClient::getTempToolActual() {
   return printerData.toolTemp;
 }
 
-String OctoPrintClient::getTempToolTarget() {
+String KlipperPrintClient::getTempToolTarget() {
   return printerData.toolTargetTemp;
 }
 
-String OctoPrintClient::getFilamentLength() {
+String KlipperPrintClient::getFilamentLength() {
   return printerData.filamentLength;
 }
 
-String OctoPrintClient::getError() {
+String KlipperPrintClient::getError() {
   return printerData.error;
 }
 
-String OctoPrintClient::getValueRounded(String value) {
+String KlipperPrintClient::getValueRounded(String value) {
   float f = value.toFloat();
   int rounded = (int)(f+0.5f);
   return String(rounded);
 }
 
-String OctoPrintClient::getPrinterType() {
+String KlipperPrintClient::getPrinterType() {
   return printerType;
 }
 
-int OctoPrintClient::getPrinterPort() {
+int KlipperPrintClient::getPrinterPort() {
   return myPort;
 }
 
-String OctoPrintClient::getPrinterName() {
+String KlipperPrintClient::getPrinterName() {
   return printerData.printerName;
 }
 
-void OctoPrintClient::setPrinterName(String printer) {
+void KlipperPrintClient::setPrinterName(String printer) {
   printerData.printerName = printer;
 }

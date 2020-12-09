@@ -1,3 +1,23 @@
+#include <doxygen.h>
+#include <NexButton.h>
+#include <NexConfig.h>
+#include <NexCrop.h>
+#include <NexGauge.h>
+#include <NexHardware.h>
+#include <NexHotspot.h>
+#include <NexObject.h>
+#include <NexPage.h>
+#include <NexPicture.h>
+#include <NexProgressBar.h>
+#include <NexSlider.h>
+#include <NexText.h>
+#include <NexTimer.h>
+#include <Nextion.h>
+#include <NexTouch.h>
+#include <NexVar.h>
+#include <NexWaveform.h>
+#include <SoftwareSerial.h>
+
 /** The MIT License (MIT)
 
 Copyright (c) 2018 David Payne
@@ -61,10 +81,14 @@ SOFTWARE.
 // Start Settings
 //******************************
 
+// ESP32/ESP8266 compatibility!
+//#define USE_ESP8266
+
 // OctoPrint / Repetier / Klipper/  Duet Monitoring -- Monitor your 3D OctoPrint or Repetier Server
 #define USE_DUET_CLIENT       // Uncomment this line to use the Duet Printer Server -- OctoPrint is used by default and is most common
-#define USE_KLIPPER_CLIENT       // Uncomment this line to use the Duet Printer Server -- OctoPrint is used by default and is most common
+//#define USE_KLIPPER_CLIENT       // Uncomment this line to use the Duet Printer Server -- OctoPrint is used by default and is most common
 //#define USE_REPETIER_CLIENT       // Uncomment this line to use the Repetier Printer Server -- OctoPrint is used by default and is most common
+
 String PrinterApiKey = "";   // ApiKey from your User Account on OctoPrint / Repetier
 String PrinterHostName = "";// Default 'octopi' -- or hostname if different (optional if your IP changes)
 String PrinterServer = "";   // IP or Address of your OctoPrint / Repetier Server (DO NOT include http://)
@@ -95,11 +119,21 @@ int minutesBetweenDataRefresh = 15;
 boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = turn off display when not printing
 
 // Display Settings
-const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)
-const int SDA_PIN = D2;
-const int SCL_PIN = D1; // original code D5 -- Monitor Easy Board use D1
-boolean INVERT_DISPLAY = true; // true = pins at top | false = pins at the bottom
-//#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
+#define USE_NEXTION_DISPLAY
+#ifdef USE_NEXTION_DISPLAY
+#else
+  const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)
+  #ifdef USE_ESP8266
+    const int SDA_PIN = 21;
+    const int SCL_PIN = 22; // original code D5 -- Monitor Easy Board use D1
+  #else
+    const int SDA_PIN = D1;
+    const int SCL_PIN = D2; // original code D5 -- Monitor Easy Board use D1
+  #endif
+  
+  boolean INVERT_DISPLAY = true; // true = pins at top | false = pins at the bottom
+  //#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
+#endif
 
 // LED Settings
 const int externalLight = LED_BUILTIN; // LED will always flash on bootup or Wifi Errors

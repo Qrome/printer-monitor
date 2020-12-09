@@ -45,25 +45,27 @@ SOFTWARE.
 #define numberOfMinutes(_time_) ((_time_ / SECS_PER_MIN) % SECS_PER_MIN) 
 #define numberOfHours(_time_) (_time_ / SECS_PER_HOUR)
 
-// Initialize the oled display for I2C_DISPLAY_ADDRESS
-// SDA_PIN and SCL_PIN
-#if defined(DISPLAY_SH1106)
-  SH1106Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SCL_PIN);
+#if USE_NEXTION_DISPLAY
 #else
-  SSD1306Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SCL_PIN); // this is the default
+  // Initialize the oled display for I2C_DISPLAY_ADDRESS
+  // SDA_PIN and SCL_PIN
+  #if defined(DISPLAY_SH1106)
+    SH1106Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SCL_PIN);
+  #else
+    SSD1306Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SCL_PIN); // this is the default
+  #endif
+  OLEDDisplayUi   ui( &display );
+
+  void drawProgress(OLEDDisplay *display, int percentage, String label);
+  void drawOtaProgress(unsigned int, unsigned int);
+  void drawScreen1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+  void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+  void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+  void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
+  void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+  void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+  void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 #endif
-
-OLEDDisplayUi   ui( &display );
-
-void drawProgress(OLEDDisplay *display, int percentage, String label);
-void drawOtaProgress(unsigned int, unsigned int);
-void drawScreen1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
-void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
-void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
-void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
-void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
-void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
-void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 
 // Set the number of Frames supported
 const int numberOfFrames = 3;
@@ -88,6 +90,8 @@ boolean displayOn = true;
 // Printer Client
 #if defined(USE_REPETIER_CLIENT)
   RepetierClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
+#elif defined(USE_KLIPPER_CLIENT)
+  KlipperClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
 #elif defined(USE_DUET_CLIENT)
   DuetClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
 #else
