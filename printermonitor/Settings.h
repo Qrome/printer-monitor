@@ -1,23 +1,3 @@
-#include <doxygen.h>
-#include <NexButton.h>
-#include <NexConfig.h>
-#include <NexCrop.h>
-#include <NexGauge.h>
-#include <NexHardware.h>
-#include <NexHotspot.h>
-#include <NexObject.h>
-#include <NexPage.h>
-#include <NexPicture.h>
-#include <NexProgressBar.h>
-#include <NexSlider.h>
-#include <NexText.h>
-#include <NexTimer.h>
-#include <Nextion.h>
-#include <NexTouch.h>
-#include <NexVar.h>
-#include <NexWaveform.h>
-#include <SoftwareSerial.h>
-
 /** The MIT License (MIT)
 
 Copyright (c) 2018 David Payne
@@ -59,34 +39,19 @@ SOFTWARE.
  * the Web Interface.
  ******************************************************************************/
 
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>
-#include <ESP8266mDNS.h>
-#include <ArduinoOTA.h>
-#include <ESP8266HTTPUpdateServer.h>
-#include "TimeClient.h"
-#include "KlipperClient.h"
-#include "DuetClient.h"
-#include "RepetierClient.h"
-#include "OctoPrintClient.h"
-#include "OpenWeatherMapClient.h"
-#include "WeatherStationFonts.h"
-#include "FS.h"
-#include "SH1106Wire.h"
-#include "SSD1306Wire.h"
-#include "OLEDDisplayUi.h"
+#ifndef __SETTINGS_H__
+#define __SETTINGS_H__
 
 //******************************
 // Start Settings
 //******************************
 
 // ESP32/ESP8266 compatibility!
-//#define USE_ESP8266
+#define USE_ESP8266
 
 // OctoPrint / Repetier / Klipper/  Duet Monitoring -- Monitor your 3D OctoPrint or Repetier Server
-#define USE_DUET_CLIENT       // Uncomment this line to use the Duet Printer Server -- OctoPrint is used by default and is most common
-//#define USE_KLIPPER_CLIENT       // Uncomment this line to use the Duet Printer Server -- OctoPrint is used by default and is most common
+//#define USE_DUET_CLIENT       // Uncomment this line to use the Duet Printer Server -- OctoPrint is used by default and is most common
+#define USE_KLIPPER_CLIENT       // Uncomment this line to use the Duet Printer Server -- OctoPrint is used by default and is most common
 //#define USE_REPETIER_CLIENT       // Uncomment this line to use the Repetier Printer Server -- OctoPrint is used by default and is most common
 
 String PrinterApiKey = "";   // ApiKey from your User Account on OctoPrint / Repetier
@@ -121,18 +86,25 @@ boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = 
 // Display Settings
 #define USE_NEXTION_DISPLAY
 #ifdef USE_NEXTION_DISPLAY
+  #ifdef USE_ESP8266
+    const int TX_PIN = 5;
+    const int RX_PIN = 4;
+  #else
+    const int TX_PIN = D1;
+    const int RX_PIN = D2;
+  #endif
 #else
   const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)
   #ifdef USE_ESP8266
-    const int SDA_PIN = 21;
-    const int SCL_PIN = 22; // original code D5 -- Monitor Easy Board use D1
+    const int SDA_PIN = 5;
+    const int SCL_PIN = 4; // original code D5 -- Monitor Easy Board use D1
   #else
     const int SDA_PIN = D1;
     const int SCL_PIN = D2; // original code D5 -- Monitor Easy Board use D1
   #endif
   
-  boolean INVERT_DISPLAY = true; // true = pins at top | false = pins at the bottom
-  //#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
+  boolean INVERT_DISPLAY = true;  // true = pins at top | false = pins at the bottom
+  boolean DISPLAY_SH1106 = false; // true = to use the SH1106 display | false = SSD1306 is used by default and is most common
 #endif
 
 // LED Settings
@@ -151,3 +123,8 @@ String OTA_Password = "";      // Set an OTA password here -- leave blank if you
 //******************************
 
 String themeColor = "light-green"; // this can be changed later in the web interface.
+#define HOSTNAME "PrintMon-" 
+#define CONFIG "/conf.txt"
+#define VERSION "4.0"
+
+#endif

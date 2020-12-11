@@ -27,15 +27,17 @@ Modified by David Payne for use in the Scrolling Marquee
 
 #include "TimeClient.h"
 
-TimeClient::TimeClient(float utcOffset) {
-  myUtcOffset = utcOffset;
+TimeClient::TimeClient(float utcOffset, boolean is24Hour, Debug *debugHandle) {
+  this->debugHandle = debugHandle;
+  this->myUtcOffset = utcOffset;
+  this->is24Hour = is24Hour;
 }
 
 void TimeClient::updateTime() {
   WiFiClient client;
   
   if (!client.connect(ntpServerName, httpPort)) {
-    Serial.println("connection failed");
+    this->debugHandle->printLn("connection failed");
     return;
   }
 
@@ -46,7 +48,7 @@ void TimeClient::updateTime() {
   int repeatCounter = 0;
   while(!client.available() && repeatCounter < 10) {
     delay(1000);
-    Serial.println(".");
+    this->debugHandle->printLn(".");
     repeatCounter++;
   }
 
@@ -61,14 +63,14 @@ void TimeClient::updateTime() {
       // example:
       // date: Thu, 19 Nov 2015 20:25:40 GMT
       if (line.startsWith("DATE: ")) {
-        Serial.println(line.substring(23, 25) + ":" + line.substring(26, 28) + ":" +line.substring(29, 31));
+        this->debugHandle->printLn(line.substring(23, 25) + ":" + line.substring(26, 28) + ":" +line.substring(29, 31));
         int parsedHours = line.substring(23, 25).toInt();
         int parsedMinutes = line.substring(26, 28).toInt();
         int parsedSeconds = line.substring(29, 31).toInt();
-        Serial.println(String(parsedHours) + ":" + String(parsedMinutes) + ":" + String(parsedSeconds));
+        this->debugHandle->printLn(String(parsedHours) + ":" + String(parsedMinutes) + ":" + String(parsedSeconds));
 
         localEpoc = (parsedHours * 60 * 60 + parsedMinutes * 60 + parsedSeconds);
-        Serial.println(localEpoc);
+        this->debugHandle->printLn(localEpoc);
         localMillisAtUpdate = millis();
         client.stop();
       }
@@ -149,4 +151,8 @@ long TimeClient::getCurrentEpoch() {
 
 long TimeClient::getCurrentEpochWithUtcOffset() {
   return (long)round(getCurrentEpoch() + 3600 * myUtcOffset + 86400L) % 86400L;
+}
+
+boolean TimeClient::isHour24() {
+  return this->is24Hour;
 }

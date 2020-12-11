@@ -23,7 +23,8 @@ SOFTWARE.
 
 #include "OpenWeatherMapClient.h"
 
-OpenWeatherMapClient::OpenWeatherMapClient(String ApiKey, int CityIDs[], int cityCount, boolean isMetric, String language) {
+OpenWeatherMapClient::OpenWeatherMapClient(String ApiKey, int CityIDs[], int cityCount, boolean isMetric, String language, Debug *debugHandle) {
+  this->debugHandle = debugHandle;
   updateCityIdList(CityIDs, cityCount);
   updateLanguage(language);
   myApiKey = ApiKey;
@@ -45,8 +46,8 @@ void OpenWeatherMapClient::updateWeather() {
   WiFiClient weatherClient;
   String apiGetData = "GET /data/2.5/group?id=" + myCityIDs + "&units=" + units + "&cnt=1&APPID=" + myApiKey + "&lang=" + lang + " HTTP/1.1";
 
-  Serial.println("Getting Weather Data");
-  Serial.println(apiGetData);
+  this->debugHandle->printLn("Getting Weather Data");
+  this->debugHandle->printLn(apiGetData);
   result = "";
   if (weatherClient.connect(servername, 80)) {  //starts client connection, checks for connection
     weatherClient.println(apiGetData);
@@ -56,29 +57,29 @@ void OpenWeatherMapClient::updateWeather() {
     weatherClient.println();
   } 
   else {
-    Serial.println("connection for weather data failed"); //error message if no client connect
-    Serial.println();
+    this->debugHandle->printLn("connection for weather data failed"); //error message if no client connect
+    this->debugHandle->printLn("");
     return;
   }
 
   while(weatherClient.connected() && !weatherClient.available()) delay(1); //waits for data
  
-  Serial.println("Waiting for data");
+  this->debugHandle->printLn("Waiting for data");
 
   // Check HTTP status
   char status[32] = {0};
   weatherClient.readBytesUntil('\r', status, sizeof(status));
-  Serial.println("Response Header: " + String(status));
+  this->debugHandle->printLn("Response Header: " + String(status));
   if (strcmp(status, "HTTP/1.1 200 OK") != 0) {
-    Serial.print(F("Unexpected response: "));
-    Serial.println(status);
+    this->debugHandle->print("Unexpected response: ");
+    this->debugHandle->printLn(status);
     return;
   }
 
     // Skip HTTP headers
   char endOfHeaders[] = "\r\n\r\n";
   if (!weatherClient.find(endOfHeaders)) {
-    Serial.println(F("Invalid response"));
+    this->debugHandle->printLn("Invalid response");
     return;
   }
 
@@ -90,7 +91,7 @@ void OpenWeatherMapClient::updateWeather() {
   // Parse JSON object
   JsonObject& root = jsonBuffer.parseObject(weatherClient);
   if (!root.success()) {
-    Serial.println(F("Weather Data Parsing failed!"));
+    this->debugHandle->printLn("Weather Data Parsing failed!");
     weathers[0].error = "Weather Data Parsing failed!";
     return;
   }
@@ -98,10 +99,10 @@ void OpenWeatherMapClient::updateWeather() {
   weatherClient.stop(); //stop client
 
   if (root.measureLength() <= 150) {
-    Serial.println("Error Does not look like we got the data.  Size: " + String(root.measureLength()));
+    this->debugHandle->printLn("Error Does not look like we got the data.  Size: " + String(root.measureLength()));
     weathers[0].cached = true;
     weathers[0].error = (const char*)root["message"];
-    Serial.println("Error: " + weathers[0].error);
+    this->debugHandle->printLn("Error: " + weathers[0].error);
     return;
   }
   int count = root["cnt"];
@@ -120,19 +121,19 @@ void OpenWeatherMapClient::updateWeather() {
     weathers[inx].description = (const char*)root["list"][inx]["weather"][0]["description"];
     weathers[inx].icon = (const char*)root["list"][inx]["weather"][0]["icon"];
 
-    Serial.println("lat: " + weathers[inx].lat);
-    Serial.println("lon: " + weathers[inx].lon);
-    Serial.println("dt: " + weathers[inx].dt);
-    Serial.println("city: " + weathers[inx].city);
-    Serial.println("country: " + weathers[inx].country);
-    Serial.println("temp: " + weathers[inx].temp);
-    Serial.println("humidity: " + weathers[inx].humidity);
-    Serial.println("condition: " + weathers[inx].condition);
-    Serial.println("wind: " + weathers[inx].wind);
-    Serial.println("weatherId: " + weathers[inx].weatherId);
-    Serial.println("description: " + weathers[inx].description);
-    Serial.println("icon: " + weathers[inx].icon);
-    Serial.println();
+    this->debugHandle->printLn("lat: " + weathers[inx].lat);
+    this->debugHandle->printLn("lon: " + weathers[inx].lon);
+    this->debugHandle->printLn("dt: " + weathers[inx].dt);
+    this->debugHandle->printLn("city: " + weathers[inx].city);
+    this->debugHandle->printLn("country: " + weathers[inx].country);
+    this->debugHandle->printLn("temp: " + weathers[inx].temp);
+    this->debugHandle->printLn("humidity: " + weathers[inx].humidity);
+    this->debugHandle->printLn("condition: " + weathers[inx].condition);
+    this->debugHandle->printLn("wind: " + weathers[inx].wind);
+    this->debugHandle->printLn("weatherId: " + weathers[inx].weatherId);
+    this->debugHandle->printLn("description: " + weathers[inx].description);
+    this->debugHandle->printLn("icon: " + weathers[inx].icon);
+    this->debugHandle->printLn("");
     
   }
 }

@@ -27,7 +27,8 @@ SOFTWARE.
 
 #include "RepetierClient.h"
 
-RepetierClient::RepetierClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+RepetierClient::RepetierClient(String ApiKey, String server, int port, String user, String pass, boolean psu, Debug *debugHandle) {
+  this->debugHandle = debugHandle;
   updatePrintClient(ApiKey, server, port, user, pass, psu);
 }
 
@@ -63,8 +64,8 @@ WiFiClient RepetierClient::getSubmitRequest(String apiGetData) {
   WiFiClient printClient;
   printClient.setTimeout(5000);
 
-  Serial.println("Getting Repetier Data via GET");
-  Serial.println(apiGetData);
+  this->debugHandle->printLn("Getting Repetier Data via GET");
+  this->debugHandle->printLn(apiGetData);
   result = "";
   if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
     printClient.println(apiGetData);
@@ -77,40 +78,20 @@ WiFiClient RepetierClient::getSubmitRequest(String apiGetData) {
     printClient.println("User-Agent: ArduinoWiFi/1.1");
     printClient.println("Connection: close");
     if (printClient.println() == 0) {
-      Serial.println("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
-      Serial.println();
+      this->debugHandle->printLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
+      this->debugHandle->printLn("");
       resetPrintData();
       printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
       return printClient;
     }
   } 
   else {
-    Serial.println("Connection to Repetier failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
-    Serial.println();
+    this->debugHandle->printLn("Connection to Repetier failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+    this->debugHandle->printLn("");
     resetPrintData();
     printerData.error = "Connection to Repetier failed: " + String(myServer) + ":" + String(myPort);
     return printClient;
   }
-/*
-  // Check HTTP status
-  char status[32] = {0};
-  printClient.readBytesUntil('\r', status, sizeof(status));
-  if (strcmp(status, "HTTP/1.1 200 OK") != 0) {
-    Serial.print(F("Unexpected response: "));
-    Serial.println(status);
-    printerData.state = "";
-    printerData.error = "Response: " + String(status);
-    return printClient;
-  }
-
-  // Skip HTTP headers
-  char endOfHeaders[] = "\r\n\r\n";
-  if (!printClient.find(endOfHeaders)) {
-    Serial.println(F("Invalid response"));
-    printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
-    printerData.state = "";
-  }
-*/
   return printClient;
 }
 
@@ -133,16 +114,16 @@ void RepetierClient::getPrinterJobResults() {
     
   if (!root.success()) {
     printerData.error = "Repetier Data Parsing failed: " + String(myServer) + ":" + String(myPort);
-    Serial.println(printerData.error);
+    this->debugHandle->printLn(printerData.error);
     printerData.state = "";
     return;
   }
 
   int inx = 0;
   int count = root.size();
-  Serial.println("Size of root: " + String(count));
+  this->debugHandle->printLn("Size of root: " + String(count));
   for (int i = 0; i < count; i++) {
-    Serial.println("Printer: " + String((const char*)root[i]["slug"]));
+    this->debugHandle->printLn("Printer: " + String((const char*)root[i]["slug"]));
     if (String((const char*)root[i]["slug"]) == printerData.printerName) {
       inx = i;
       break;
@@ -182,13 +163,13 @@ void RepetierClient::getPrinterJobResults() {
   }
 
   if (printerData.isPrinting) {  
-    Serial.println("Printing: " + printerData.fileName);
+    this->debugHandle->printLn("Printing: " + printerData.fileName);
   }
   
   if (isOperational()) {
-    Serial.println("Status: " + printerData.state);
+    this->debugHandle->printLn("Status: " + printerData.state);
   } else {
-    Serial.println("Printer Not Operational");
+    this->debugHandle->printLn("Printer Not Operational");
   }
 
   //**** get the Printer Temps and Stat
@@ -221,7 +202,7 @@ void RepetierClient::getPrinterJobResults() {
   printerData.bedTargetTemp = (const char*) pr2["heatedBeds"][0]["tempSet"];
 
   if (printerData.isPrinting) {
-    Serial.println("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
+    this->debugHandle->printLn("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
   }
 }
 

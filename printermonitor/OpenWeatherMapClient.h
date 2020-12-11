@@ -24,6 +24,7 @@ SOFTWARE.
 #pragma once
 #include <ESP8266WiFi.h>
 #include "libs/ArduinoJson/ArduinoJson.h"
+#include "Debug.h"
 
 class OpenWeatherMapClient {
 
@@ -56,9 +57,11 @@ private:
   weather weathers[5];
 
   String roundValue(String value);
+
+  Debug *debugHandle;
   
 public:
-  OpenWeatherMapClient(String ApiKey, int CityIDs[], int cityCount, boolean isMetric, String language);
+  OpenWeatherMapClient(String ApiKey, int CityIDs[], int cityCount, boolean isMetric, String language, Debug *debugHandle);
   void updateWeather();
   void updateWeatherApiKey(String ApiKey);
   void updateCityIdList(int CityIDs[], int cityCount);

@@ -28,8 +28,10 @@ SOFTWARE.
 #include <ESP8266WiFi.h>
 #include "libs/ArduinoJson/ArduinoJson.h"
 #include <base64.h>
+#include "Debug.h"
+#include "PrinterClientInterface.h"
 
-class OctoPrintClient {
+class OctoPrintClient : public PrinterClientInterface {
 
 private:
   char myServer[100];
@@ -69,10 +71,11 @@ private:
   } PrinterStruct;
 
   PrinterStruct printerData;
+  Debug *debugHandle;
 
   
 public:
-  OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);
+  OctoPrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu, Debug *debugHandle);
   void getPrinterJobResults();
   void getPrinterPsuState();
   void updatePrintClient(String ApiKey, String server, int port, String user, String pass, boolean psu);

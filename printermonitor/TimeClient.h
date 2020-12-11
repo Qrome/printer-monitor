@@ -30,6 +30,7 @@ Modified by David Payne for use in the Scrolling Marquee
 #pragma once
 
 #include <ESP8266WiFi.h>
+#include "Debug.h"
 
 #define NTP_PACKET_SIZE 48
 
@@ -42,9 +43,11 @@ class TimeClient {
     const char* ntpServerName = "www.google.com";
     const int httpPort = 80;    
     byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
-
+    bool is24Hour;
+    Debug *debugHandle;
+    
   public:
-    TimeClient(float utcOffset);
+    TimeClient(float utcOffset, boolean is24Hour, Debug *debugHandle);
     void updateTime();
     
     void setUtcOffset(float utcOffset);
@@ -57,6 +60,6 @@ class TimeClient {
     String getAmPmFormattedTime();
     long getCurrentEpoch();
     long getCurrentEpochWithUtcOffset();
+    boolean isHour24();
 
 };
-

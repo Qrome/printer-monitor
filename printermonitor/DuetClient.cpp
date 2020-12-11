@@ -27,7 +27,8 @@ SOFTWARE.
 
 #include "DuetClient.h"
 
-DuetClient::DuetClient(String ApiKey, String server, int port, String user, String pass, boolean psu) {
+DuetClient::DuetClient(String ApiKey, String server, int port, String user, String pass, boolean psu, Debug *debugHandle) {
+  this->debugHandle = debugHandle;
   updatePrintClient(ApiKey, server, port, user, pass, psu);
 }
 
@@ -63,8 +64,8 @@ WiFiClient DuetClient::getSubmitRequest(String apiGetData) {
   WiFiClient printClient;
   printClient.setTimeout(5000);
 
-  Serial.println("Getting Duet Data via GET");
-  Serial.println(apiGetData);
+  this->debugHandle->printLn("Getting Duet Data via GET");
+  this->debugHandle->printLn(apiGetData);
   result = "";
   if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
     printClient.println(apiGetData);
@@ -77,16 +78,16 @@ WiFiClient DuetClient::getSubmitRequest(String apiGetData) {
     printClient.println("User-Agent: ArduinoWiFi/1.1");
     printClient.println("Connection: close");
     if (printClient.println() == 0) {
-      Serial.println("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
-      Serial.println();
+      this->debugHandle->printLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
+      this->debugHandle->printLn("");
       resetPrintData();
       printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
       return printClient;
     }
   } 
   else {
-    Serial.println("Connection to Duet failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
-    Serial.println();
+    this->debugHandle->printLn("Connection to Duet failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+    this->debugHandle->printLn("");
     resetPrintData();
     printerData.error = "Connection to Duet failed: " + String(myServer) + ":" + String(myPort);
     return printClient;
@@ -96,8 +97,8 @@ WiFiClient DuetClient::getSubmitRequest(String apiGetData) {
   char status[32] = {0};
   printClient.readBytesUntil('\r', status, sizeof(status));
   if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
-    Serial.print(F("Unexpected response: "));
-    Serial.println(status);
+    this->debugHandle->print("Unexpected response: ");
+    this->debugHandle->printLn(status);
     printerData.state = "";
     printerData.error = "Response: " + String(status);
     return printClient;
@@ -106,7 +107,7 @@ WiFiClient DuetClient::getSubmitRequest(String apiGetData) {
   // Skip HTTP headers
   char endOfHeaders[] = "\r\n\r\n";
   if (!printClient.find(endOfHeaders)) {
-    Serial.println(F("Invalid response"));
+    this->debugHandle->printLn("Invalid response");
     printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
     printerData.state = "";
   }
@@ -118,8 +119,8 @@ WiFiClient DuetClient::getPostRequest(String apiPostData, String apiPostBody) {
   WiFiClient printClient;
   printClient.setTimeout(5000);
 
-  Serial.println("Getting Duet Data via POST");
-  Serial.println(apiPostData + " | " + apiPostBody);
+  this->debugHandle->printLn("Getting Duet Data via POST");
+  this->debugHandle->printLn(apiPostData + " | " + apiPostBody);
   result = "";
   if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
     printClient.println(apiPostData);
@@ -137,16 +138,16 @@ WiFiClient DuetClient::getPostRequest(String apiPostData, String apiPostBody) {
     printClient.println();
     printClient.println(apiPostBody);
     if (printClient.println() == 0) {
-      Serial.println("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
-      Serial.println();
+      this->debugHandle->printLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
+      this->debugHandle->printLn("");
       resetPrintData();
       printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
       return printClient;
     }
   } 
   else {
-    Serial.println("Connection to Duet failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
-    Serial.println();
+    this->debugHandle->printLn("Connection to Duet failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+    this->debugHandle->printLn("");
     resetPrintData();
     printerData.error = "Connection to Duet failed: " + String(myServer) + ":" + String(myPort);
     return printClient;
@@ -156,8 +157,8 @@ WiFiClient DuetClient::getPostRequest(String apiPostData, String apiPostBody) {
   char status[32] = {0};
   printClient.readBytesUntil('\r', status, sizeof(status));
   if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
-    Serial.print(F("Unexpected response: "));
-    Serial.println(status);
+    this->debugHandle->print("Unexpected response: ");
+    this->debugHandle->printLn(status);
     printerData.state = "";
     printerData.error = "Response: " + String(status);
     return printClient;
@@ -166,7 +167,7 @@ WiFiClient DuetClient::getPostRequest(String apiPostData, String apiPostBody) {
   // Skip HTTP headers
   char endOfHeaders[] = "\r\n\r\n";
   if (!printClient.find(endOfHeaders)) {
-    Serial.println(F("Invalid response"));
+    this->debugHandle->print("Invalid response");
     printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
     printerData.state = "";
   }
@@ -190,7 +191,7 @@ void DuetClient::getPrinterJobResults() {
   // Parse JSON object
   JsonObject& root = jsonBuffer.parseObject(printClient);
   if (!root.success()) {
-    Serial.println("Duet Data Parsing failed: " + String(myServer) + ":" + String(myPort));
+    this->debugHandle->printLn("Duet Data Parsing failed: " + String(myServer) + ":" + String(myPort));
     printerData.error = "Duet Data Parsing failed: " + String(myServer) + ":" + String(myPort);
     printerData.state = "";
     return;
@@ -210,9 +211,9 @@ void DuetClient::getPrinterJobResults() {
 
   
   if (isOperational()) {
-    Serial.println("Status: " + printerData.state);
+    this->debugHandle->printLn("Status: " + printerData.state);
   } else {
-    Serial.println("Printer Not Operational");
+    this->debugHandle->printLn("Printer Not Operational");
   }
 
   //**** get the Printer Temps and Stat
@@ -246,10 +247,10 @@ void DuetClient::getPrinterJobResults() {
   printerData.bedTemp = (const char*)root2["temps"]["bed"]["current"];
   printerData.bedTargetTemp = (const char*)root2["temps"]["bed"]["active"];
 
-  Serial.println("temps: " + printerData.toolTemp + " 1 " + printerData.toolTargetTemp + " 2 " + printerData.bedTemp + " 3 " + printerData.bedTargetTemp + " 4 ");
+  this->debugHandle->printLn("temps: " + printerData.toolTemp + " 1 " + printerData.toolTargetTemp + " 2 " + printerData.bedTemp + " 3 " + printerData.bedTargetTemp + " 4 ");
   
   if (isPrinting()) {
-    Serial.println("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
+    this->debugHandle->printLn("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
   }
 }
 
