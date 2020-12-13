@@ -2,6 +2,8 @@
 #include <ArduinoOTA.h>
 
 
+
+
 void configModeCallback(WiFiManager *myWiFiManager);
 
 
@@ -75,6 +77,12 @@ void setup() {
 }
 
 void loop() {
+
+    // Handle update of time
+    timeClient.handleSync(globalDataController.getClockResyncMinutes());
+
+ 
+
     // put your main code here, to run repeatedly:
 
 

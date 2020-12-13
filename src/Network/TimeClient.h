@@ -14,10 +14,15 @@ private:
     byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
     DebugController * debugController;
     
+    long lastEpoch = 0;
+    long firstEpoch = 0;
+
 public:
     TimeClient(float utcOffset, DebugController * debugController);
     void updateTime();
-    
+    void handleSync(int snycDelayMinutes);
+    int getMinutesFromLastRefresh();
+
     void setUtcOffset(float utcOffset);
     String getHours();
     String getAmPmHours();

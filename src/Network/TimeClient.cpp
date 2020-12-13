@@ -1,8 +1,23 @@
 #include "TimeClient.h"
 
 TimeClient::TimeClient(float utcOffset, DebugController * debugController) {
-  this->myUtcOffset = utcOffset;
-  this->debugController = debugController;
+    this->myUtcOffset = utcOffset;
+    this->debugController = debugController;
+}
+
+void TimeClient::handleSync(int snycDelayMinutes) {
+    //Get Time Update
+    if((this->getMinutesFromLastRefresh() >= snycDelayMinutes) || this->lastEpoch == 0) {
+        this->debugController->printLn("Updating Time...");
+        this->updateTime();
+        this->lastEpoch = this->getCurrentEpoch();
+        this->debugController->printLn("Local time: " + this->getAmPmFormattedTime());
+    }
+}
+
+int TimeClient::getMinutesFromLastRefresh() {
+    int minutes = (this->getCurrentEpoch() - this->lastEpoch) / 60;
+    return minutes;
 }
 
 void TimeClient::updateTime() {
