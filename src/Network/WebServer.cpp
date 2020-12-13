@@ -322,7 +322,7 @@ void WebServer::handleUpdateConfig() {
     this->globalDataController->setUseLedFlash(this->server->hasArg("useFlash"));
 
     this->globalDataController->writeSettings();
-    //findMDNS();
+
     this->globalDataController->getPrinterClient()->getPrinterJobResults();
     this->globalDataController->getPrinterClient()->getPrinterPsuState();
     /*if (INVERT_DISPLAY != flipOld) {
@@ -335,6 +335,35 @@ void WebServer::handleUpdateConfig() {
     this->globalDataController->getTimeClient()->resetLastEpoch();
     this->redirectHome();
 }
+//     findMDNS();
+
+// void findMDNS() {
+//   if (PrinterServer == "" || ENABLE_OTA == false) {
+//     return; // nothing to do here
+//   }
+//   // We now query our network for 'web servers' service
+//   // over tcp, and get the number of available devices
+//   int n = MDNS.queryService("http", "tcp");
+//   if (n == 0) {
+//     Serial.println("no services found - make sure Printer server is turned on");
+//     return;
+//   }
+//   Serial.println("*** Looking for " + PrinterHostName + " over mDNS");
+//   for (int i = 0; i < n; ++i) {
+//     // Going through every available service,
+//     // we're searching for the one whose hostname
+//     // matches what we want, and then get its IP
+//     Serial.println("Found: " + MDNS.hostname(i));
+//     if (MDNS.hostname(i) == PrinterHostName) {
+//       IPAddress serverIp = MDNS.IP(i);
+//       PrinterServer = serverIp.toString();
+//       PrinterPort = MDNS.port(i); // save the port
+//       Serial.println("*** Found Printer Server " + PrinterHostName + " http://" + PrinterServer + ":" + PrinterPort);
+//       writeSettings(); // update the settings
+//     }
+//   }
+// }
+
 
 void WebServer::handleUpdateWeather() {
     if (!this->authentication()) {
@@ -373,7 +402,7 @@ void WebServer::handleConfigure() {
     CHANGE_FORM =       "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
                         "<p><label>" + printerClient->getPrinterType() + " API Key (get from your server)</label>"
                         "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' id='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>";
-    if (printerClient->getPrinterType() == "OctoPrint") {
+    if (printerClient->getPrinterType() == "OctoPrint" || "Klipper") {
         CHANGE_FORM +=      "<p><label>" + printerClient->getPrinterType() + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>";                        
     }
     CHANGE_FORM +=      "<p><label>" + printerClient->getPrinterType() + " Address (do not include http://)</label>"
@@ -413,15 +442,7 @@ void WebServer::handleConfigure() {
     else if (printerClient->getPrinterType() == "Klipper") {
         html = "<script>function testKlipper(){var e=document.getElementById(\"KlipperTest\"),r=document.getElementById(\"PrinterAddress\").value,"
             "t=document.getElementById(\"PrinterPort\").value;if(\"\"==r||\"\"==t)return e.innerHTML=\"* Address and Port are required\","
-            "void(e.style.background=\"\");var n=\"http://\"+r+\":\"+t;n+=\"/printer/info"
-            "console.log(n);var o=new XMLHttpRequest;o.open(\"GET\",n,!0),o.onload=function(){if(200===o.status){var r=JSON.parse(o.responseText);"
-            "if(!r.error&&r.length>0){var t=\"<label>Connected -- Select Printer</label> \";t+=\"<select class='w3-option w3-padding' name='printer'>\";"
-            "var n=document.getElementById(\"selectedPrinter\").value,i=\"\";for(printer in r)i=r[printer].slug==n?\"selected\":\"\","
-            "t+=\"<option value='\"+r[printer].slug+\"' \"+i+\">\"+r[printer].name+\"</option>\";t+=\"</select>\","
-            "e.innerHTML=t,e.style.background=\"lime\"}else e.innerHTML=\"Error invalid API Key: \"+r.error,"
-            "e.style.background=\"red\"}else e.innerHTML=\"Error: \"+o.statusText,e.style.background=\"red\"},"
-            "o.onerror=function(){e.innerHTML=\"Error connecting to server -- check IP and Port\",e.style.background=\"red\"},o.send(null)}</script>";
-
+            "void(e.style.background=\"\");var n=\"http://\"+r+\":\"+t;n+=\"/printer/info";
         this->server->sendContent(html);
     }    
     else {
