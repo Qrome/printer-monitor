@@ -157,12 +157,12 @@ void DuetClient::getPrinterJobResults() {
         return;
     }
     //**** get the Printer Job status
-    String apiGetData = "GET /printer/objects/query?heater_bed&extruder&webhooks&virtual_sdcard&print_stats&toolhead&display_status";
+    String apiGetData = "GET /rr_status?type=3";
     WiFiClient printClient = getSubmitRequest(apiGetData);
     if (printerData.error != "") {
         return;
     }
-    const size_t bufferSize = JSON_ARRAY_SIZE(4) + JSON_OBJECT_SIZE(1) + 3*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(9) + 426;
+    const size_t bufferSize = 6*JSON_ARRAY_SIZE(1) + 3*JSON_ARRAY_SIZE(2) + 5*JSON_ARRAY_SIZE(3) + 5*JSON_OBJECT_SIZE(2) + 4*JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(9) + 257
     DynamicJsonDocument jsonBuffer(bufferSize);
 
     // Parse JSON object
@@ -190,7 +190,7 @@ void DuetClient::getPrinterJobResults() {
     printerData.progressPrintTime = (const char*)jsonBuffer["result"]["status"]["print_stats"]["print_duration"];
     printerData.progressPrintTimeLeft = (const char*)jsonBuffer["progress"]["printTimeLeft"];
     printerData.filamentLength = (const char*)jsonBuffer["result"]["status"]["job"]["print_stats"]["filament_used"];
-    printerData.state = (const char*)jsonBuffer["result"]["status"]["print_stats"]["state"];
+    printerData.state = (const char*)jsonBuffer["status"];
 /**
 printerData.progressPrintTimeLeft : 
 If no metadata is available, print duration and progress can be used to calculate the ETA:
@@ -208,28 +208,28 @@ let eta = total_time - pstats.print_duration; */
         this->debugController->printLn("Printer Not Operational");
     }
 
-    //**** get the fileseize
-    apiGetData = "GET /server/files/metadata?filename=" + printerData.fileName;
-    printClient = getSubmitRequest(apiGetData);
-    if (printerData.error != "") {
-        return;
-    }
-    const size_t bufferSize2 = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(8) + 128;
-    DynamicJsonDocument jsonBuffer2(bufferSize2);
+    // //**** get the fileseize
+    // apiGetData = "GET /server/files/metadata?filename=" + printerData.fileName;
+    // printClient = getSubmitRequest(apiGetData);
+    // if (printerData.error != "") {
+    //     return;
+    // }
+    // const size_t bufferSize2 = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(8) + 128;
+    // DynamicJsonDocument jsonBuffer2(bufferSize2);
     
     // Parse JSON object
-    DeserializationError error2 = deserializeJson(jsonBuffer2, printClient);
+    DeserializationError error2 = deserializeJson(jsonBuffer, printClient);
     if (error2) {
         printerData.isPrinting = false;
         printerData.toolTemp = "";
         printerData.toolTargetTemp = "";
         printerData.bedTemp = "";
-        printerData.bedTargetTemp = (int)jsonBuffer["result"]["status"]["heater_bed"]["target"];
+        printerData.bedTargetTemp = (int)jsonBuffer["temps"]["bed"]["active"];
         return;
     }
 
-    String printing = (const char*)jsonBuffer["result"]["status"]["print_stats"]["state"];
-    if (printing == "printing") {
+    String printing = (const char*)jsonBuffer["status"];
+    if (printing == "P") {
         printerData.isPrinting = true;
     } else {
         printerData.isPrinting = false;
@@ -357,7 +357,7 @@ boolean DuetClient::isPSUoff() {
 
 boolean DuetClient::isOperational() {
     boolean operational = false;
-    if (printerData.state == "standby" || isPrinting()) {
+    if (printerData.state == "I" || isPrinting()) {
         operational = true;
     }
     return operational;
