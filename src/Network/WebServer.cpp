@@ -233,30 +233,30 @@ void WebServer::displayPrinterStatus() {
     this->server->sendContent(html); // spit out what we got
     html = "";
     
-    /*
-    if (DISPLAYWEATHER) {
-        if (weatherClient.getCity(0) == "") {
-        html += "<p>Please <a href='/configureweather'>Configure Weather</a> API</p>";
-        if (weatherClient.getError() != "") {
-            html += "<p>Weather Error: <strong>" + weatherClient.getError() + "</strong></p>";
-        }
+    if (this->globalDataController->getWeatherShow()) {
+        OpenWeatherMapClient *weatherClient = this->globalDataController->getWeatherClient();
+        if (weatherClient->getCity(0) == "") {
+            html += "<p>Please <a href='/configureweather'>Configure Weather</a> API</p>";
+            if (weatherClient->getError() != "") {
+                html += "<p>Weather Error: <strong>" + weatherClient->getError() + "</strong></p>";
+            }
         } else {
-        html += "<div class='w3-cell-row' style='width:100%'><h2>" + weatherClient.getCity(0) + ", " + weatherClient.getCountry(0) + "</h2></div><div class='w3-cell-row'>";
-        html += "<div class='w3-cell w3-left w3-medium' style='width:120px'>";
-        html += "<img src='http://openweathermap.org/img/w/" + weatherClient.getIcon(0) + ".png' alt='" + weatherClient.getDescription(0) + "'><br>";
-        html += weatherClient.getHumidity(0) + "% Humidity<br>";
-        html += weatherClient.getWind(0) + " <span class='w3-tiny'>" + getSpeedSymbol() + "</span> Wind<br>";
-        html += "</div>";
-        html += "<div class='w3-cell w3-container' style='width:100%'><p>";
-        html += weatherClient.getCondition(0) + " (" + weatherClient.getDescription(0) + ")<br>";
-        html += weatherClient.getTempRounded(0) + getTempSymbol(true) + "<br>";
-        html += "<a href='https://www.google.com/maps/@" + weatherClient.getLat(0) + "," + weatherClient.getLon(0) + ",10000m/data=!3m1!1e3' target='_BLANK'><i class='fa fa-map-marker' style='color:red'></i> Map It!</a><br>";
-        html += "</p></div></div>";
+            html += "<div class='w3-cell-row' style='width:100%'><h2>" + weatherClient->getCity(0) + ", " + weatherClient->getCountry(0) + "</h2></div><div class='w3-cell-row'>";
+            html += "<div class='w3-cell w3-left w3-medium' style='width:120px'>";
+            html += "<img src='http://openweathermap.org/img/w/" + weatherClient->getIcon(0) + ".png' alt='" + weatherClient->getDescription(0) + "'><br>";
+            html += weatherClient->getHumidity(0) + "% Humidity<br>";
+            html += weatherClient->getWind(0) + " <span class='w3-tiny'>" + weatherClient->getSpeedSymbol() + "</span> Wind<br>";
+            html += "</div>";
+            html += "<div class='w3-cell w3-container' style='width:100%'><p>";
+            html += weatherClient->getCondition(0) + " (" + weatherClient->getDescription(0) + ")<br>";
+            html += weatherClient->getTempRounded(0) + weatherClient->getTempSymbol(true) + "<br>";
+            html += "<a href='https://www.google.com/maps/@" + weatherClient->getLat(0) + "," + weatherClient->getLon(0) + ",10000m/data=!3m1!1e3' target='_BLANK'><i class='fa fa-map-marker' style='color:red'></i> Map It!</a><br>";
+            html += "</p></div></div>";
         }
         
-        server.sendContent(html); // spit out what we got
+        this->server->sendContent(html); // spit out what we got
         html = ""; // fresh start
-    }*/
+    }
 
     this->server->sendContent(String(getFooter()));
     this->server->sendContent("");
@@ -327,8 +327,8 @@ void WebServer::handleUpdateConfig() {
             display.flipScreenVertically();
         ui.update();
     }
-    checkDisplay();
-    lastEpoch = 0; */
+    checkDisplay();*/
+    this->globalDataController->getTimeClient()->resetLastEpoch();
     this->redirectHome();
 }
 
@@ -336,16 +336,16 @@ void WebServer::handleUpdateWeather() {
     if (!this->authentication()) {
         return this->server->requestAuthentication();
     }
-    //DISPLAYWEATHER = server.hasArg("isWeatherEnabled");
-    //WeatherApiKey = server.arg("openWeatherMapApiKey");
-    //CityIDs[0] = server.arg("city1").toInt();
-    //IS_METRIC = server.hasArg("metric");
-    //WeatherLanguage = server.arg("language");
-    
+    this->globalDataController->setWeatherShow(this->server->hasArg("isWeatherEnabled"));
+    this->globalDataController->setWeatherApiKey(this->server->arg("openWeatherMapApiKey"));
+    this->globalDataController->setWeatherCityId(this->server->arg("city1").toInt());
+    this->globalDataController->setWeatherIsMetric(this->server->hasArg("metric"));
+    this->globalDataController->setWeatherLang(this->server->arg("language"));
     this->globalDataController->writeSettings();
+
     //isClockOn = false; // this will force a check for the display
     //checkDisplay();
-    //lastEpoch = 0;
+    this->globalDataController->getTimeClient()->resetLastEpoch();
     this->redirectHome();
 }
 
@@ -495,19 +495,19 @@ void WebServer::handleWeatherConfigure() {
     if (DISPLAYWEATHER) {
         isWeatherChecked = "checked='checked'";
     }
-    /*form.replace("%IS_WEATHER_CHECKED%", isWeatherChecked);
-    form.replace("%WEATHERKEY%", this->globalDataController());
-    form.replace("%CITYNAME1%", weatherClient.getCity(0));
-    form.replace("%CITY1%", String(CityIDs[0]));
+    form.replace("%IS_WEATHER_CHECKED%", this->globalDataController->getWeatherShow() ? "1" : "0");
+    form.replace("%WEATHERKEY%", this->globalDataController->getWeatherApiKey());
+    form.replace("%CITYNAME1%", this->globalDataController->getWeatherClient()->getCity(0));
+    form.replace("%CITY1%", String(this->globalDataController->getWeatherCityId()));
     String checked = "";
-    if (IS_METRIC) {
+    if (this->globalDataController->getWeatherIsMetric()) {
         checked = "checked='checked'";
     }
     form.replace("%METRIC%", checked);
     String options = FPSTR(LANG_OPTIONS);
-    options.replace(">"+String(WeatherLanguage)+"<", " selected>"+String(WeatherLanguage)+"<");
+    options.replace(">"+String(this->globalDataController->getWeatherLang())+"<", " selected>"+String(this->globalDataController->getWeatherLang())+"<");
     form.replace("%LANGUAGEOPTIONS%", options);
-    this->server->sendContent(form);*/
+    this->server->sendContent(form);
     
     html = this->getFooter();
     this->server->sendContent(html);

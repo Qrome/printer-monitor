@@ -79,7 +79,10 @@ void setup() {
 void loop() {
 
     // Handle update of time
-    timeClient.handleSync(globalDataController.getClockResyncMinutes());
+    if(timeClient.handleSync(globalDataController.getClockResyncMinutes()) && globalDataController.getWeatherShow()) {
+        // We sync time? Ok, sync weather also!
+        weatherClient.updateWeather();
+    }
 
  
 

@@ -62,6 +62,7 @@ public:
 
     void setPrinterClient(BasePrinterClient *basePrinterClient);
     TimeClient *getTimeClient();
+    OpenWeatherMapClient *getWeatherClient();
     BasePrinterClient *getPrinterClient();
     String getLastReportStatus();
     String getVersion();
@@ -105,6 +106,17 @@ public:
 
     bool useLedFlash();
     void setUseLedFlash(bool useLedFlash);
+
+    bool getWeatherShow();
+    void setWeatherShow(bool weatherShow);
+    String getWeatherApiKey();
+    void setWeatherApiKey(String weatherApiKey);
+    int getWeatherCityId();
+    void setWeatherCityId(int weatherCityId);
+    bool getWeatherIsMetric();
+    void setWeatherIsMetric(bool weatherIsMetric);
+    String getWeatherLang();
+    void setWeatherLang(String weatherLang);
 
     void ledOnOff(boolean value);
     void flashLED(int number, int delayTime);

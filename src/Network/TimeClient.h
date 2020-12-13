@@ -20,8 +20,9 @@ private:
 public:
     TimeClient(float utcOffset, DebugController * debugController);
     void updateTime();
-    void handleSync(int snycDelayMinutes);
+    bool handleSync(int snycDelayMinutes);
     int getMinutesFromLastRefresh();
+    void resetLastEpoch();
 
     void setUtcOffset(float utcOffset);
     String getHours();

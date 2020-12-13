@@ -2,11 +2,10 @@
 
 OpenWeatherMapClient::OpenWeatherMapClient(String ApiKey, int CityID, int cityCount, boolean isMetric, String language, DebugController *debugController) {
     this->debugController = debugController;
-    int CityIDs[1];
-    CityIDs[0] = CityID;
-    updateCityIdList(CityIDs, cityCount);
+    updateCityId(CityID);
     updateLanguage(language);
     myApiKey = ApiKey;
+    this->isMetric = false;
     setMetric(isMetric);
 }
 
@@ -106,7 +105,6 @@ void OpenWeatherMapClient::updateWeather() {
         this->debugController->printLn("description: " + weathers[inx].description);
         this->debugController->printLn("icon: " + weathers[inx].icon);
         this->debugController->printLn("");
-        
     }
 }
 
@@ -116,14 +114,20 @@ String OpenWeatherMapClient::roundValue(String value) {
     return String(rounded);
 }
 
+void OpenWeatherMapClient::updateCityId(int CityID) {
+    int CityIDs[1];
+    CityIDs[0] = CityID;
+    this->updateCityIdList(CityIDs, 1);
+}
+
 void OpenWeatherMapClient::updateCityIdList(int CityIDs[], int cityCount) {
     myCityIDs = "";
     for (int inx = 0; inx < cityCount; inx++) {
         if (CityIDs[inx] > 0) {
-        if (myCityIDs != "") {
-            myCityIDs = myCityIDs + ",";
-        }
-        myCityIDs = myCityIDs + String(CityIDs[inx]); 
+            if (myCityIDs != "") {
+                myCityIDs = myCityIDs + ",";
+            }
+            myCityIDs = myCityIDs + String(CityIDs[inx]); 
         }
     }
 }
@@ -134,6 +138,7 @@ void OpenWeatherMapClient::setMetric(boolean isMetric) {
     } else {
         units = "imperial";
     }
+    this->isMetric = isMetric;
 }
 
 String OpenWeatherMapClient::getWeatherResults() {
@@ -281,4 +286,29 @@ String OpenWeatherMapClient::getWeatherIcon(int index)
         default:break; 
     }
     return W;
+}
+
+String OpenWeatherMapClient::getTempSymbol() {
+  return this->getTempSymbol(false);
+}
+
+String OpenWeatherMapClient::getTempSymbol(boolean forHTML) {
+    String rtnValue = "F";
+    if (this->isMetric) {
+        rtnValue = "C";
+    }
+    if (forHTML) {
+        rtnValue = "&#176;" + rtnValue;
+    } else {
+        rtnValue = "°" + rtnValue;
+    }
+    return rtnValue;
+}
+
+String OpenWeatherMapClient::getSpeedSymbol() {
+    String rtnValue = "mph";
+    if (this->isMetric) {
+        rtnValue = "kph";
+    }
+    return rtnValue;
 }

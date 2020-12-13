@@ -144,49 +144,48 @@ void GlobalDataController::readSettings() {
     }
     fr.close();
     this->getPrinterClient()->updatePrintClient();
-    //weatherClient.updateWeatherApiKey(WeatherApiKey);
-    //weatherClient.updateLanguage(WeatherLanguage);
-    //weatherClient.setMetric(IS_METRIC);
-    //weatherClient.updateCityIdList(CityIDs, 1);
+    this->weatherClient->updateWeatherApiKey(this->WeatherApiKey);
+    this->weatherClient->updateLanguage(this->WeatherLang);
+    this->weatherClient->setMetric(this->WeatherIsMetric);
+    this->weatherClient->updateCityId(this->WeatherCityId);
     this->timeClient->setUtcOffset(this->getClockUtcOffset());
 }
 
 void GlobalDataController::writeSettings() {
-  // Save decoded message to SPIFFS file for playback on power up.
-  File f = LittleFS.open(CONFIG, "w");
-  if (!f) {
-    this->debugController->printLn("File open failed!");
-  } else {
-    this->debugController->printLn("Saving settings now...");
-    f.println("printerApiKey=" + this->PrinterApiKey);
-    f.println("printerHostName=" + this->PrinterHostName);
-    f.println("printerServer=" + this->PrinterServer);
-    f.println("printerPort=" + String(this->PrinterPort));
-    f.println("printerName=" + this->getPrinterClient()->getPrinterName());
-    f.println("printerAuthUser=" + this->PrinterAuthUser);
-    f.println("printerAuthPass=" + this->PrinterAuthPass);
-    f.println("printerHasPsu=" + String(this->PrinterHasPsu));
-#ifndef USE_NEXTION_DISPLAY
-    f.println("displayInvertDisplay=" + String(this->DisplayInvertDisplay));
-#endif
-    f.println("webserverTheme=" + this->WebserverTheme);
-    f.println("webserverIsBasicAuth=" + String(this->WebserverIsBasicAuth));
-    f.println("webserverUsername=" + String(this->WebserverUsername));
-    f.println("webserverPassword=" + String(this->WebserverPassword));
-    f.println("clockUtcOffset=" + String(this->ClockUtcOffset));
-    f.println("clockResyncMinutes=" + String(this->ClockResyncMinutes));
-    f.println("displayClock=" + String(this->DisplayClock));
-    f.println("clockIs24h=" + String(this->ClockIs24h));
-    f.println("weatherShow=" + String(this->WeatherShow));
-    f.println("weatherApiKey=" + this->WeatherApiKey);
-    f.println("weatherCityId=" + String(this->WeatherCityId));
-    f.println("weatherIsMetric=" + String(this->WeatherIsMetric));
-    f.println("weatherLang=" + this->WeatherLang);
-    f.println("useLedFlash=" + String(this->UseLedFlash));
-  }
-  f.close();
-  readSettings();
-  this->getTimeClient()->setUtcOffset(this->ClockUtcOffset);
+    // Save decoded message to SPIFFS file for playback on power up.
+    File f = LittleFS.open(CONFIG, "w");
+    if (!f) {
+        this->debugController->printLn("File open failed!");
+    } else {
+        this->debugController->printLn("Saving settings now...");
+        f.println("printerApiKey=" + this->PrinterApiKey);
+        f.println("printerHostName=" + this->PrinterHostName);
+        f.println("printerServer=" + this->PrinterServer);
+        f.println("printerPort=" + String(this->PrinterPort));
+        f.println("printerName=" + this->getPrinterClient()->getPrinterName());
+        f.println("printerAuthUser=" + this->PrinterAuthUser);
+        f.println("printerAuthPass=" + this->PrinterAuthPass);
+        f.println("printerHasPsu=" + String(this->PrinterHasPsu));
+    #ifndef USE_NEXTION_DISPLAY
+        f.println("displayInvertDisplay=" + String(this->DisplayInvertDisplay));
+    #endif
+        f.println("webserverTheme=" + this->WebserverTheme);
+        f.println("webserverIsBasicAuth=" + String(this->WebserverIsBasicAuth));
+        f.println("webserverUsername=" + String(this->WebserverUsername));
+        f.println("webserverPassword=" + String(this->WebserverPassword));
+        f.println("clockUtcOffset=" + String(this->ClockUtcOffset));
+        f.println("clockResyncMinutes=" + String(this->ClockResyncMinutes));
+        f.println("displayClock=" + String(this->DisplayClock));
+        f.println("clockIs24h=" + String(this->ClockIs24h));
+        f.println("weatherShow=" + String(this->WeatherShow));
+        f.println("weatherApiKey=" + this->WeatherApiKey);
+        f.println("weatherCityId=" + String(this->WeatherCityId));
+        f.println("weatherIsMetric=" + String(this->WeatherIsMetric));
+        f.println("weatherLang=" + this->WeatherLang);
+        f.println("useLedFlash=" + String(this->UseLedFlash));
+    }
+    f.close();
+    readSettings();
 }
 
 String GlobalDataController::getVersion() {
@@ -199,6 +198,10 @@ String GlobalDataController::getLastReportStatus() {
 
 TimeClient *GlobalDataController::getTimeClient() {
     return this->timeClient;
+}
+
+OpenWeatherMapClient *GlobalDataController::getWeatherClient() {
+    return this->weatherClient;
 }
 
 void GlobalDataController::setPrinterClient(BasePrinterClient *basePrinterClient) {
@@ -351,6 +354,46 @@ bool GlobalDataController::useLedFlash() {
 
 void GlobalDataController::setUseLedFlash(bool useLedFlash) {
     this->UseLedFlash = useLedFlash;
+}
+
+bool GlobalDataController::getWeatherShow() {
+    return this->WeatherShow;
+}
+
+void GlobalDataController::setWeatherShow(bool weatherShow) {
+    this->WeatherShow = weatherShow;
+}
+
+String GlobalDataController::getWeatherApiKey() {
+    return this->WeatherApiKey;
+}
+
+void GlobalDataController::setWeatherApiKey(String weatherApiKey) {
+    this->WeatherApiKey = weatherApiKey;
+}
+
+int GlobalDataController::getWeatherCityId() {
+    return this->WeatherCityId;
+}
+
+void GlobalDataController::setWeatherCityId(int weatherCityId) {
+    this->WeatherCityId = weatherCityId;
+}
+
+bool GlobalDataController::getWeatherIsMetric() {
+    return this->WeatherIsMetric;
+}
+
+void GlobalDataController::setWeatherIsMetric(bool weatherIsMetric) {
+    this->WeatherIsMetric = weatherIsMetric;
+}
+
+String GlobalDataController::getWeatherLang() {
+    return this->WeatherLang;
+}
+ 
+void GlobalDataController::setWeatherLang(String weatherLang) {
+    this->WeatherLang = weatherLang;
 }
 
 /**

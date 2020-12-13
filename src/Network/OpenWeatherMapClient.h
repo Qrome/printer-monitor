@@ -10,7 +10,8 @@ private:
     String myApiKey = "";
     String units = "";
     String lang = "";
-    
+    bool isMetric;
+
     const char* servername = "api.openweathermap.org";  // remote server we will connect to
     String result;
 
@@ -40,6 +41,7 @@ public:
     OpenWeatherMapClient(String ApiKey, int CityID, int cityCount, boolean isMetric, String language, DebugController *debugController);
     void updateWeather();
     void updateWeatherApiKey(String ApiKey);
+    void updateCityId(int CityID);
     void updateCityIdList(int CityIDs[], int cityCount);
     void updateLanguage(String language);
     void setMetric(boolean isMetric);
@@ -65,4 +67,7 @@ public:
     String getMyCityIDs();
     String getWeatherIcon(int index);
     String getError();
+    String getTempSymbol();
+    String getTempSymbol(boolean forHTML);
+    String getSpeedSymbol();
 };
