@@ -228,7 +228,7 @@ let eta = total_time - pstats.print_duration; */
         return;
     }
 
-    String printing = (bool)jsonBuffer["result"]["status"]["print_stats"]["state"];
+    String printing = (const char*)jsonBuffer["result"]["status"]["print_stats"]["state"];
     if (printing == "printing") {
         printerData.isPrinting = true;
     } else {
