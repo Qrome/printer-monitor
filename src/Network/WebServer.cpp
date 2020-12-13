@@ -305,19 +305,17 @@ void WebServer::handleUpdateConfig() {
     this->globalDataController->setPrinterAuthUser(this->server->arg("octoUser"));
     this->globalDataController->setPrinterAuthPass(this->server->arg("octoPass"));
     this->globalDataController->setHasPrinterPsu(this->server->hasArg("hasPSU"));
-
-    /*DISPLAYCLOCK = this->server->hasArg("isClockEnabled");
-    IS_24HOUR = this->server->hasArg("is24hour");
-    INVERT_DISPLAY = this->server->hasArg("invDisp");
-    USE_FLASH = this->server->hasArg("useFlash");
-    
-    minutesBetweenDataRefresh = this->server->arg("refresh").toInt();
-    themeColor = this->server->arg("theme");
-    UtcOffset = this->server->arg("utcoffset").toFloat();
+    this->globalDataController->setDisplayClock(this->server->hasArg("isClockEnabled"));
+    this->globalDataController->setIsDisplayInverted(this->server->hasArg("invDisp"));
+    this->globalDataController->setClockIs24h(this->server->hasArg("is24hour"));
+    this->globalDataController->setClockResyncMinutes(this->server->arg("refresh").toInt());
+    this->globalDataController->setWebserverTheme(this->server->arg("theme"));
+    this->globalDataController->setClockUtcOffset(this->server->arg("utcoffset").toFloat());
     String temp = this->server->arg("userid");
-    temp.toCharArray(www_username, sizeof(temp));
+    this->globalDataController->setWebserverUsername(temp);
     temp = this->server->arg("stationpassword");
-    temp.toCharArray(www_password, sizeof(temp));*/
+    this->globalDataController->setWebserverPassword(temp);
+    this->globalDataController->setUseLedFlash(this->server->hasArg("useFlash"));
 
     this->globalDataController->writeSettings();
     //findMDNS();

@@ -138,8 +138,8 @@ void GlobalDataController::readSettings() {
             this->debugController->printLn("weatherLang=" + this->WeatherLang);
         }
         if(line.indexOf("useLedFlash=") >= 0) {
-            this->useLedFlash = line.substring(line.lastIndexOf("useLedFlash=") + 12).toInt();
-            this->debugController->printLn("useLedFlash=" + String(this->useLedFlash));
+            this->UseLedFlash = line.substring(line.lastIndexOf("useLedFlash=") + 12).toInt();
+            this->debugController->printLn("useLedFlash=" + String(this->UseLedFlash));
         }
     }
     fr.close();
@@ -182,7 +182,7 @@ void GlobalDataController::writeSettings() {
     f.println("weatherCityId=" + String(this->WeatherCityId));
     f.println("weatherIsMetric=" + String(this->WeatherIsMetric));
     f.println("weatherLang=" + this->WeatherLang);
-    f.println("useLedFlash=" + String(this->useLedFlash));
+    f.println("useLedFlash=" + String(this->UseLedFlash));
   }
   f.close();
   readSettings();
@@ -209,11 +209,9 @@ BasePrinterClient *GlobalDataController::getPrinterClient() {
     return this->basePrinterClient;
 }
 
-
-
-
-
-
+/**
+ * Configuration parameters
+ */
 
 String GlobalDataController::getPrinterApiKey() {
     return this->PrinterApiKey;
@@ -279,46 +277,88 @@ bool GlobalDataController::getWebserverIsBasicAuth() {
     return this->WebserverIsBasicAuth;
 }
 
+void GlobalDataController::setWebserverIsBasicAuth(bool webserverIsBasicAuth) {
+    this->WebserverIsBasicAuth = webserverIsBasicAuth;
+}
+
 String GlobalDataController::getWebserverUsername() {
     return this->WebserverUsername;
+}
+
+void GlobalDataController::setWebserverUsername(String webserverUsername) {
+    this->WebserverUsername = webserverUsername;
 }
 
 String GlobalDataController::getWebserverPassword() {
     return this->WebserverPassword;
 }
 
+void GlobalDataController::setWebserverPassword(String webserverPassword) {
+    this->WebserverPassword = webserverPassword;
+}
+
 String GlobalDataController::getWebserverTheme() {
     return this->WebserverTheme;
 }
 
+void GlobalDataController::setWebserverTheme(String webserverTheme) {
+    this->WebserverTheme = webserverTheme;
+}
 
 bool GlobalDataController::isDisplayInverted() {
     return this->DisplayInvertDisplay;
+}
+
+void GlobalDataController::setIsDisplayInverted(bool displayInvertDisplay) {
+    this->DisplayInvertDisplay = displayInvertDisplay;
 }
 
 int GlobalDataController::getClockUtcOffset() {
     return this->ClockUtcOffset;
 }
 
+void GlobalDataController::setClockUtcOffset(int clockUtcOffset) {
+    this->ClockUtcOffset = clockUtcOffset;
+}
+
 bool GlobalDataController::getDisplayClock() {
     return this->DisplayClock;
+}
+
+void GlobalDataController::setDisplayClock(bool displayClock) {
+    this->DisplayClock = displayClock;
 }
 
 bool GlobalDataController::getClockIs24h() {
     return this->ClockIs24h;
 }
 
+void GlobalDataController::setClockIs24h(bool clockIs24h) {
+    this->ClockIs24h = clockIs24h;
+}
+
 int GlobalDataController::getClockResyncMinutes() {
     return this->ClockResyncMinutes;
 }
 
+void GlobalDataController::setClockResyncMinutes(int clockResyncMinutes) {
+    this->ClockResyncMinutes = clockResyncMinutes;
+}
+
+bool GlobalDataController::useLedFlash() {
+    return this->UseLedFlash;
+}
+
+void GlobalDataController::setUseLedFlash(bool useLedFlash) {
+    this->UseLedFlash = useLedFlash;
+}
 
 /**
  * Notify LED
  */
 
 void GlobalDataController::ledOnOff(boolean value) {
-  if (USE_FLASH) {
+  if (this->useLedFlash()) {
     if (value) {
       digitalWrite(EXTERNAL_LED, LOW); // LED ON
     } else {

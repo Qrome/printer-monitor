@@ -41,7 +41,7 @@ private:
     bool ClockIs24h = TIME_IS_24HOUR;
     int ClockResyncMinutes = TIME_RESYNC_MINUTES_DELAY;
 
-    bool useLedFlash = USE_FLASH;
+    bool UseLedFlash = USE_FLASH;
 
     bool WeatherShow = DISPLAYWEATHER;
     String WeatherApiKey = WEATHER_APIKEY;
@@ -83,16 +83,28 @@ public:
     
     int getWebserverPort();
     bool getWebserverIsBasicAuth();
+    void setWebserverIsBasicAuth(bool webserverIsBasicAuth);
     String getWebserverUsername();
+    void setWebserverUsername(String webserverUsername);
     String getWebserverPassword();
+    void setWebserverPassword(String webserverPassword);
     String getWebserverTheme();
+    void setWebserverTheme(String webserverTheme);
 
     bool isDisplayInverted();
+    void setIsDisplayInverted(bool displayInvertDisplay);
 
     int getClockUtcOffset();
+    void setClockUtcOffset(int clockUtcOffset);
     bool getDisplayClock();
+    void setDisplayClock(bool displayClock);
     bool getClockIs24h();
+    void setClockIs24h(bool clockIs24h);
     int getClockResyncMinutes();
+    void setClockResyncMinutes(int clockResyncMinutes);
+
+    bool useLedFlash();
+    void setUseLedFlash(bool useLedFlash);
 
     void ledOnOff(boolean value);
     void flashLED(int number, int delayTime);
