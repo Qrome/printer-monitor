@@ -64,13 +64,14 @@ void OpenWeatherMapClient::updateWeather() {
     weathers[0].cached = false;
     weathers[0].error = "";
 
-    const size_t bufferSize = 710;
+    const size_t bufferSize = 1024;
     DynamicJsonDocument jsonBuffer(bufferSize);
 
     // Parse JSON object
     DeserializationError error = deserializeJson(jsonBuffer, weatherClient);
     if (error) {
         this->debugController->printLn("Weather Data Parsing failed!");
+        this->debugController->printLn(error.c_str());
         weathers[0].error = "Weather Data Parsing failed!";
         return;
     }
@@ -79,16 +80,16 @@ void OpenWeatherMapClient::updateWeather() {
     int count = jsonBuffer["cnt"];
 
     for (int inx = 0; inx < count; inx++) {
-        weathers[inx].lat = (const char*)jsonBuffer["list"][inx]["coord"]["lat"];
-        weathers[inx].lon = (const char*)jsonBuffer["list"][inx]["coord"]["lon"];
-        weathers[inx].dt = (const char*)jsonBuffer["list"][inx]["dt"];
+        weathers[inx].lon = (float)jsonBuffer["list"][inx]["coord"]["lon"];
+        weathers[inx].lat = (float)jsonBuffer["list"][inx]["coord"]["lat"];
+        weathers[inx].dt = (long)jsonBuffer["list"][inx]["dt"];
         weathers[inx].city = (const char*)jsonBuffer["list"][inx]["name"];
         weathers[inx].country = (const char*)jsonBuffer["list"][inx]["sys"]["country"];
-        weathers[inx].temp = (const char*)jsonBuffer["list"][inx]["main"]["temp"];
-        weathers[inx].humidity = (const char*)jsonBuffer["list"][inx]["main"]["humidity"];
+        weathers[inx].temp = (float)jsonBuffer["list"][inx]["main"]["temp"];
+        weathers[inx].humidity = (int)jsonBuffer["list"][inx]["main"]["humidity"];
         weathers[inx].condition = (const char*)jsonBuffer["list"][inx]["weather"][0]["main"];
-        weathers[inx].wind = (const char*)jsonBuffer["list"][inx]["wind"]["speed"];
-        weathers[inx].weatherId = (const char*)jsonBuffer["list"][inx]["weather"][0]["id"];
+        weathers[inx].wind = (float)jsonBuffer["list"][inx]["wind"]["speed"];
+        weathers[inx].weatherId = (int)jsonBuffer["list"][inx]["weather"][0]["id"];
         weathers[inx].description = (const char*)jsonBuffer["list"][inx]["weather"][0]["description"];
         weathers[inx].icon = (const char*)jsonBuffer["list"][inx]["weather"][0]["icon"];
 
