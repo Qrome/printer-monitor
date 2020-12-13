@@ -173,7 +173,11 @@ void WebServer::displayPrinterStatus() {
     html += "<div class='w3-cell w3-container' style='width:100%'><p>";
     if (printerClient->getPrinterType() == "Repetier") {
         html += "Printer Name: " + printerClient->getPrinterName() + " <a href='/configure' title='Configure'><i class='fa fa-cog'></i></a><br>";
-    } else {
+    } 
+    else if (printerClient->getPrinterType() == "Klipper") {
+        html += "Printer Name: " + printerClient->getPrinterName() + " <a href='/configure' title='Configure'><i class='fa fa-cog'></i></a><br>";
+    } 
+    else {
         html += "Host Name: " + this->globalDataController->getPrinterHostName() + " <a href='/configure' title='Configure'><i class='fa fa-cog'></i></a><br>";
     }
     
@@ -380,7 +384,13 @@ void WebServer::handleConfigure() {
         CHANGE_FORM +=    "<input type='button' value='Test Connection' onclick='testRepetier()'>"
                         "<input type='hidden' id='selectedPrinter' value='" + printerClient->getPrinterName() + "'><p id='RepetierTest'></p>"
                         "<script>testRepetier();</script>";                        
-    } else {
+    } 
+    else if (printerClient->getPrinterType() == "Klipper") {
+        CHANGE_FORM +=    "<input type='button' value='Test Connection' onclick='testKlipper()'>"
+                        "<input type='hidden' id='selectedPrinter' value='" + printerClient->getPrinterName() + "'><p id='KlipperTest'></p>"
+                        "<script>testKlipper();</script>";
+    }                    
+    else {
         CHANGE_FORM +=    "<input type='button' value='Test Connection and API JSON Response' onclick='testOctoPrint()'><p id='OctoPrintTest'></p>";
     }
     CHANGE_FORM +=      "<p><label>" + printerClient->getPrinterType() + " User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
@@ -399,7 +409,22 @@ void WebServer::handleConfigure() {
             "o.onerror=function(){e.innerHTML=\"Error connecting to server -- check IP and Port\",e.style.background=\"red\"},o.send(null)}</script>";
 
         this->server->sendContent(html);
-    } else {
+    } 
+    else if (printerClient->getPrinterType() == "Klipper") {
+        html = "<script>function testKlipper(){var e=document.getElementById(\"KlipperTest\"),r=document.getElementById(\"PrinterAddress\").value,"
+            "t=document.getElementById(\"PrinterPort\").value;if(\"\"==r||\"\"==t)return e.innerHTML=\"* Address and Port are required\","
+            "void(e.style.background=\"\");var n=\"http://\"+r+\":\"+t;n+=\"/printer/info"
+            "console.log(n);var o=new XMLHttpRequest;o.open(\"GET\",n,!0),o.onload=function(){if(200===o.status){var r=JSON.parse(o.responseText);"
+            "if(!r.error&&r.length>0){var t=\"<label>Connected -- Select Printer</label> \";t+=\"<select class='w3-option w3-padding' name='printer'>\";"
+            "var n=document.getElementById(\"selectedPrinter\").value,i=\"\";for(printer in r)i=r[printer].slug==n?\"selected\":\"\","
+            "t+=\"<option value='\"+r[printer].slug+\"' \"+i+\">\"+r[printer].name+\"</option>\";t+=\"</select>\","
+            "e.innerHTML=t,e.style.background=\"lime\"}else e.innerHTML=\"Error invalid API Key: \"+r.error,"
+            "e.style.background=\"red\"}else e.innerHTML=\"Error: \"+o.statusText,e.style.background=\"red\"},"
+            "o.onerror=function(){e.innerHTML=\"Error connecting to server -- check IP and Port\",e.style.background=\"red\"},o.send(null)}</script>";
+
+        this->server->sendContent(html);
+    }    
+    else {
         html = "<script>function testOctoPrint(){var e=document.getElementById(\"OctoPrintTest\"),t=document.getElementById(\"PrinterAddress\").value,"
             "n=document.getElementById(\"PrinterPort\").value;if(e.innerHTML=\"\",\"\"==t||\"\"==n)return e.innerHTML=\"* Address and Port are required\","
             "void(e.style.background=\"\");var r=\"http://\"+t+\":\"+n;r+=\"/api/job?apikey=\"+document.getElementById(\"PrinterApiKey\").value,window.open(r,\"_blank\").focus()}</script>";
