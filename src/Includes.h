@@ -2,10 +2,13 @@
 #include <Arduino.h>
 #include <WiFiManager.h>
 #include "Global/GlobalDataController.h"
+#include "Global/DebugController.h"
 #include "Configuration.h"
 #if WEBSERVER_ENABLED
     #include "Network/WebServer.h"
 #endif
+#include "Network/TimeClient.h"
+#include "Network/OpenWeatherMapClient.h"
 #if (PRINTERCLIENT == REPETIER_CLIENT)
     #include "Clients/RepetierClient.h"
 #elif (PRINTERCLIENT == KLIPPER_CLIENT)
@@ -22,18 +25,20 @@
     #include "Display/OledDisplay.h"
 #endif
 
-
 // Initilize all needed data
-GlobalDataController globalDataController;
+DebugController debugController;
+TimeClient timeClient(TIME_UTCOFFSET, &debugController);
+OpenWeatherMapClient weatherClient(WEATHER_APIKEY, WEATHER_CITYID, 1, WEATHER_METRIC, WEATHER_LANGUAGE, &debugController);
+GlobalDataController globalDataController(&timeClient, &weatherClient, &debugController);
 #if WEBSERVER_ENABLED
-    WebServer webServer(&globalDataController);
+    WebServer webServer(&globalDataController, &debugController);
 #endif
 
 // Construct the correct printer client
 #if (PRINTERCLIENT == REPETIER_CLIENT)
     //RepetierClient printerClient(&globalDataController);
 #elif (PRINTERCLIENT == KLIPPER_CLIENT)
-    KlipperClient printerClient(&globalDataController);
+    KlipperClient printerClient(&globalDataController, &debugController);
 #elif (PRINTERCLIENT == DUET_CLIENT)
     //DuetClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU, debugHandle);
 #else
@@ -48,5 +53,5 @@ GlobalDataController globalDataController;
     #else
         SSD1306Wire display(DISPLAY_I2C_DISPLAY_ADDRESS, DISPLAY_SDA_PIN, DISPLAY_SCL_PIN);
     #endif
-    OledDisplay displayClient(&display, &globalDataController);
+    OledDisplay displayClient(&display, &globalDataController, &debugController);
 #endif

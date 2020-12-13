@@ -1,8 +1,8 @@
 #include "KlipperClient.h"
 
-KlipperClient::KlipperClient(GlobalDataController *globalDataController) {
+KlipperClient::KlipperClient(GlobalDataController *globalDataController, DebugController *debugController) {
     this->globalDataController = globalDataController;
-    this->globalDataController->setPrinterClientType(this->getPrinterType());
+    this->debugController = debugController;
     this->updatePrintClient();
 }
 
@@ -38,8 +38,8 @@ WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
     WiFiClient printClient;
     printClient.setTimeout(5000);
 
-    this->globalDataController->debugPrintLn("Getting Klipper Data via GET");
-    this->globalDataController->debugPrintLn(apiGetData);
+    this->debugController->printLn("Getting Klipper Data via GET");
+    this->debugController->printLn(apiGetData);
     result = "";
     if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
         printClient.println(apiGetData);
@@ -52,16 +52,16 @@ WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
         printClient.println("User-Agent: ArduinoWiFi/1.1");
         printClient.println("Connection: close");
         if (printClient.println() == 0) {
-        this->globalDataController->debugPrintLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
-        this->globalDataController->debugPrintLn("");
+        this->debugController->printLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
+        this->debugController->printLn("");
         resetPrintData();
         printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
         return printClient;
         }
     } 
     else {
-        this->globalDataController->debugPrintLn("Connection to Klipper failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
-        this->globalDataController->debugPrintLn("");
+        this->debugController->printLn("Connection to Klipper failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+        this->debugController->printLn("");
         resetPrintData();
         printerData.error = "Connection to Klipper failed: " + String(myServer) + ":" + String(myPort);
         return printClient;
@@ -71,8 +71,8 @@ WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
     char status[32] = {0};
     printClient.readBytesUntil('\r', status, sizeof(status));
     if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
-        this->globalDataController->debugPrintLn("Unexpected response: ");
-        this->globalDataController->debugPrintLn(status);
+        this->debugController->printLn("Unexpected response: ");
+        this->debugController->printLn(status);
         printerData.state = "";
         printerData.error = "Response: " + String(status);
         return printClient;
@@ -81,7 +81,7 @@ WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
     // Skip HTTP headers
     char endOfHeaders[] = "\r\n\r\n";
     if (!printClient.find(endOfHeaders)) {
-        this->globalDataController->debugPrintLn("Invalid response");
+        this->debugController->printLn("Invalid response");
         printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
         printerData.state = "";
     }
@@ -93,8 +93,8 @@ WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody)
     WiFiClient printClient;
     printClient.setTimeout(5000);
 
-    this->globalDataController->debugPrintLn("Getting Klipper Data via POST");
-    this->globalDataController->debugPrintLn(apiPostData + " | " + apiPostBody);
+    this->debugController->printLn("Getting Klipper Data via POST");
+    this->debugController->printLn(apiPostData + " | " + apiPostBody);
     result = "";
     if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
         printClient.println(apiPostData);
@@ -112,16 +112,16 @@ WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody)
         printClient.println();
         printClient.println(apiPostBody);
         if (printClient.println() == 0) {
-        this->globalDataController->debugPrintLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
-        this->globalDataController->debugPrintLn("");
+        this->debugController->printLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
+        this->debugController->printLn("");
         resetPrintData();
         printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
         return printClient;
         }
     } 
     else {
-        this->globalDataController->debugPrintLn("Connection to Klipper failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
-        this->globalDataController->debugPrintLn("");
+        this->debugController->printLn("Connection to Klipper failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+        this->debugController->printLn("");
         resetPrintData();
         printerData.error = "Connection to Klipper failed: " + String(myServer) + ":" + String(myPort);
         return printClient;
@@ -131,8 +131,8 @@ WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody)
     char status[32] = {0};
     printClient.readBytesUntil('\r', status, sizeof(status));
     if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
-        this->globalDataController->debugPrint("Unexpected response: ");
-        this->globalDataController->debugPrintLn(status);
+        this->debugController->print("Unexpected response: ");
+        this->debugController->printLn(status);
         printerData.state = "";
         printerData.error = "Response: " + String(status);
         return printClient;
@@ -141,7 +141,7 @@ WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody)
     // Skip HTTP headers
     char endOfHeaders[] = "\r\n\r\n";
     if (!printClient.find(endOfHeaders)) {
-        this->globalDataController->debugPrintLn("Invalid response");
+        this->debugController->printLn("Invalid response");
         printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
         printerData.state = "";
     }
@@ -165,7 +165,7 @@ void KlipperClient::getPrinterJobResults() {
     // Parse JSON object
     DeserializationError error = deserializeJson(jsonBuffer, printClient);
     if (error) {
-        this->globalDataController->debugPrintLn("Klipper Data Parsing failed: " + String(myServer) + ":" + String(myPort));
+        this->debugController->printLn("Klipper Data Parsing failed: " + String(myServer) + ":" + String(myPort));
         printerData.error = "Klipper Data Parsing failed: " + String(myServer) + ":" + String(myPort);
         printerData.state = "";
         return;
@@ -184,9 +184,9 @@ void KlipperClient::getPrinterJobResults() {
     printerData.state = (const char*)jsonBuffer["result"]["status"]["print_stats"]["state"];
 
     if (isOperational()) {
-        this->globalDataController->debugPrintLn("Status: " + printerData.state);
+        this->debugController->printLn("Status: " + printerData.state);
     } else {
-        this->globalDataController->debugPrintLn("Printer Not Operational");
+        this->debugController->printLn("Printer Not Operational");
     }
 
     //**** get the Printer Temps and Stat
@@ -221,7 +221,7 @@ void KlipperClient::getPrinterJobResults() {
     printerData.bedTargetTemp = (const char*)jsonBuffer2["result"]["status"]["heater_bed"]["target"];
 
     if (isPrinting()) {
-        this->globalDataController->debugPrintLn("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
+        this->debugController->printLn("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
     }
 }
 

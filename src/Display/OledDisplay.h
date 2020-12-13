@@ -8,6 +8,7 @@
 class OledDisplay {
 private:
     GlobalDataController *globalDataController;
+    DebugController *debugController;
     OLEDDisplay *oledDisplay;
     OLEDDisplayUi *ui;
 
@@ -18,7 +19,7 @@ private:
     OverlayCallback clockOverlay[1];
 
 public:
-    OledDisplay(OLEDDisplay *oledDisplay, GlobalDataController *globalDataController);
+    OledDisplay(OLEDDisplay *oledDisplay, GlobalDataController *globalDataController, DebugController *debugController);
     void preSetup();
     void postSetup();
     void showBootScreen();

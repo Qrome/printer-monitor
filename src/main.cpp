@@ -8,6 +8,8 @@ void configModeCallback(WiFiManager *myWiFiManager);
 
 void setup() {
     LittleFS.begin();
+    debugController.setup();
+    globalDataController.setPrinterClient(&printerClient);
     globalDataController.setup();
     displayClient.preSetup();
     displayClient.showBootScreen();
@@ -29,27 +31,27 @@ void setup() {
     displayClient.postSetup();
 
     // print the received signal strength:
-    globalDataController.debugPrint("Signal Strength (RSSI): ");
-    globalDataController.debugPrint(globalDataController.getWifiQuality());
-    globalDataController.debugPrintLn("%");
+    debugController.print("Signal Strength (RSSI): ");
+    debugController.print(globalDataController.getWifiQuality());
+    debugController.printLn("%");
 
     if (ENABLE_OTA) {
         ArduinoOTA.onStart([]() {
-            globalDataController.debugPrintLn("Start");
+            debugController.printLn("Start");
         });
         ArduinoOTA.onEnd([]() {
-            globalDataController.debugPrintLn("\nEnd");
+            debugController.printLn("\nEnd");
         });
         ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-            globalDataController.debugPrintF("Progress: %u%%\r", (progress / (total / 100)));
+            debugController.printF("Progress: %u%%\r", (progress / (total / 100)));
         });
         ArduinoOTA.onError([](ota_error_t error) {
-            globalDataController.debugPrintF("Error[%u]: ", error);
-            if (error == OTA_AUTH_ERROR) globalDataController.debugPrintLn("Auth Failed");
-            else if (error == OTA_BEGIN_ERROR) globalDataController.debugPrintLn("Begin Failed");
-            else if (error == OTA_CONNECT_ERROR) globalDataController.debugPrintLn("Connect Failed");
-            else if (error == OTA_RECEIVE_ERROR) globalDataController.debugPrintLn("Receive Failed");
-            else if (error == OTA_END_ERROR) globalDataController.debugPrintLn("End Failed");
+            debugController.printF("Error[%u]: ", error);
+            if (error == OTA_AUTH_ERROR) debugController.printLn("Auth Failed");
+            else if (error == OTA_BEGIN_ERROR) debugController.printLn("Begin Failed");
+            else if (error == OTA_CONNECT_ERROR) debugController.printLn("Connect Failed");
+            else if (error == OTA_RECEIVE_ERROR) debugController.printLn("Receive Failed");
+            else if (error == OTA_END_ERROR) debugController.printLn("End Failed");
         });
         ArduinoOTA.setHostname((const char *)hostname.c_str()); 
         if (String(OTA_Password) != "") {
@@ -58,8 +60,8 @@ void setup() {
         ArduinoOTA.begin();
     }
 
-    globalDataController.debugPrintLn("local ip");
-    globalDataController.debugPrintLn(WiFi.localIP().toString());
+    debugController.printLn("local ip");
+    debugController.printLn(WiFi.localIP().toString());
 
 #if WEBSERVER_ENABLED
     webServer.setup();
@@ -69,11 +71,26 @@ void setup() {
 #endif
 
     globalDataController.flashLED(5, 100);
-    globalDataController.debugPrintLn("*** Leaving setup()");
+    debugController.printLn("*** Leaving setup()");
 }
 
 void loop() {
     // put your main code here, to run repeatedly:
+
+
+
+
+
+
+
+
+
+    if (WEBSERVER_ENABLED) {
+        webServer.handleClient();
+    }
+    if (ENABLE_OTA) {
+        ArduinoOTA.handle();
+    }
 }
 
 
@@ -91,12 +108,12 @@ void loop() {
 
 
 void configModeCallback(WiFiManager *myWiFiManager) {
-  globalDataController.debugPrintLn("Entered config mode");
-  globalDataController.debugPrintLn(WiFi.softAPIP().toString());
+  debugController.printLn("Entered config mode");
+  debugController.printLn(WiFi.softAPIP().toString());
   displayClient.showApAccessScreen(myWiFiManager->getConfigPortalSSID(), WiFi.softAPIP().toString());
-  globalDataController.debugPrintLn("Wifi Manager");
-  globalDataController.debugPrintLn("Please connect to AP");
-  globalDataController.debugPrintLn(myWiFiManager->getConfigPortalSSID());
-  globalDataController.debugPrintLn("To setup Wifi Configuration");
+  debugController.printLn("Wifi Manager");
+  debugController.printLn("Please connect to AP");
+  debugController.printLn(myWiFiManager->getConfigPortalSSID());
+  debugController.printLn("To setup Wifi Configuration");
   globalDataController.flashLED(20, 50);
 }

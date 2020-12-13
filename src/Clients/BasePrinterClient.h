@@ -11,10 +11,13 @@
 #pragma once
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
-#include "../Global/GlobalDataController.h"
 
 class BasePrinterClient {
 public:
+  virtual void getPrinterJobResults();
+  virtual void getPrinterPsuState();
+  virtual void updatePrintClient();
+
   virtual String getAveragePrintTime() = 0;
   virtual String getEstimatedPrintTime() = 0;
   virtual String getFileName() = 0;

@@ -4,6 +4,7 @@
 #include <base64.h>
 #include "Debug.h"
 #include "BasePrinterClient.h"
+#include "../Global/GlobalDataController.h"
 
 class KlipperClient : public BasePrinterClient {
 private:
@@ -45,9 +46,10 @@ private:
 
     PrinterStruct printerData;
     GlobalDataController *globalDataController;
+    DebugController *debugController;
   
 public:
-    KlipperClient(GlobalDataController *globalDataController);
+    KlipperClient(GlobalDataController *globalDataController, DebugController *debugController);
     void getPrinterJobResults();
     void getPrinterPsuState();
     void updatePrintClient();

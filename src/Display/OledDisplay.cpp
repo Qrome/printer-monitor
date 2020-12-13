@@ -1,7 +1,8 @@
 #include "OledDisplay.h"
 
-OledDisplay::OledDisplay(OLEDDisplay *oledDisplay, GlobalDataController *globalDataController) {
+OledDisplay::OledDisplay(OLEDDisplay *oledDisplay, GlobalDataController *globalDataController, DebugController *debugController) {
     this->globalDataController = globalDataController;
+    this->debugController = debugController;
     this->oledDisplay = oledDisplay;
     this->ui = new OLEDDisplayUi(oledDisplay);
 }
@@ -47,7 +48,7 @@ void OledDisplay::showBootScreen() {
     this->oledDisplay->setFont(ArialMT_Plain_16);
     this->oledDisplay->drawString(64, 1, "Printer Monitor");
     this->oledDisplay->setFont(ArialMT_Plain_10);
-    this->oledDisplay->drawString(64, 18, "for " + this->globalDataController->getPrinterClientType());
+    this->oledDisplay->drawString(64, 18, "for " + this->globalDataController->getPrinterClient()->getPrinterType());
     this->oledDisplay->setFont(ArialMT_Plain_16);
     this->oledDisplay->drawString(64, 30, "By Qrome");
     this->oledDisplay->drawString(64, 46, "V" + this->globalDataController->getVersion());
@@ -70,7 +71,7 @@ void OledDisplay::showApAccessScreen(String apSsid, String apIp) {
 void OledDisplay::showWebserverSplashScreen(bool isEnabled) {
     if (isEnabled) {
         String webAddress = "http://" + WiFi.localIP().toString() + ":" + String(this->globalDataController->getWebserverPort()) + "/";
-        this->globalDataController->debugPrintLn("Use this URL : " + webAddress);
+        this->debugController->printLn("Use this URL : " + webAddress);
         this->oledDisplay->clear();
         this->oledDisplay->setTextAlignment(TEXT_ALIGN_CENTER);
         this->oledDisplay->setFont(ArialMT_Plain_10);
@@ -81,7 +82,7 @@ void OledDisplay::showWebserverSplashScreen(bool isEnabled) {
         this->oledDisplay->drawString(64, 46, "Port: " + String(this->globalDataController->getWebserverPort()));
         this->oledDisplay->display();
     } else {
-        this->globalDataController->debugPrintLn("Web Interface is Disabled");
+        this->debugController->printLn("Web Interface is Disabled");
         this->oledDisplay->clear();
         this->oledDisplay->setTextAlignment(TEXT_ALIGN_CENTER);
         this->oledDisplay->setFont(ArialMT_Plain_10);
