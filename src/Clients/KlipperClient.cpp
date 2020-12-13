@@ -240,9 +240,9 @@ let eta = total_time - pstats.print_duration; */
     printerData.bedTargetTemp = (int)jsonBuffer["result"]["status"]["heater_bed"]["target"];
     printerData.fileSize = (long)jsonBuffer2["result"]["size"];
 
-    // if (isPrinting()) {
+    if (isPrinting()) {
         this->debugController->printLn("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
-    // }
+    }
 }
 
 void KlipperClient::getPrinterPsuState() {
