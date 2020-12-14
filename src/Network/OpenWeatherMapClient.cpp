@@ -1,12 +1,13 @@
 #include "OpenWeatherMapClient.h"
 
-OpenWeatherMapClient::OpenWeatherMapClient(String ApiKey, int CityID, int cityCount, boolean isMetric, String language, DebugController *debugController) {
+OpenWeatherMapClient::OpenWeatherMapClient(String ApiKey, int CityID, int cityCount, boolean isMetric, String language, DebugController *debugController, JsonRequestClient *jsonRequestClient) {
     this->debugController = debugController;
-    updateCityId(CityID);
-    updateLanguage(language);
-    myApiKey = ApiKey;
+    this->jsonRequestClient = jsonRequestClient;
+    this->updateCityId(CityID);
+    this->updateLanguage(language);
+    this->myApiKey = ApiKey;
     this->isMetric = false;
-    setMetric(isMetric);
+    this->setMetric(isMetric);
 }
 
 void OpenWeatherMapClient::updateWeatherApiKey(String ApiKey) {
@@ -21,77 +22,46 @@ void OpenWeatherMapClient::updateLanguage(String language) {
 }
 
 void OpenWeatherMapClient::updateWeather() {
-    WiFiClient weatherClient;
-    String apiGetData = "GET /data/2.5/group?id=" + myCityIDs + "&units=" + units + "&cnt=1&APPID=" + myApiKey + "&lang=" + lang + " HTTP/1.1";
-
+    
+    String apiGetData = "/data/2.5/group?id=" + myCityIDs + "&units=" + units + "&cnt=1&APPID=" + myApiKey + "&lang=" + lang + " HTTP/1.1";
     this->debugController->printLn("Getting Weather Data");
     this->debugController->printLn(apiGetData);
-    result = "";
-    if (weatherClient.connect(servername, 80)) {  //starts client connection, checks for connection
-        weatherClient.println(apiGetData);
-        weatherClient.println("Host: " + String(servername));
-        weatherClient.println("User-Agent: ArduinoWiFi/1.1");
-        weatherClient.println("Connection: close");
-        weatherClient.println();
-    } 
-    else {
-        this->debugController->printLn("connection for weather data failed"); //error message if no client connect
-        this->debugController->printLn("");
-        return;
-    }
-
-    while(weatherClient.connected() && !weatherClient.available()) delay(1); //waits for data
-    
-    this->debugController->printLn("Waiting for data");
-
-    // Check HTTP status
-    char status[32] = {0};
-    weatherClient.readBytesUntil('\r', status, sizeof(status));
-    this->debugController->printLn("Response Header: " + String(status));
-    if (strcmp(status, "HTTP/1.1 200 OK") != 0) {
-        this->debugController->print("Unexpected response: ");
-        this->debugController->printLn(status);
-        return;
-    }
-
-    // Skip HTTP headers
-    char endOfHeaders[] = "\r\n\r\n";
-    if (!weatherClient.find(endOfHeaders)) {
-        this->debugController->printLn(F("Invalid response"));
-        return;
-    }
-
+    const size_t bufferSize = 1024;
     weathers[0].cached = false;
     weathers[0].error = "";
 
-    const size_t bufferSize = 1024;
-    DynamicJsonDocument jsonBuffer(bufferSize);
-
-    // Parse JSON object
-    DeserializationError error = deserializeJson(jsonBuffer, weatherClient);
-    if (error) {
+    DynamicJsonDocument *jsonBuffer = this->jsonRequestClient->requestJson(
+        PRINTER_REQUEST_GET,
+        String(servername),
+        80,
+        "",
+        apiGetData,
+        "",
+        bufferSize,
+        true
+    );
+    if ((jsonBuffer == NULL) || (this->jsonRequestClient->getLastError() != "")) {
         this->debugController->printLn("Weather Data Parsing failed!");
-        this->debugController->printLn(error.c_str());
-        weathers[0].error = "Weather Data Parsing failed!";
+        this->debugController->printLn(this->jsonRequestClient->getLastError());
+        weathers[0].error = this->jsonRequestClient->getLastError();
         return;
     }
 
-    weatherClient.stop(); //stop client
-    int count = jsonBuffer["cnt"];
+    int count = (*jsonBuffer)["cnt"];
 
     for (int inx = 0; inx < count; inx++) {
-        weathers[inx].lon = (float)jsonBuffer["list"][inx]["coord"]["lon"];
-        weathers[inx].lat = (float)jsonBuffer["list"][inx]["coord"]["lat"];
-        weathers[inx].dt = (long)jsonBuffer["list"][inx]["dt"];
-        weathers[inx].city = (const char*)jsonBuffer["list"][inx]["name"];
-        weathers[inx].country = (const char*)jsonBuffer["list"][inx]["sys"]["country"];
-        weathers[inx].temp = (float)jsonBuffer["list"][inx]["main"]["temp"];
-        weathers[inx].humidity = (int)jsonBuffer["list"][inx]["main"]["humidity"];
-        weathers[inx].condition = (const char*)jsonBuffer["list"][inx]["weather"][0]["main"];
-        weathers[inx].wind = (float)jsonBuffer["list"][inx]["wind"]["speed"];
-        weathers[inx].weatherId = (int)jsonBuffer["list"][inx]["weather"][0]["id"];
-        weathers[inx].description = (const char*)jsonBuffer["list"][inx]["weather"][0]["description"];
-        weathers[inx].icon = (const char*)jsonBuffer["list"][inx]["weather"][0]["icon"];
+        weathers[inx].lon = (float)(*jsonBuffer)["list"][inx]["coord"]["lon"];
+        weathers[inx].lat = (float)(*jsonBuffer)["list"][inx]["coord"]["lat"];
+        weathers[inx].dt = (long)(*jsonBuffer)["list"][inx]["dt"];
+        weathers[inx].city = (const char*)(*jsonBuffer)["list"][inx]["name"];
+        weathers[inx].country = (const char*)(*jsonBuffer)["list"][inx]["sys"]["country"];
+        weathers[inx].temp = (float)(*jsonBuffer)["list"][inx]["main"]["temp"];
+        weathers[inx].humidity = (int)(*jsonBuffer)["list"][inx]["main"]["humidity"];
+        weathers[inx].condition = (const char*)(*jsonBuffer)["list"][inx]["weather"][0]["main"];
+        weathers[inx].wind = (float)(*jsonBuffer)["list"][inx]["wind"]["speed"];
+        weathers[inx].weatherId = (int)(*jsonBuffer)["list"][inx]["weather"][0]["id"];
+        weathers[inx].description = (const char*)(*jsonBuffer)["list"][inx]["weather"][0]["description"];
+        weathers[inx].icon = (const char*)(*jsonBuffer)["list"][inx]["weather"][0]["icon"];
 
         this->debugController->printLn("lat: " + weathers[inx].lat);
         this->debugController->printLn("lon: " + weathers[inx].lon);

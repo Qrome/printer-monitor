@@ -3,6 +3,7 @@
 #include <ESP8266WiFi.h>
 #include <base64.h>
 #include "Debug.h"
+#include "../Network/JsonRequestClient.h"
 
 class BasePrinterClient {
 public:

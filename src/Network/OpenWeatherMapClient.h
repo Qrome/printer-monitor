@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <base64.h>
 #include "../Global/DebugController.h"
+#include "JsonRequestClient.h"
 
 class OpenWeatherMapClient {
 private:
@@ -36,9 +37,10 @@ private:
 
     String roundValue(String value);
     DebugController *debugController;
+    JsonRequestClient *jsonRequestClient;
 
 public:
-    OpenWeatherMapClient(String ApiKey, int CityID, int cityCount, boolean isMetric, String language, DebugController *debugController);
+    OpenWeatherMapClient(String ApiKey, int CityID, int cityCount, boolean isMetric, String language, DebugController *debugController, JsonRequestClient *jsonRequestClient);
     void updateWeather();
     void updateWeatherApiKey(String ApiKey);
     void updateCityId(int CityID);

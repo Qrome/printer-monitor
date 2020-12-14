@@ -8,17 +8,14 @@
 
 class KlipperClient : public BasePrinterClientImpl {
 private:
-    String encodedAuth = "";
     boolean pollPsu;
 
     boolean validate();
     WiFiClient getSubmitRequest(String apiGetData);
     WiFiClient getPostRequest(String apiPostData, String apiPostBody);
-    
-    String result;
   
 public:
-    KlipperClient(GlobalDataController *globalDataController, DebugController *debugController);
+    KlipperClient(GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient);
 
     void getPrinterJobResults() override;
     void getPrinterPsuState() override;

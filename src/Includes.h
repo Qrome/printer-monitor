@@ -9,6 +9,7 @@
 #endif
 #include "Network/TimeClient.h"
 #include "Network/OpenWeatherMapClient.h"
+#include "Network/JsonRequestClient.h"
 #if (PRINTERCLIENT == REPETIER_CLIENT)
     #include "Clients/RepetierClient.h"
 #elif (PRINTERCLIENT == KLIPPER_CLIENT)
@@ -28,8 +29,9 @@
 
 // Initilize all needed data
 DebugController debugController(DEBUG_MODE_ENABLE);
+JsonRequestClient jsonRequestClient(&debugController);
 TimeClient timeClient(TIME_UTCOFFSET, &debugController);
-OpenWeatherMapClient weatherClient(WEATHER_APIKEY, WEATHER_CITYID, 1, WEATHER_METRIC, WEATHER_LANGUAGE, &debugController);
+OpenWeatherMapClient weatherClient(WEATHER_APIKEY, WEATHER_CITYID, 1, WEATHER_METRIC, WEATHER_LANGUAGE, &debugController, &jsonRequestClient);
 GlobalDataController globalDataController(&timeClient, &weatherClient, &debugController);
 WebServer webServer(&globalDataController, &debugController);
 
@@ -37,7 +39,7 @@ WebServer webServer(&globalDataController, &debugController);
 #if (PRINTERCLIENT == REPETIER_CLIENT)
     //RepetierClient printerClient(&globalDataController);
 #elif (PRINTERCLIENT == KLIPPER_CLIENT)
-    KlipperClient printerClient(&globalDataController, &debugController);
+    KlipperClient printerClient(&globalDataController, &debugController, &jsonRequestClient);
 #elif (PRINTERCLIENT == DUET_CLIENT)
     //DuetClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU, debugHandle);
 #else

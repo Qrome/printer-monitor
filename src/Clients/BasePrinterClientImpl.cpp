@@ -1,9 +1,15 @@
 #include "BasePrinterClientImpl.h"
 
-BasePrinterClientImpl::BasePrinterClientImpl(String printerType, GlobalDataController *globalDataController, DebugController *debugController) {
+BasePrinterClientImpl::BasePrinterClientImpl(
+    String printerType,
+    GlobalDataController *globalDataController,
+    DebugController *debugController,
+    JsonRequestClient *jsonRequestClient
+) {
     this->globalDataController = globalDataController;
     this->debugController = debugController;
     this->printerType = printerType;
+    this->jsonRequestClient = jsonRequestClient;
 }
 
 // Reset all PrinterData
@@ -132,4 +138,16 @@ String BasePrinterClientImpl::getPrinterName() {
 
 void BasePrinterClientImpl::setPrinterName(String printer) {
     printerData.printerName = printer;
+}
+
+String BasePrinterClientImpl::getInstanceServerTarget() {
+    String targetServer = this->globalDataController->getPrinterServer();
+    if (this->globalDataController->getPrinterServer() == "") {
+        targetServer = this->globalDataController->getPrinterHostName();
+    }
+    return targetServer;
+}
+
+int BasePrinterClientImpl::getInstanceServerPort() {
+    return this->globalDataController->getPrinterPort();
 }

@@ -3,8 +3,8 @@
 
 #include "DuetClient.h"
 
-DuetClient::DuetClient(GlobalDataController *globalDataController, DebugController *debugController)
-: BasePrinterClientImpl("Duet", globalDataController, debugController) {
+DuetClient::DuetClient(GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient)
+: BasePrinterClientImpl("Duet", globalDataController, debugController, jsonRequestClient) {
     this->updatePrintClient();
 }
 

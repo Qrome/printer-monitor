@@ -2,10 +2,12 @@
 #include "BasePrinterClient.h"
 #include "../Global/GlobalDataController.h"
 
+
 class BasePrinterClientImpl : public BasePrinterClient {
 protected:
     GlobalDataController *globalDataController;
     DebugController *debugController;
+    JsonRequestClient *jsonRequestClient;
     String printerType = "Octoprint";
 
     typedef struct {
@@ -31,9 +33,11 @@ protected:
     } PrinterStruct;
 
     PrinterStruct printerData;
+    String result;
+    String encodedAuth = "";
     
 public:
-    BasePrinterClientImpl(String printerType, GlobalDataController *globalDataController, DebugController *debugController);
+    BasePrinterClientImpl(String printerType, GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient);
 
     void getPrinterJobResults() {};
     void getPrinterPsuState() {};
@@ -64,4 +68,8 @@ public:
     int getPrinterPort();
     String getPrinterName();
     void setPrinterName(String printer);
+
+protected:
+    String getInstanceServerTarget();
+    int getInstanceServerPort();
 };

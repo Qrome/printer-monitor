@@ -18,7 +18,7 @@ private:
     String result;
   
 public:
-    DuetClient(GlobalDataController *globalDataController, DebugController *debugController);
+    DuetClient(GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient);
 
     void getPrinterJobResults() override;
     void getPrinterPsuState() override;
