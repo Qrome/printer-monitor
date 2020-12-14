@@ -42,6 +42,10 @@ void OledDisplay::postSetup() {
     }
 }
 
+void OledDisplay::handleUpdate() {
+    this->ui->update();
+}
+
 void OledDisplay::showBootScreen() {
     this->oledDisplay->setTextAlignment(TEXT_ALIGN_CENTER);
     this->oledDisplay->setContrast(255); // default is 255

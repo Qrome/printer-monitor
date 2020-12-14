@@ -319,6 +319,7 @@ void WebServer::handleUpdateConfig() {
     this->globalDataController->setUseLedFlash(this->server->hasArg("useFlash"));
 
     this->globalDataController->writeSettings();
+    this->findMDNS();
 
     this->globalDataController->getPrinterClient()->getPrinterJobResults();
     this->globalDataController->getPrinterClient()->getPrinterPsuState();
@@ -332,35 +333,37 @@ void WebServer::handleUpdateConfig() {
     this->globalDataController->getTimeClient()->resetLastEpoch();
     this->redirectHome();
 }
-//     findMDNS();
 
-// void findMDNS() {
-//   if (PrinterServer == "" || ENABLE_OTA == false) {
-//     return; // nothing to do here
-//   }
-//   // We now query our network for 'web servers' service
-//   // over tcp, and get the number of available devices
-//   int n = MDNS.queryService("http", "tcp");
-//   if (n == 0) {
-//     Serial.println("no services found - make sure Printer server is turned on");
-//     return;
-//   }
-//   Serial.println("*** Looking for " + PrinterHostName + " over mDNS");
-//   for (int i = 0; i < n; ++i) {
-//     // Going through every available service,
-//     // we're searching for the one whose hostname
-//     // matches what we want, and then get its IP
-//     Serial.println("Found: " + MDNS.hostname(i));
-//     if (MDNS.hostname(i) == PrinterHostName) {
-//       IPAddress serverIp = MDNS.IP(i);
-//       PrinterServer = serverIp.toString();
-//       PrinterPort = MDNS.port(i); // save the port
-//       Serial.println("*** Found Printer Server " + PrinterHostName + " http://" + PrinterServer + ":" + PrinterPort);
-//       writeSettings(); // update the settings
-//     }
-//   }
-// }
-
+void WebServer::findMDNS() {
+    if (this->globalDataController->getPrinterHostName() == "" || ENABLE_OTA == false) {
+        return; // nothing to do here
+    }
+    // We now query our network for 'web servers' service
+    // over tcp, and get the number of available devices
+    int n = MDNS.queryService("http", "tcp");
+    if (n == 0) {
+        this->debugController->printLn("no services found - make sure Printer server is turned on");
+        return;
+    }
+    this->debugController->printLn("*** Looking for " + this->globalDataController->getPrinterHostName() + " over mDNS");
+    for (int i = 0; i < n; ++i) {
+        // Going through every available service,
+        // we're searching for the one whose hostname
+        // matches what we want, and then get its IP
+        Serial.println("Found: " + MDNS.hostname(i));
+        if (MDNS.hostname(i) == this->globalDataController->getPrinterHostName()) {
+            IPAddress serverIp = MDNS.IP(i);
+            this->globalDataController->setPrinterServer(serverIp.toString());
+            this->globalDataController->setPrinterPort(MDNS.port(i));
+            this->debugController->printLn(
+                "*** Found Printer Server " + this->globalDataController->getPrinterHostName() +
+                " http://" + this->globalDataController->getPrinterServer() + 
+                ":" + this->globalDataController->getPrinterPort()
+            );
+            this->globalDataController->writeSettings(); // update the settings
+        }
+    }
+}
 
 void WebServer::handleUpdateWeather() {
     if (!this->authentication()) {
@@ -396,32 +399,7 @@ void WebServer::handleConfigure() {
     html = this->getHeader();
     this->server->sendContent(html);
 
-    CHANGE_FORM =       "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
-                        "<p><label>" + printerClient->getPrinterType() + " API Key (get from your server)</label>"
-                        "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' id='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>";
-    if ((printerClient->getPrinterType() == "OctoPrint") || (printerClient->getPrinterType() == "Klipper")) {
-        CHANGE_FORM +=      "<p><label>" + printerClient->getPrinterType() + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>";                        
-    }
-    CHANGE_FORM +=      "<p><label>" + printerClient->getPrinterType() + " Address (do not include http://)</label>"
-                        "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterAddress' id='PrinterAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
-                        "<p><label>" + printerClient->getPrinterType() + " Port</label>"
-                        "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterPort' id='PrinterPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>";
-    if (printerClient->getPrinterType() == "Repetier") {
-        CHANGE_FORM +=    "<input type='button' value='Test Connection' onclick='testRepetier()'>"
-                        "<input type='hidden' id='selectedPrinter' value='" + printerClient->getPrinterName() + "'><p id='RepetierTest'></p>"
-                        "<script>testRepetier();</script>";                        
-    } 
-    else if (printerClient->getPrinterType() == "Klipper") {
-        CHANGE_FORM +=    "<input type='button' value='Test Connection' onclick='testKlipper()'>"
-                        "<input type='hidden' id='selectedPrinter' value='" + printerClient->getPrinterName() + "'><p id='KlipperTest'></p>"
-                        "<script>testKlipper();</script>";
-    }                    
-    else {
-        CHANGE_FORM +=    "<input type='button' value='Test Connection and API JSON Response' onclick='testOctoPrint()'><p id='OctoPrintTest'></p>";
-    }
-    CHANGE_FORM +=      "<p><label>" + printerClient->getPrinterType() + " User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
-                        "<p><label>" + printerClient->getPrinterType() + " Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p>";
-
+    // send javascript functions
     if (printerClient->getPrinterType() == "Repetier") {
         html = "<script>function testRepetier(){var e=document.getElementById(\"RepetierTest\"),r=document.getElementById(\"PrinterAddress\").value,"
             "t=document.getElementById(\"PrinterPort\").value;if(\"\"==r||\"\"==t)return e.innerHTML=\"* Address and Port are required\","
@@ -437,10 +415,11 @@ void WebServer::handleConfigure() {
         this->server->sendContent(html);
     } 
     else if (printerClient->getPrinterType() == "Klipper") {
-        html = "<script>function testKlipper(){var e=document.getElementById(\"KlipperTest\"),r=document.getElementById(\"PrinterAddress\").value,"
+        // TODO: INVALID JAVASCRIPT HERE
+        /*html = "<script>function testKlipper(){var e=document.getElementById(\"KlipperTest\"),r=document.getElementById(\"PrinterAddress\").value,"
             "t=document.getElementById(\"PrinterPort\").value;if(\"\"==r||\"\"==t)return e.innerHTML=\"* Address and Port are required\","
             "void(e.style.background=\"\");var n=\"http://\"+r+\":\"+t;n+=\"/printer/info";
-        this->server->sendContent(html);
+        this->server->sendContent(html); */
     }    
     else {
         html = "<script>function testOctoPrint(){var e=document.getElementById(\"OctoPrintTest\"),t=document.getElementById(\"PrinterAddress\").value,"
@@ -448,16 +427,40 @@ void WebServer::handleConfigure() {
             "void(e.style.background=\"\");var r=\"http://\"+t+\":\"+n;r+=\"/api/job?apikey=\"+document.getElementById(\"PrinterApiKey\").value,window.open(r,\"_blank\").focus()}</script>";
         this->server->sendContent(html);
     }
-    
-    String form = CHANGE_FORM;
-    
+
+
+    String form =       "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
+                        "<p><label>" + printerClient->getPrinterType() + " API Key (get from your server)</label>"
+                        "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' id='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>";
+    if ((printerClient->getPrinterType() == "OctoPrint") || (printerClient->getPrinterType() == "Klipper")) {
+        form    +=      "<p><label>" + printerClient->getPrinterType() + " Host Name</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>";                        
+    }
+    form        +=      "<p><label>" + printerClient->getPrinterType() + " Address (do not include http://)</label>"
+                        "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterAddress' id='PrinterAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
+                        "<p><label>" + printerClient->getPrinterType() + " Port</label>"
+                        "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterPort' id='PrinterPort' value='%OCTOPORT%' maxlength='5'  onkeypress='return isNumberKey(event)'></p>";
+    if (printerClient->getPrinterType() == "Repetier") {
+        form    +=     "<input type='button' value='Test Connection' onclick='testRepetier()'>"
+                       "<input type='hidden' id='selectedPrinter' value='" + printerClient->getPrinterName() + "'><p id='RepetierTest'></p>"
+                       "<script>testRepetier();</script>";                        
+    } 
+    else if (printerClient->getPrinterType() == "Klipper") {
+        form    +=     "<input type='button' value='Test Connection' onclick='testKlipper()'>"
+                       "<input type='hidden' id='selectedPrinter' value='" + printerClient->getPrinterName() + "'><p id='KlipperTest'></p>"
+                       "<script>testKlipper();</script>";
+    }                    
+    else {
+        form    +=     "<input type='button' value='Test Connection and API JSON Response' onclick='testOctoPrint()'><p id='OctoPrintTest'></p>";
+    }
+    form        +=     "<p><label>" + printerClient->getPrinterType() + " User (only needed if you have haproxy or basic auth turned on)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='octoUser' value='%OCTOUSER%' maxlength='30'></p>"
+                       "<p><label>" + printerClient->getPrinterType() + " Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='octoPass' value='%OCTOPASS%'></p>";
+
     form.replace("%OCTOKEY%", this->globalDataController->getPrinterApiKey());
     form.replace("%OCTOHOST%", this->globalDataController->getPrinterHostName());
     form.replace("%OCTOADDRESS%", this->globalDataController->getPrinterServer());
     form.replace("%OCTOPORT%", String(this->globalDataController->getPrinterPort()));
     form.replace("%OCTOUSER%", this->globalDataController->getPrinterAuthUser());
     form.replace("%OCTOPASS%", this->globalDataController->getPrinterAuthPass());
-
     this->server->sendContent(form);
 
     form = FPSTR(CLOCK_FORM);

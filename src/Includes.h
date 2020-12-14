@@ -30,9 +30,7 @@ DebugController debugController;
 TimeClient timeClient(TIME_UTCOFFSET, &debugController);
 OpenWeatherMapClient weatherClient(WEATHER_APIKEY, WEATHER_CITYID, 1, WEATHER_METRIC, WEATHER_LANGUAGE, &debugController);
 GlobalDataController globalDataController(&timeClient, &weatherClient, &debugController);
-#if WEBSERVER_ENABLED
-    WebServer webServer(&globalDataController, &debugController);
-#endif
+WebServer webServer(&globalDataController, &debugController);
 
 // Construct the correct printer client
 #if (PRINTERCLIENT == REPETIER_CLIENT)

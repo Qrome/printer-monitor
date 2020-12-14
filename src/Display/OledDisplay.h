@@ -22,6 +22,7 @@ public:
     OledDisplay(OLEDDisplay *oledDisplay, GlobalDataController *globalDataController, DebugController *debugController);
     void preSetup();
     void postSetup();
+    void handleUpdate();
     void showBootScreen();
     void showApAccessScreen(String apSsid, String apIp);
     void showWebserverSplashScreen(bool isEnabled);

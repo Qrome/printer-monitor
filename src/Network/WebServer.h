@@ -4,6 +4,7 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
 #include <WiFiManager.h>
+#include <ESP8266mDNS.h>
 #include "../Global/GlobalDataController.h"
 
 class WebServer {
@@ -16,6 +17,7 @@ private:
 public:
     WebServer(GlobalDataController *globalDataController, DebugController *debugController);
     void setup();
+    void findMDNS();
 
     void handleClient();
     boolean authentication();

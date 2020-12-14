@@ -1,12 +1,9 @@
 #include "Includes.h"
 #include <ArduinoOTA.h>
 
-
-
-
+String lastMinute = "xx";
+String lastSecond = "xx";
 void configModeCallback(WiFiManager *myWiFiManager);
-
-
 
 void setup() {
     LittleFS.begin();
@@ -73,6 +70,7 @@ void setup() {
 #endif
 
     globalDataController.flashLED(5, 100);
+    webServer.findMDNS();
     debugController.printLn("*** Leaving setup()");
 }
 
@@ -81,20 +79,29 @@ void loop() {
     // Handle update of time
     if(timeClient.handleSync(globalDataController.getClockResyncMinutes()) && globalDataController.getWeatherShow()) {
         // We sync time? Ok, sync weather also!
+        debugController.printLn("Updating weather...");
         weatherClient.updateWeather();
     }
 
- 
+    if (lastMinute != timeClient.getMinutes() && !printerClient.isPrinting()) {
+        // Check status every 60 seconds
+        globalDataController.ledOnOff(true);
+        lastMinute = timeClient.getMinutes(); // reset the check value
+        printerClient.getPrinterJobResults();
+        printerClient.getPrinterPsuState();
+        globalDataController.ledOnOff(false);
+    } else if (printerClient.isPrinting()) {
+        if (lastSecond != timeClient.getSeconds() && timeClient.getSeconds().endsWith("0")) {
+            lastSecond = timeClient.getSeconds();
+            // every 10 seconds while printing get an update
+            globalDataController.ledOnOff(true);
+            printerClient.getPrinterJobResults();
+            printerClient.getPrinterPsuState();
+            globalDataController.ledOnOff(false);
+        }
+    }
 
-    // put your main code here, to run repeatedly:
-
-
-
-
-
-
-
-
+    displayClient.handleUpdate();
 
     if (WEBSERVER_ENABLED) {
         webServer.handleClient();
@@ -104,27 +111,13 @@ void loop() {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void configModeCallback(WiFiManager *myWiFiManager) {
-  debugController.printLn("Entered config mode");
-  debugController.printLn(WiFi.softAPIP().toString());
-  displayClient.showApAccessScreen(myWiFiManager->getConfigPortalSSID(), WiFi.softAPIP().toString());
-  debugController.printLn("Wifi Manager");
-  debugController.printLn("Please connect to AP");
-  debugController.printLn(myWiFiManager->getConfigPortalSSID());
-  debugController.printLn("To setup Wifi Configuration");
-  globalDataController.flashLED(20, 50);
+    debugController.printLn("Entered config mode");
+    debugController.printLn(WiFi.softAPIP().toString());
+    displayClient.showApAccessScreen(myWiFiManager->getConfigPortalSSID(), WiFi.softAPIP().toString());
+    debugController.printLn("Wifi Manager");
+    debugController.printLn("Please connect to AP");
+    debugController.printLn(myWiFiManager->getConfigPortalSSID());
+    debugController.printLn("To setup Wifi Configuration");
+    globalDataController.flashLED(20, 50);
 }
