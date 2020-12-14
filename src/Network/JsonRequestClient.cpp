@@ -103,6 +103,7 @@ DynamicJsonDocument *JsonRequestClient::requestJson(
     this->resetLastError();
     WiFiClient reqClient = this->requestWifiClient(requestType, server, port, encodedAuth, httpPath, apiPostBody);
     if ((this->lastError != "") || !withResponse) {
+        reqClient.stop();
         return NULL;
     }
     
@@ -112,6 +113,7 @@ DynamicJsonDocument *JsonRequestClient::requestJson(
     if (error) {
         this->debugController->printLn("Data Parsing failed: " + server + ":" + String(port) + "[" + error.c_str() + "]");
         this->lastError = "Data Parsing failed: " + server + ":" + String(port);
+        reqClient.stop();
         return NULL;
     }
     reqClient.stop();

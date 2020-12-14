@@ -52,6 +52,18 @@ void KlipperClient::getPrinterJobResults() {
         bufferSize,
         true
     );
+    if (this->jsonRequestClient->getLastError() != "") {
+        this->debugController->printLn(this->jsonRequestClient->getLastError());
+        printerData.error = this->jsonRequestClient->getLastError();
+        printerData.state = "";
+        printerData.isPrinting = false;
+        printerData.toolTemp = "";
+        printerData.toolTargetTemp = "";
+        printerData.bedTemp = "";
+        printerData.bedTargetTemp = "";
+        return;
+    }
+
     printerData.state = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["state"];
     printerData.filamentLength = (const char*)(*jsonDoc)["result"]["status"]["job"]["print_stats"]["filament_used"];
     printerData.progressPrintTime = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["print_duration"];
