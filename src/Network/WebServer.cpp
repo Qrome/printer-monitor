@@ -171,12 +171,9 @@ void WebServer::displayPrinterStatus() {
     
     html += "<div class='w3-cell-row' style='width:100%'><h2>" + printerClient->getPrinterType() + " Monitor</h2></div><div class='w3-cell-row'>";
     html += "<div class='w3-cell w3-container' style='width:100%'><p>";
-    if (printerClient->getPrinterType() == "Repetier") {
+    if ((printerClient->getPrinterType() == "Repetier") || (printerClient->getPrinterType() == "Klipper")) {
         html += "Printer Name: " + printerClient->getPrinterName() + " <a href='/configure' title='Configure'><i class='fa fa-cog'></i></a><br>";
-    } 
-    else if (printerClient->getPrinterType() == "Klipper") {
-        html += "Printer Name: " + printerClient->getPrinterName() + " <a href='/configure' title='Configure'><i class='fa fa-cog'></i></a><br>";
-    } 
+    }
     else {
         html += "Host Name: " + this->globalDataController->getPrinterHostName() + " <a href='/configure' title='Configure'><i class='fa fa-cog'></i></a><br>";
     }
@@ -402,7 +399,7 @@ void WebServer::handleConfigure() {
     CHANGE_FORM =       "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
                         "<p><label>" + printerClient->getPrinterType() + " API Key (get from your server)</label>"
                         "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' id='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>";
-    if (printerClient->getPrinterType() == "OctoPrint" || "Klipper") {
+    if ((printerClient->getPrinterType() == "OctoPrint") || (printerClient->getPrinterType() == "Klipper")) {
         CHANGE_FORM +=      "<p><label>" + printerClient->getPrinterType() + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>";                        
     }
     CHANGE_FORM +=      "<p><label>" + printerClient->getPrinterType() + " Address (do not include http://)</label>"

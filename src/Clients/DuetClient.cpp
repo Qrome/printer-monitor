@@ -162,7 +162,7 @@ void DuetClient::getPrinterJobResults() {
     if (printerData.error != "") {
         return;
     }
-    const size_t bufferSize = 6*JSON_ARRAY_SIZE(1) + 3*JSON_ARRAY_SIZE(2) + 5*JSON_ARRAY_SIZE(3) + 5*JSON_OBJECT_SIZE(2) + 4*JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(9) + 257
+    const size_t bufferSize = 6*JSON_ARRAY_SIZE(1) + 3*JSON_ARRAY_SIZE(2) + 5*JSON_ARRAY_SIZE(3) + 5*JSON_OBJECT_SIZE(2) + 4*JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(9) + 257;
     DynamicJsonDocument jsonBuffer(bufferSize);
 
     // Parse JSON object
@@ -238,7 +238,7 @@ let eta = total_time - pstats.print_duration; */
     printerData.toolTargetTemp = (int)jsonBuffer["result"]["status"]["extruder"]["target"];
     printerData.bedTemp = (int)jsonBuffer["result"]["status"]["heater_bed"]["temperature"];
     printerData.bedTargetTemp = (int)jsonBuffer["result"]["status"]["heater_bed"]["target"];
-    printerData.fileSize = (long)jsonBuffer2["result"]["size"];
+    printerData.fileSize = (long)jsonBuffer["result"]["size"];
 
     if (isPrinting()) {
         this->debugController->printLn("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
