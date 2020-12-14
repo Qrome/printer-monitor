@@ -11,9 +11,7 @@ private:
     boolean pollPsu;
 
     boolean validate();
-    WiFiClient getSubmitRequest(String apiGetData);
-    WiFiClient getPostRequest(String apiPostData, String apiPostBody);
-  
+ 
 public:
     KlipperClient(GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient);
 

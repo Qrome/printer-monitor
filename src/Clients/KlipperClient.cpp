@@ -30,139 +30,6 @@ boolean KlipperClient::validate() {
     return rtnValue;
 }
 
-WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
-
-
-
-
-
-    WiFiClient printClient;
-    printClient.setTimeout(5000);
-    String targetServer = this->globalDataController->getPrinterServer();
-    if (this->globalDataController->getPrinterServer() == "") {
-        targetServer = this->globalDataController->getPrinterHostName();
-    }
-
-    this->debugController->printLn("Getting Klipper Data via GET");
-    this->debugController->printLn(apiGetData);
-    result = "";
-    if (printClient.connect(targetServer, this->globalDataController->getPrinterPort())) {  //starts client connection, checks for connection
-        printClient.println(apiGetData);
-        printClient.println("Host: " + String(targetServer) + ":" + this->globalDataController->getPrinterPort());
-        if (encodedAuth != "") {
-        printClient.print("Authorization: ");
-        printClient.println("Basic " + encodedAuth);
-        }
-        printClient.println("User-Agent: ArduinoWiFi/1.1");
-        printClient.println("Connection: close");
-        if (printClient.println() == 0) {
-        this->debugController->printLn("Connection to " + targetServer + ":" + String(this->globalDataController->getPrinterPort()) + " failed.");
-        this->debugController->printLn("");
-        resetPrintData();
-        printerData.error = "Connection to " + targetServer + ":" + String(this->globalDataController->getPrinterPort()) + " failed.";
-        return printClient;
-        }
-    } 
-    else {
-        this->debugController->printLn("Connection to Klipper failed: " + targetServer + ":" + String(this->globalDataController->getPrinterPort())); //error message if no client connect
-        this->debugController->printLn("");
-        resetPrintData();
-        printerData.error = "Connection to Klipper failed: " + targetServer + ":" + String(this->globalDataController->getPrinterPort());
-        return printClient;
-    }
-
-    // Check HTTP status
-    char status[32] = {0};
-    printClient.readBytesUntil('\r', status, sizeof(status));
-    if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
-        this->debugController->printLn("Unexpected response: ");
-        this->debugController->printLn(status);
-        printerData.state = "";
-        printerData.error = "Response: " + String(status);
-        return printClient;
-    }
-
-    // Skip HTTP headers
-    char endOfHeaders[] = "\r\n\r\n";
-    if (!printClient.find(endOfHeaders)) {
-        this->debugController->printLn("Invalid response");
-        printerData.error = "Invalid response from " + targetServer + ":" + String(this->globalDataController->getPrinterPort());
-        printerData.state = "";
-    }
-
-    return printClient;
-}
-
-WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody) {
-    WiFiClient printClient;
-    printClient.setTimeout(5000);
-    String targetServer = this->globalDataController->getPrinterServer();
-    if (this->globalDataController->getPrinterServer() == "") {
-        targetServer = this->globalDataController->getPrinterHostName();
-    }
-
-    this->debugController->printLn("Getting Klipper Data via POST");
-    this->debugController->printLn(apiPostData + " | " + apiPostBody);
-    result = "";
-    if (printClient.connect(targetServer, this->globalDataController->getPrinterPort())) {  //starts client connection, checks for connection
-        printClient.println(apiPostData);
-        printClient.println("Host: " + targetServer + ":" + String(this->globalDataController->getPrinterPort()));
-        printClient.println("Connection: close");
-        if (encodedAuth != "") {
-            printClient.print("Authorization: ");
-            printClient.println("Basic " + encodedAuth);
-        }
-        printClient.println("User-Agent: ArduinoWiFi/1.1");
-        printClient.println("Content-Type: application/json");
-        printClient.print("Content-Length: ");
-        printClient.println(apiPostBody.length());
-        printClient.println();
-        printClient.println(apiPostBody);
-        if (printClient.println() == 0) {
-            this->debugController->printLn("Connection to " + targetServer + ":" + String(this->globalDataController->getPrinterPort()) + " failed.");
-            this->debugController->printLn("");
-            resetPrintData();
-            printerData.error = "Connection to " + targetServer + ":" + String(this->globalDataController->getPrinterPort()) + " failed.";
-            return printClient;
-        }
-    } 
-    else {
-        this->debugController->printLn("Connection to Klipper failed: " + targetServer + ":" + String(this->globalDataController->getPrinterPort())); //error message if no client connect
-        this->debugController->printLn("");
-        resetPrintData();
-        printerData.error = "Connection to Klipper failed: " + targetServer + ":" + String(this->globalDataController->getPrinterPort());
-        return printClient;
-    }
-
-    // Check HTTP status
-    char status[32] = {0};
-    printClient.readBytesUntil('\r', status, sizeof(status));
-    if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
-        this->debugController->print("Unexpected response: ");
-        this->debugController->printLn(status);
-        printerData.state = "";
-        printerData.error = "Response: " + String(status);
-        return printClient;
-    }
-
-    // Skip HTTP headers
-    char endOfHeaders[] = "\r\n\r\n";
-    if (!printClient.find(endOfHeaders)) {
-        this->debugController->printLn("Invalid response");
-        printerData.error = "Invalid response from " + targetServer + ":" + String(this->globalDataController->getPrinterPort());
-        printerData.state = "";
-    }
-
-    return printClient;
-}
-
-
-
-
-
-
-
-
 
 
 
@@ -195,7 +62,6 @@ void KlipperClient::getPrinterJobResults() {
     } else {
         printerData.isPrinting = false;
     }
-    printerData.state = "I";
     if (BasePrinterClientImpl::isOperational()) {
         this->debugController->printLn("Status: " + printerData.state);
     } else {
@@ -326,7 +192,7 @@ let eta = total_time - pstats.print_duration; */
 }
 
 void KlipperClient::getPrinterPsuState() {
-    //**** get the PSU state (if enabled and printer operational)
+    /*// get the PSU state (if enabled and printer operational)
     if (pollPsu && BasePrinterClientImpl::isOperational()) {
         if (!validate()) {
             printerData.isPSUoff = false; // we do not know PSU state, so assume on.
@@ -358,5 +224,5 @@ void KlipperClient::getPrinterPsuState() {
         printClient.stop(); //stop client
     } else {
         printerData.isPSUoff = false; // we are not checking PSU state, so assume on
-    }
+    } */
 }
