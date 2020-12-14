@@ -1,6 +1,8 @@
 #pragma once
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
+#include <base64.h>
+#include "Debug.h"
 
 class BasePrinterClient {
 public:

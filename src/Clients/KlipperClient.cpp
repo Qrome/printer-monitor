@@ -3,16 +3,12 @@
 
 #include "KlipperClient.h"
 
-KlipperClient::KlipperClient(GlobalDataController *globalDataController, DebugController *debugController) {
-    this->globalDataController = globalDataController;
-    this->debugController = debugController;
+KlipperClient::KlipperClient(GlobalDataController *globalDataController, DebugController *debugController)
+: BasePrinterClientImpl("Klipper", globalDataController, debugController) {
     this->updatePrintClient();
 }
 
 void KlipperClient::updatePrintClient() {
-    this->globalDataController->getPrinterHostName().toCharArray(this->myServer, 100);
-    this->globalDataController->getPrinterServer().toCharArray(this->myServerIp, 30);
-    this->myPort = this->globalDataController->getPrinterPort();
     encodedAuth = "";
     if (this->globalDataController->getPrinterAuthUser() != "") {
         String userpass = this->globalDataController->getPrinterAuthUser() + ":" + this->globalDataController->getPrinterAuthPass();
@@ -25,7 +21,7 @@ void KlipperClient::updatePrintClient() {
 boolean KlipperClient::validate() {
     boolean rtnValue = false;
     printerData.error = "";
-    if ((String(this->myServer) == "") && (String(this->myServerIp) == "")) {
+    if ((this->globalDataController->getPrinterServer() == "") && (this->globalDataController->getPrinterHostName() == "")) {
         printerData.error += "Server address or host name is required; ";
     }
     if (printerData.error == "") {
@@ -37,17 +33,17 @@ boolean KlipperClient::validate() {
 WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
     WiFiClient printClient;
     printClient.setTimeout(5000);
-    const char *targetServer = this->myServerIp;
-    if (String(this->myServerIp) == "") {
-        targetServer = this->myServer;
+    String targetServer = this->globalDataController->getPrinterServer();
+    if (this->globalDataController->getPrinterServer() == "") {
+        targetServer = this->globalDataController->getPrinterHostName();
     }
 
     this->debugController->printLn("Getting Klipper Data via GET");
     this->debugController->printLn(apiGetData);
     result = "";
-    if (printClient.connect(targetServer, myPort)) {  //starts client connection, checks for connection
+    if (printClient.connect(targetServer, this->globalDataController->getPrinterPort())) {  //starts client connection, checks for connection
         printClient.println(apiGetData);
-        printClient.println("Host: " + String(targetServer) + ":" + String(myPort));
+        printClient.println("Host: " + String(targetServer) + ":" + this->globalDataController->getPrinterPort());
         if (encodedAuth != "") {
         printClient.print("Authorization: ");
         printClient.println("Basic " + encodedAuth);
@@ -55,18 +51,18 @@ WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
         printClient.println("User-Agent: ArduinoWiFi/1.1");
         printClient.println("Connection: close");
         if (printClient.println() == 0) {
-        this->debugController->printLn("Connection to " + String(targetServer) + ":" + String(myPort) + " failed.");
+        this->debugController->printLn("Connection to " + targetServer + ":" + String(this->globalDataController->getPrinterPort()) + " failed.");
         this->debugController->printLn("");
         resetPrintData();
-        printerData.error = "Connection to " + String(targetServer) + ":" + String(myPort) + " failed.";
+        printerData.error = "Connection to " + targetServer + ":" + String(this->globalDataController->getPrinterPort()) + " failed.";
         return printClient;
         }
     } 
     else {
-        this->debugController->printLn("Connection to Klipper failed: " + String(targetServer) + ":" + String(myPort)); //error message if no client connect
+        this->debugController->printLn("Connection to Klipper failed: " + targetServer + ":" + String(this->globalDataController->getPrinterPort())); //error message if no client connect
         this->debugController->printLn("");
         resetPrintData();
-        printerData.error = "Connection to Klipper failed: " + String(targetServer) + ":" + String(myPort);
+        printerData.error = "Connection to Klipper failed: " + targetServer + ":" + String(this->globalDataController->getPrinterPort());
         return printClient;
     }
 
@@ -85,7 +81,7 @@ WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
     char endOfHeaders[] = "\r\n\r\n";
     if (!printClient.find(endOfHeaders)) {
         this->debugController->printLn("Invalid response");
-        printerData.error = "Invalid response from " + String(targetServer) + ":" + String(myPort);
+        printerData.error = "Invalid response from " + targetServer + ":" + String(this->globalDataController->getPrinterPort());
         printerData.state = "";
     }
 
@@ -95,17 +91,17 @@ WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
 WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody) {
     WiFiClient printClient;
     printClient.setTimeout(5000);
-    const char *targetServer = this->myServerIp;
-    if (String(this->myServerIp) == "") {
-        targetServer = this->myServer;
+    String targetServer = this->globalDataController->getPrinterServer();
+    if (this->globalDataController->getPrinterServer() == "") {
+        targetServer = this->globalDataController->getPrinterHostName();
     }
 
     this->debugController->printLn("Getting Klipper Data via POST");
     this->debugController->printLn(apiPostData + " | " + apiPostBody);
     result = "";
-    if (printClient.connect(targetServer, myPort)) {  //starts client connection, checks for connection
+    if (printClient.connect(targetServer, this->globalDataController->getPrinterPort())) {  //starts client connection, checks for connection
         printClient.println(apiPostData);
-        printClient.println("Host: " + String(targetServer) + ":" + String(myPort));
+        printClient.println("Host: " + targetServer + ":" + String(this->globalDataController->getPrinterPort()));
         printClient.println("Connection: close");
         if (encodedAuth != "") {
             printClient.print("Authorization: ");
@@ -118,18 +114,18 @@ WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody)
         printClient.println();
         printClient.println(apiPostBody);
         if (printClient.println() == 0) {
-            this->debugController->printLn("Connection to " + String(targetServer) + ":" + String(myPort) + " failed.");
+            this->debugController->printLn("Connection to " + targetServer + ":" + String(this->globalDataController->getPrinterPort()) + " failed.");
             this->debugController->printLn("");
             resetPrintData();
-            printerData.error = "Connection to " + String(targetServer) + ":" + String(myPort) + " failed.";
+            printerData.error = "Connection to " + targetServer + ":" + String(this->globalDataController->getPrinterPort()) + " failed.";
             return printClient;
         }
     } 
     else {
-        this->debugController->printLn("Connection to Klipper failed: " + String(targetServer) + ":" + String(myPort)); //error message if no client connect
+        this->debugController->printLn("Connection to Klipper failed: " + targetServer + ":" + String(this->globalDataController->getPrinterPort())); //error message if no client connect
         this->debugController->printLn("");
         resetPrintData();
-        printerData.error = "Connection to Klipper failed: " + String(targetServer) + ":" + String(myPort);
+        printerData.error = "Connection to Klipper failed: " + targetServer + ":" + String(this->globalDataController->getPrinterPort());
         return printClient;
     }
 
@@ -148,7 +144,7 @@ WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody)
     char endOfHeaders[] = "\r\n\r\n";
     if (!printClient.find(endOfHeaders)) {
         this->debugController->printLn("Invalid response");
-        printerData.error = "Invalid response from " + String(targetServer) + ":" + String(myPort);
+        printerData.error = "Invalid response from " + targetServer + ":" + String(this->globalDataController->getPrinterPort());
         printerData.state = "";
     }
 
@@ -159,9 +155,9 @@ void KlipperClient::getPrinterJobResults() {
     if (!validate()) {
         return;
     }
-    const char *targetServer = this->myServerIp;
-    if (String(this->myServerIp) == "") {
-        targetServer = this->myServer;
+    String targetServer = this->globalDataController->getPrinterServer();
+    if (this->globalDataController->getPrinterServer() == "") {
+        targetServer = this->globalDataController->getPrinterHostName();
     }
 
     //**** get the Printer Job status
@@ -176,15 +172,14 @@ void KlipperClient::getPrinterJobResults() {
     // Parse JSON object
     DeserializationError error = deserializeJson(jsonBuffer, printClient);
     if (error) {
-        this->debugController->printLn("Klipper Data Parsing failed: " + String(targetServer) + ":" + String(myPort));
-        printerData.error = "Klipper Data Parsing failed: " + String(targetServer) + ":" + String(myPort);
+        this->debugController->printLn("Klipper Data Parsing failed: " + targetServer + ":" + String(this->globalDataController->getPrinterPort()));
+        printerData.error = "Klipper Data Parsing failed: " + targetServer + ":" + String(this->globalDataController->getPrinterPort());
         printerData.state = "";
         printerData.isPrinting = false;
         printerData.toolTemp = "";
         printerData.toolTargetTemp = "";
         printerData.bedTemp = "";
         printerData.bedTargetTemp = (const char*)jsonBuffer["result"]["status"]["heater_bed"]["target"];
-        return;
         return;
     }
     
@@ -210,7 +205,7 @@ let total_time = pstats.print_duration / vsd.progress;
 let eta = total_time - pstats.print_duration; */
 
 
-    if (isOperational()) {
+    if (BasePrinterClientImpl::isOperational()) {
         this->debugController->printLn("Status: " + printerData.state);
     } else {
         this->debugController->printLn("Printer Not Operational");
@@ -248,14 +243,14 @@ let eta = total_time - pstats.print_duration; */
     printerData.bedTargetTemp = (int)jsonBuffer["result"]["status"]["heater_bed"]["target"];
     printerData.fileSize = (long)jsonBuffer2["result"]["size"];
 
-    if (isPrinting()) {
+    if (BasePrinterClientImpl::isOperational()) {
         this->debugController->printLn("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
     }
 }
 
 void KlipperClient::getPrinterPsuState() {
     //**** get the PSU state (if enabled and printer operational)
-    if (pollPsu && isOperational()) {
+    if (pollPsu && BasePrinterClientImpl::isOperational()) {
         if (!validate()) {
             printerData.isPSUoff = false; // we do not know PSU state, so assume on.
             return;
@@ -287,132 +282,4 @@ void KlipperClient::getPrinterPsuState() {
     } else {
         printerData.isPSUoff = false; // we are not checking PSU state, so assume on
     }
-}
-
-// Reset all PrinterData
-void KlipperClient::resetPrintData() {
-    printerData.averagePrintTime = "";
-    printerData.estimatedPrintTime = "";
-    printerData.fileName = "";
-    printerData.fileSize = "";
-    printerData.lastPrintTime = "";
-    printerData.progressCompletion = "";
-    printerData.progressFilepos = "";
-    printerData.progressPrintTime = "";
-    printerData.progressPrintTimeLeft = "";
-    printerData.state = "";
-    printerData.toolTemp = "";
-    printerData.toolTargetTemp = "";
-    printerData.filamentLength = "";
-    printerData.bedTemp = "";
-    printerData.bedTargetTemp = "";
-    printerData.isPrinting = false;
-    printerData.isPSUoff = false;
-    printerData.error = "";
-}
-
-String KlipperClient::getAveragePrintTime(){
-    return printerData.averagePrintTime;
-}
-
-String KlipperClient::getEstimatedPrintTime() {
-    return printerData.estimatedPrintTime;
-}
-
-String KlipperClient::getFileName() {
-    return printerData.fileName;
-}
-
-String KlipperClient::getFileSize() {
-    return printerData.fileSize;
-}
-
-String KlipperClient::getLastPrintTime(){
-    return printerData.lastPrintTime;
-}
-
-String KlipperClient::getProgressCompletion() {
-    return String(printerData.progressCompletion.toInt());
-}
-
-String KlipperClient::getProgressFilepos() {
-    return printerData.progressFilepos;  
-}
-
-String KlipperClient::getProgressPrintTime() {
-    return printerData.progressPrintTime;
-}
-
-String KlipperClient::getProgressPrintTimeLeft() {
-    String rtnValue = printerData.progressPrintTimeLeft;
-    if (getProgressCompletion() == "100") {
-        rtnValue = "0"; // Print is done so this should be 0 this is a fix for Klipper
-    }
-    return rtnValue;
-}
-
-String KlipperClient::getState() {
-    return printerData.state;
-}
-
-boolean KlipperClient::isPrinting() {
-    return printerData.isPrinting;
-}
-
-boolean KlipperClient::isPSUoff() {
-    return printerData.isPSUoff;
-}
-
-boolean KlipperClient::isOperational() {
-    boolean operational = false;
-    if (printerData.state == "standby" || isPrinting()) {
-        operational = true;
-    }
-    return operational;
-}
-
-String KlipperClient::getTempBedActual() {
-    return printerData.bedTemp;
-}
-
-String KlipperClient::getTempBedTarget() {
-    return printerData.bedTargetTemp;
-}
-
-String KlipperClient::getTempToolActual() {
-    return printerData.toolTemp;
-}
-
-String KlipperClient::getTempToolTarget() {
-    return printerData.toolTargetTemp;
-}
-
-String KlipperClient::getFilamentLength() {
-    return printerData.filamentLength;
-}
-
-String KlipperClient::getError() {
-    return printerData.error;
-}
-
-String KlipperClient::getValueRounded(String value) {
-    float f = value.toFloat();
-    int rounded = (int)(f+0.5f);
-    return String(rounded);
-}
-
-String KlipperClient::getPrinterType() {
-    return printerType;
-}
-
-int KlipperClient::getPrinterPort() {
-    return myPort;
-}
-
-String KlipperClient::getPrinterName() {
-    return printerData.printerName;
-}
-
-void KlipperClient::setPrinterName(String printer) {
-    printerData.printerName = printer;
 }

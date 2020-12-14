@@ -3,16 +3,13 @@
 
 #include "DuetClient.h"
 
-DuetClient::DuetClient(GlobalDataController *globalDataController, DebugController *debugController) {
-    this->globalDataController = globalDataController;
-    this->debugController = debugController;
+DuetClient::DuetClient(GlobalDataController *globalDataController, DebugController *debugController)
+: BasePrinterClientImpl("Duet", globalDataController, debugController) {
     this->updatePrintClient();
 }
 
 void DuetClient::updatePrintClient() {
-    this->globalDataController->getPrinterHostName().toCharArray(this->myServer, 100);
     myApiKey = this->globalDataController->getPrinterApiKey();
-    myPort = this->globalDataController->getPrinterPort();
     encodedAuth = "";
     if (this->globalDataController->getPrinterAuthUser() != "") {
         String userpass = this->globalDataController->getPrinterAuthUser() + ":" + this->globalDataController->getPrinterAuthPass();
@@ -25,7 +22,7 @@ void DuetClient::updatePrintClient() {
 boolean DuetClient::validate() {
     boolean rtnValue = false;
     printerData.error = "";
-    if (String(myServer) == "") {
+    if (this->globalDataController->getPrinterServer() == "") {
         printerData.error += "Server address is required; ";
     }
     if (myApiKey == "") {
@@ -44,9 +41,9 @@ WiFiClient DuetClient::getSubmitRequest(String apiGetData) {
     this->debugController->printLn("Getting Duet Data via GET");
     this->debugController->printLn(apiGetData);
     result = "";
-    if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
+    if (printClient.connect(this->globalDataController->getPrinterServer(), this->globalDataController->getPrinterPort())) {  //starts client connection, checks for connection
         printClient.println(apiGetData);
-        printClient.println("Host: " + String(myServer) + ":" + String(myPort));
+        printClient.println("Host: " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort()));
         printClient.println("X-Api-Key: " + myApiKey);
         if (encodedAuth != "") {
         printClient.print("Authorization: ");
@@ -55,18 +52,18 @@ WiFiClient DuetClient::getSubmitRequest(String apiGetData) {
         printClient.println("User-Agent: ArduinoWiFi/1.1");
         printClient.println("Connection: close");
         if (printClient.println() == 0) {
-        this->debugController->printLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
+        this->debugController->printLn("Connection to " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort()) + " failed.");
         this->debugController->printLn("");
         resetPrintData();
-        printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
+        printerData.error = "Connection to " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort()) + " failed.";
         return printClient;
         }
     } 
     else {
-        this->debugController->printLn("Connection to Duet failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+        this->debugController->printLn("Connection to Duet failed: " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort())); //error message if no client connect
         this->debugController->printLn("");
         resetPrintData();
-        printerData.error = "Connection to Duet failed: " + String(myServer) + ":" + String(myPort);
+        printerData.error = "Connection to Duet failed: " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort());
         return printClient;
     }
 
@@ -85,7 +82,7 @@ WiFiClient DuetClient::getSubmitRequest(String apiGetData) {
     char endOfHeaders[] = "\r\n\r\n";
     if (!printClient.find(endOfHeaders)) {
         this->debugController->printLn("Invalid response");
-        printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
+        printerData.error = "Invalid response from " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort());
         printerData.state = "";
     }
 
@@ -99,9 +96,9 @@ WiFiClient DuetClient::getPostRequest(String apiPostData, String apiPostBody) {
     this->debugController->printLn("Getting Duet Data via POST");
     this->debugController->printLn(apiPostData + " | " + apiPostBody);
     result = "";
-    if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
+    if (printClient.connect(this->globalDataController->getPrinterServer(), this->globalDataController->getPrinterPort())) {  //starts client connection, checks for connection
         printClient.println(apiPostData);
-        printClient.println("Host: " + String(myServer) + ":" + String(myPort));
+        printClient.println("Host: " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort()));
         printClient.println("Connection: close");
         printClient.println("X-Api-Key: " + myApiKey);
         if (encodedAuth != "") {
@@ -115,18 +112,18 @@ WiFiClient DuetClient::getPostRequest(String apiPostData, String apiPostBody) {
         printClient.println();
         printClient.println(apiPostBody);
         if (printClient.println() == 0) {
-        this->debugController->printLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
+        this->debugController->printLn("Connection to " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort()) + " failed.");
         this->debugController->printLn("");
         resetPrintData();
-        printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
+        printerData.error = "Connection to " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort()) + " failed.";
         return printClient;
         }
     } 
     else {
-        this->debugController->printLn("Connection to Duet failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+        this->debugController->printLn("Connection to Duet failed: " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort())); //error message if no client connect
         this->debugController->printLn("");
         resetPrintData();
-        printerData.error = "Connection to Duet failed: " + String(myServer) + ":" + String(myPort);
+        printerData.error = "Connection to Duet failed: " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort());
         return printClient;
     }
 
@@ -145,7 +142,7 @@ WiFiClient DuetClient::getPostRequest(String apiPostData, String apiPostBody) {
     char endOfHeaders[] = "\r\n\r\n";
     if (!printClient.find(endOfHeaders)) {
         this->debugController->printLn("Invalid response");
-        printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
+        printerData.error = "Invalid response from " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort());
         printerData.state = "";
     }
 
@@ -168,8 +165,8 @@ void DuetClient::getPrinterJobResults() {
     // Parse JSON object
     DeserializationError error = deserializeJson(jsonBuffer, printClient);
     if (error) {
-        this->debugController->printLn("Duet Data Parsing failed: " + String(myServer) + ":" + String(myPort));
-        printerData.error = "Duet Data Parsing failed: " + String(myServer) + ":" + String(myPort);
+        this->debugController->printLn("Duet Data Parsing failed: " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort()));
+        printerData.error = "Duet Data Parsing failed: " + this->globalDataController->getPrinterServer() + ":" + String(this->globalDataController->getPrinterPort());
         printerData.state = "";
         printerData.isPrinting = false;
         printerData.toolTemp = "";
@@ -202,7 +199,7 @@ let total_time = pstats.print_duration / vsd.progress;
 let eta = total_time - pstats.print_duration; */
 
 
-    if (isOperational()) {
+    if (BasePrinterClientImpl::isOperational()) {
         this->debugController->printLn("Status: " + printerData.state);
     } else {
         this->debugController->printLn("Printer Not Operational");
@@ -240,14 +237,14 @@ let eta = total_time - pstats.print_duration; */
     printerData.bedTargetTemp = (int)jsonBuffer["result"]["status"]["heater_bed"]["target"];
     printerData.fileSize = (long)jsonBuffer["result"]["size"];
 
-    if (isPrinting()) {
+    if (BasePrinterClientImpl::isPrinting()) {
         this->debugController->printLn("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
     }
 }
 
 void DuetClient::getPrinterPsuState() {
     //**** get the PSU state (if enabled and printer operational)
-    if (pollPsu && isOperational()) {
+    if (pollPsu && BasePrinterClientImpl::isOperational()) {
         if (!validate()) {
             printerData.isPSUoff = false; // we do not know PSU state, so assume on.
             return;
@@ -279,132 +276,4 @@ void DuetClient::getPrinterPsuState() {
     } else {
         printerData.isPSUoff = false; // we are not checking PSU state, so assume on
     }
-}
-
-// Reset all PrinterData
-void DuetClient::resetPrintData() {
-    printerData.averagePrintTime = "";
-    printerData.estimatedPrintTime = "";
-    printerData.fileName = "";
-    printerData.fileSize = "";
-    printerData.lastPrintTime = "";
-    printerData.progressCompletion = "";
-    printerData.progressFilepos = "";
-    printerData.progressPrintTime = "";
-    printerData.progressPrintTimeLeft = "";
-    printerData.state = "";
-    printerData.toolTemp = "";
-    printerData.toolTargetTemp = "";
-    printerData.filamentLength = "";
-    printerData.bedTemp = "";
-    printerData.bedTargetTemp = "";
-    printerData.isPrinting = false;
-    printerData.isPSUoff = false;
-    printerData.error = "";
-}
-
-String DuetClient::getAveragePrintTime(){
-    return printerData.averagePrintTime;
-}
-
-String DuetClient::getEstimatedPrintTime() {
-    return printerData.estimatedPrintTime;
-}
-
-String DuetClient::getFileName() {
-    return printerData.fileName;
-}
-
-String DuetClient::getFileSize() {
-    return printerData.fileSize;
-}
-
-String DuetClient::getLastPrintTime(){
-    return printerData.lastPrintTime;
-}
-
-String DuetClient::getProgressCompletion() {
-    return String(printerData.progressCompletion.toInt());
-}
-
-String DuetClient::getProgressFilepos() {
-    return printerData.progressFilepos;  
-}
-
-String DuetClient::getProgressPrintTime() {
-    return printerData.progressPrintTime;
-}
-
-String DuetClient::getProgressPrintTimeLeft() {
-    String rtnValue = printerData.progressPrintTimeLeft;
-    if (getProgressCompletion() == "100") {
-        rtnValue = "0"; // Print is done so this should be 0 this is a fix for Duet
-    }
-    return rtnValue;
-}
-
-String DuetClient::getState() {
-    return printerData.state;
-}
-
-boolean DuetClient::isPrinting() {
-    return printerData.isPrinting;
-}
-
-boolean DuetClient::isPSUoff() {
-    return printerData.isPSUoff;
-}
-
-boolean DuetClient::isOperational() {
-    boolean operational = false;
-    if (printerData.state == "I" || isPrinting()) {
-        operational = true;
-    }
-    return operational;
-}
-
-String DuetClient::getTempBedActual() {
-    return printerData.bedTemp;
-}
-
-String DuetClient::getTempBedTarget() {
-    return printerData.bedTargetTemp;
-}
-
-String DuetClient::getTempToolActual() {
-    return printerData.toolTemp;
-}
-
-String DuetClient::getTempToolTarget() {
-    return printerData.toolTargetTemp;
-}
-
-String DuetClient::getFilamentLength() {
-    return printerData.filamentLength;
-}
-
-String DuetClient::getError() {
-    return printerData.error;
-}
-
-String DuetClient::getValueRounded(String value) {
-    float f = value.toFloat();
-    int rounded = (int)(f+0.5f);
-    return String(rounded);
-}
-
-String DuetClient::getPrinterType() {
-    return printerType;
-}
-
-int DuetClient::getPrinterPort() {
-    return myPort;
-}
-
-String DuetClient::getPrinterName() {
-    return printerData.printerName;
-}
-
-void DuetClient::setPrinterName(String printer) {
-    printerData.printerName = printer;
 }
