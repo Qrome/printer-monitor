@@ -60,6 +60,15 @@ WiFiClient JsonRequestClient::requestWifiClient(
 
     while(requestClient.connected() && !requestClient.available()) delay(1); 
 
+    // Did we have header data in response?
+    char statusPeek[32] = {0};
+    requestClient.peekBytes(statusPeek, sizeof(statusPeek));
+    if (String(statusPeek).indexOf("HTTP/") < 0) {
+        this->debugController->print("No HTTP Header: ");
+        this->debugController->printLn(statusPeek);
+        return requestClient;
+    }
+
     // Check HTTP status
     char status[32] = {0};
     requestClient.readBytesUntil('\r', status, sizeof(status));
@@ -101,10 +110,11 @@ DynamicJsonDocument *JsonRequestClient::requestJson(
     DynamicJsonDocument *returnJson = this->createNewJsonDocument(bufferSize);
     DeserializationError error = deserializeJson(*returnJson, reqClient);
     if (error) {
-        this->debugController->printLn("Data Parsing failed: " + server + ":" + String(port));
-        this->lastError = "Klipper Data Parsing failed: " + server + ":" + String(port);
+        this->debugController->printLn("Data Parsing failed: " + server + ":" + String(port) + "[" + error.c_str() + "]");
+        this->lastError = "Data Parsing failed: " + server + ":" + String(port);
         return NULL;
     }
+    reqClient.stop();
     return returnJson;
 }
 
@@ -126,6 +136,7 @@ DynamicJsonDocument *JsonRequestClient::createNewJsonDocument(size_t bufferSize)
 
 void JsonRequestClient::freeLastJsonDocument() {
     if (JsonRequestClient::lastJsonDocument != NULL) {
+        JsonRequestClient::lastJsonDocument->clear();
         free(JsonRequestClient::lastJsonDocument);
         JsonRequestClient::lastJsonDocument = NULL;
     }
