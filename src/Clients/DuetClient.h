@@ -4,19 +4,14 @@
 #include <base64.h>
 #include "Debug.h"
 #include "BasePrinterClientImpl.h"
+#include "../Global/GlobalDataController.h"
 
 class DuetClient : public BasePrinterClientImpl {
 private:
-    String myApiKey = "";
-    String encodedAuth = "";
     boolean pollPsu;
 
     boolean validate();
-    WiFiClient getSubmitRequest(String apiGetData);
-    WiFiClient getPostRequest(String apiPostData, String apiPostBody);
-    
-    String result;
-  
+ 
 public:
     DuetClient(GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient);
 

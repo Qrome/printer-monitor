@@ -72,7 +72,7 @@ WiFiClient JsonRequestClient::requestWifiClient(
     // Check HTTP status
     char status[32] = {0};
     requestClient.readBytesUntil('\r', status, sizeof(status));
-    if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
+    if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0 && strcmp(status, "HTTP/1.1 503 Service Unavailable") != 0) {
         this->debugController->print("Unexpected response: ");
         this->debugController->printLn(status);
         this->lastError = "Response: " + String(status);

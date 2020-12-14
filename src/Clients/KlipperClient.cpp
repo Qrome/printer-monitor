@@ -102,12 +102,6 @@ void KlipperClient::getPrinterJobResults() {
         printerData.toolTargetTemp = "";
         printerData.bedTemp = "";
         printerData.bedTargetTemp = "";
-        printerData.state = "";
-        printerData.isPrinting = false;
-        printerData.toolTemp = "";
-        printerData.toolTargetTemp = "";
-        printerData.bedTemp = "";
-        printerData.bedTargetTemp = "";
         return;
     }
 
