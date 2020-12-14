@@ -21,8 +21,9 @@ public:
     TimeClient(float utcOffset, DebugController * debugController);
     void updateTime();
     bool handleSync(int snycDelayMinutes);
-    int getMinutesFromLastRefresh();
+    int getMinutesFromLast(long lastEpochToUse);
     void resetLastEpoch();
+    long getLastEpoch();
 
     void setUtcOffset(float utcOffset);
     String getHours();

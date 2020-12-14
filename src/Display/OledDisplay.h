@@ -4,6 +4,7 @@
 #include "../Global/GlobalDataController.h"
 #include <OLEDDisplayUi.h>
 #include <OLEDDisplay.h>
+#include "../../include/WeatherStationFonts.h"
 
 class OledDisplay {
 private:
@@ -11,6 +12,8 @@ private:
     DebugController *debugController;
     OLEDDisplay *oledDisplay;
     OLEDDisplayUi *ui;
+    boolean displayOn = true;
+    long displayOffEpoch = 0;
 
     FrameCallback frames[3];
     FrameCallback clockFrame[2];
@@ -29,7 +32,8 @@ public:
 
 
 
-
+    void checkDisplay();
+    void enableDisplay(boolean enable);
     void drawScreen1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
     void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
     void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
@@ -37,4 +41,5 @@ public:
     void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
     void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
     void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
+    void drawRssi(OLEDDisplay *display);
 };

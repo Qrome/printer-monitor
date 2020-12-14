@@ -7,7 +7,7 @@ TimeClient::TimeClient(float utcOffset, DebugController * debugController) {
 
 bool TimeClient::handleSync(int snycDelayMinutes) {
     //Get Time Update
-    if((this->getMinutesFromLastRefresh() >= snycDelayMinutes) || this->lastEpoch == 0) {
+    if((this->getMinutesFromLast(this->lastEpoch) >= snycDelayMinutes) || this->lastEpoch == 0) {
         this->debugController->printLn("Updating Time...");
         this->updateTime();
         this->lastEpoch = this->getCurrentEpoch();
@@ -17,13 +17,17 @@ bool TimeClient::handleSync(int snycDelayMinutes) {
     return false;
 }
 
-int TimeClient::getMinutesFromLastRefresh() {
-    int minutes = (this->getCurrentEpoch() - this->lastEpoch) / 60;
+int TimeClient::getMinutesFromLast(long lastEpochToUse) {
+    int minutes = (this->getCurrentEpoch() - lastEpochToUse) / 60;
     return minutes;
 }
 
 void TimeClient::resetLastEpoch() {
     this->lastEpoch = 0;
+}
+
+long TimeClient::getLastEpoch() {
+    return this->lastEpoch;
 }
 
 void TimeClient::updateTime() {
