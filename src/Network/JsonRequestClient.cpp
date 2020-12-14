@@ -130,6 +130,7 @@ DynamicJsonDocument *JsonRequestClient::createNewJsonDocument(size_t bufferSize)
     if (JsonRequestClient::lastJsonDocument != NULL) {
         this->freeLastJsonDocument();
     }
+    Serial.printf_P(PSTR("free heap memory: %d\n"), ESP.getFreeHeap());
     JsonRequestClient::lastJsonDocument = new DynamicJsonDocument(bufferSize);
     return JsonRequestClient::lastJsonDocument;
 }
@@ -137,6 +138,7 @@ DynamicJsonDocument *JsonRequestClient::createNewJsonDocument(size_t bufferSize)
 void JsonRequestClient::freeLastJsonDocument() {
     if (JsonRequestClient::lastJsonDocument != NULL) {
         JsonRequestClient::lastJsonDocument->clear();
+        JsonRequestClient::lastJsonDocument->~BasicJsonDocument();
         free(JsonRequestClient::lastJsonDocument);
         JsonRequestClient::lastJsonDocument = NULL;
     }
