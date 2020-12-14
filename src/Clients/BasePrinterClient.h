@@ -1,13 +1,3 @@
-/**
- * @file BasePrinterClient.h
- * @author Robert Stein
- * @brief Basic implementation for all implemented printer 
- *        Clients
- * @version 0.1
- * @date 2020-12-12
- * 
- * @copyright Copyright (c) 2020
-  */
 #pragma once
 #include <Arduino.h>
 #include <ESP8266WiFi.h>

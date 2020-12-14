@@ -7,7 +7,6 @@ GlobalDataController::GlobalDataController(TimeClient *timeClient, OpenWeatherMa
 }
 
 void GlobalDataController::setup() {
-    
     this->listSettingFiles();
     this->readSettings();
 }
@@ -71,15 +70,10 @@ void GlobalDataController::readSettings() {
             this->PrinterHasPsu = line.substring(line.lastIndexOf("printerHasPsu=") + 14).toInt();
             this->debugController->printLn("PrinterHasPsu=" + String(this->PrinterHasPsu));
         }
-
-
-#ifndef USE_NEXTION_DISPLAY
         if(line.indexOf("displayInvertDisplay=") >= 0) {
             this->DisplayInvertDisplay = line.substring(line.lastIndexOf("displayInvertDisplay=") + 21).toInt();
             this->debugController->printLn("DisplayInvertDisplay=" + String(this->DisplayInvertDisplay));
         }
-#endif
-
         if (line.indexOf("webserverTheme=") >= 0) {
             this->WebserverTheme = line.substring(line.lastIndexOf("webserverTheme=") + 15);
             this->WebserverTheme.trim();
@@ -166,9 +160,7 @@ void GlobalDataController::writeSettings() {
         f.println("printerAuthUser=" + this->PrinterAuthUser);
         f.println("printerAuthPass=" + this->PrinterAuthPass);
         f.println("printerHasPsu=" + String(this->PrinterHasPsu));
-    #ifndef USE_NEXTION_DISPLAY
         f.println("displayInvertDisplay=" + String(this->DisplayInvertDisplay));
-    #endif
         f.println("webserverTheme=" + this->WebserverTheme);
         f.println("webserverIsBasicAuth=" + String(this->WebserverIsBasicAuth));
         f.println("webserverUsername=" + String(this->WebserverUsername));
@@ -210,6 +202,14 @@ void GlobalDataController::setPrinterClient(BasePrinterClient *basePrinterClient
     
 BasePrinterClient *GlobalDataController::getPrinterClient() {
     return this->basePrinterClient;
+}
+
+void GlobalDataController::setDisplayClient(BaseDisplayClient *baseDisplayClient) {
+    this->baseDisplayClient = baseDisplayClient;
+}
+
+BaseDisplayClient *GlobalDataController::setDisplayClient() {
+    return this->baseDisplayClient;
 }
 
 /**

@@ -19,6 +19,7 @@
     #include "Clients/OctoPrintClient.h"
 #endif
 #ifdef USE_NEXTION_DISPLAY
+    #include "Display/NextionDisplay.h"
 #else
     #include <SSD1306Wire.h>
     #include <SH1106Wire.h>
@@ -26,7 +27,7 @@
 #endif
 
 // Initilize all needed data
-DebugController debugController;
+DebugController debugController(DEBUG_MODE_ENABLE);
 TimeClient timeClient(TIME_UTCOFFSET, &debugController);
 OpenWeatherMapClient weatherClient(WEATHER_APIKEY, WEATHER_CITYID, 1, WEATHER_METRIC, WEATHER_LANGUAGE, &debugController);
 GlobalDataController globalDataController(&timeClient, &weatherClient, &debugController);
@@ -45,6 +46,8 @@ WebServer webServer(&globalDataController, &debugController);
 
 // Construct correct display client
 #ifdef USE_NEXTION_DISPLAY
+    SoftwareSerial displaySerialPort(DISPLAY_RX_PIN, DISPLAY_TX_PIN);
+    NextionDisplay displayClient(&displaySerialPort, &globalDataController, &debugController);
 #else
     #if DISPLAY_SH1106
         SH1106Wire  display(DISPLAY_I2C_DISPLAY_ADDRESS, DISPLAY_SDA_PIN, DISPLAY_SCL_PIN);

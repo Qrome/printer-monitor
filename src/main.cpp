@@ -9,12 +9,14 @@ void setup() {
     LittleFS.begin();
     debugController.setup();
     globalDataController.setPrinterClient(&printerClient);
+    globalDataController.setDisplayClient(&displayClient);
     globalDataController.setup();
     displayClient.preSetup();
     displayClient.showBootScreen();
 
     // WiFiManager - Local intialization. Once its business is done, there is no need to keep it around
     WiFiManager wifiManager;
+    wifiManager.setDebugOutput(DEBUG_MODE_ENABLE);
     //wifiManager.resetSettings();    // Uncomment for testing wifi manager
     wifiManager.setAPCallback(configModeCallback);
     String hostname(HOSTNAME);

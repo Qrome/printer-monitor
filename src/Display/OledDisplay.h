@@ -5,8 +5,9 @@
 #include <OLEDDisplayUi.h>
 #include <OLEDDisplay.h>
 #include "../../include/WeatherStationFonts.h"
+#include "BaseDisplayClient.h"
 
-class OledDisplay {
+class OledDisplay : public BaseDisplayClient {
 private:
     GlobalDataController *globalDataController;
     DebugController *debugController;

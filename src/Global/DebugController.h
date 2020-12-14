@@ -4,7 +4,12 @@
 #include "Configuration.h"
 
 class DebugController {
+private:
+    bool enabled;
+
 public:
+    DebugController(bool enabled);
+    bool isEnabled();
     void setup();
 
     void print(const char *data);

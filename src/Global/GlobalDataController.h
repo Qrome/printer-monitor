@@ -7,6 +7,7 @@
 #include "../Network/OpenWeatherMapClient.h"
 #include "../Clients/BasePrinterClient.h"
 #include "DebugController.h"
+#include "../Display/BaseDisplayClient.h"
 
 class GlobalDataController {
 private:
@@ -18,6 +19,7 @@ private:
     BasePrinterClient *basePrinterClient;
     OpenWeatherMapClient *weatherClient; 
     DebugController *debugController;
+    BaseDisplayClient *baseDisplayClient;
 
     /**
      * Configuration variables
@@ -29,28 +31,25 @@ private:
     String PrinterAuthUser = PRINTERCLIENT_AUTHUSER;
     String PrinterAuthPass = PRINTERCLIENT_AUTHPASS;
     bool PrinterHasPsu = PRINTERCLIENT_HASPSU;
-
     int WebserverPort = WEBSERVER_PORT;
     bool WebserverIsBasicAuth = WEBSERVER_IS_BASIC_AUTH;
     String WebserverUsername = WEBSERVER_USERNAME;
     String WebserverPassword = WEBSERVER_PASSWORD;
     String WebserverTheme = WEBSERVER_THEMECOLOR;
-
     int ClockUtcOffset = TIME_UTCOFFSET;
     bool DisplayClock = DISPLAYCLOCK;
     bool ClockIs24h = TIME_IS_24HOUR;
     int ClockResyncMinutes = TIME_RESYNC_MINUTES_DELAY;
-
     bool UseLedFlash = USE_FLASH;
-
     bool WeatherShow = DISPLAYWEATHER;
     String WeatherApiKey = WEATHER_APIKEY;
     int WeatherCityId = WEATHER_CITYID;
     bool WeatherIsMetric = WEATHER_METRIC;
     String WeatherLang = WEATHER_LANGUAGE;
-
-#ifndef USE_NEXTION_DISPLAY
+#ifdef DISPLAY_INVERT_DISPLAY
     bool DisplayInvertDisplay = DISPLAY_INVERT_DISPLAY;
+#else
+    bool DisplayInvertDisplay = false;
 #endif
 
 public:
@@ -61,9 +60,11 @@ public:
     void writeSettings();
 
     void setPrinterClient(BasePrinterClient *basePrinterClient);
+    void setDisplayClient(BaseDisplayClient *baseDisplayClient);
     TimeClient *getTimeClient();
     OpenWeatherMapClient *getWeatherClient();
     BasePrinterClient *getPrinterClient();
+    BaseDisplayClient *setDisplayClient();
     String getLastReportStatus();
     String getVersion();
     

@@ -10,9 +10,11 @@
 /**
  * Basic software settings
  */
-#define VERSION "4.0"
-#define HOSTNAME "PrintMon-" 
-#define CONFIG "/conf.txt"
+#define VERSION                     "4.0"
+#define HOSTNAME                    "PrintMon-" 
+#define CONFIG                      "/conf.txt"
+// true = Enables debug message on terminal | false = disable all debug messages
+#define DEBUG_MODE_ENABLE           true
 
 //===========================================================================
 //========================= MCU & Display config ============================
@@ -33,6 +35,7 @@
         #define DISPLAY_TX_PIN                  D1
         #define DISPLAY_RX_PIN                  D2
     #endif
+    #define DISPLAY_BAUDRATE                    9600
 #else
     // I2C Address of your Display (usually 0x3c or 0x3d)
     #define DISPLAY_I2C_DISPLAY_ADDRESS         0x3c
