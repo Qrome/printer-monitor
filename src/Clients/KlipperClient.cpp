@@ -34,7 +34,8 @@ boolean KlipperClient::validate() {
 
 
 void KlipperClient::getPrinterJobResults() {
-    const size_t bufferSize = JSON_ARRAY_SIZE(4) + JSON_OBJECT_SIZE(1) + 3*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(9) + 426;
+    // const size_t bufferSize = JSON_ARRAY_SIZE(4) + JSON_OBJECT_SIZE(1) + 4*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(7) + JSON_OBJECT_SIZE(9) + 426;
+    const size_t bufferSize = 1536; // according to ArduinoJson assistant
     DynamicJsonDocument *jsonDoc;
     if (!validate()) {
         return;
@@ -81,12 +82,13 @@ void KlipperClient::getPrinterJobResults() {
     }
 
     // Req 2
-    jsonDoc = this->jsonRequestClient->requestJson(
+    if (printerData.isPrinting = true) {
+        jsonDoc = this->jsonRequestClient->requestJson(
         PRINTER_REQUEST_GET,
         this->getInstanceServerTarget(),
         this->getInstanceServerPort(),
         this->encodedAuth,
-        "/printer/objects/query?heater_bed&extruder&display_status",
+        "/printer/objects/query?heater_bed&extruder&display_status&toolhead&virtual_sdcard",
         "",
         bufferSize,
         true
@@ -94,6 +96,12 @@ void KlipperClient::getPrinterJobResults() {
     if (this->jsonRequestClient->getLastError() != "") {
         this->debugController->printLn(this->jsonRequestClient->getLastError());
         printerData.error = this->jsonRequestClient->getLastError();
+        printerData.state = "";
+        printerData.isPrinting = false;
+        printerData.toolTemp = "";
+        printerData.toolTargetTemp = "";
+        printerData.bedTemp = "";
+        printerData.bedTargetTemp = "";
         printerData.state = "";
         printerData.isPrinting = false;
         printerData.toolTemp = "";
@@ -108,30 +116,6 @@ void KlipperClient::getPrinterJobResults() {
     printerData.toolTargetTemp = (int)(*jsonDoc)["result"]["status"]["extruder"]["target"];
     printerData.bedTemp = (int)(*jsonDoc)["result"]["status"]["heater_bed"]["temperature"];
     printerData.bedTargetTemp = (int)(*jsonDoc)["result"]["status"]["heater_bed"]["target"];
- 
-    // Req 3
-    jsonDoc = this->jsonRequestClient->requestJson(
-        PRINTER_REQUEST_GET,
-        this->getInstanceServerTarget(),
-        this->getInstanceServerPort(),
-        this->encodedAuth,
-        "/printer/objects/query?toolhead&virtual_sdcard",
-        "",
-        bufferSize,
-        true
-    );
-    if (this->jsonRequestClient->getLastError() != "") {
-        this->debugController->printLn(this->jsonRequestClient->getLastError());
-        printerData.error = this->jsonRequestClient->getLastError();
-        printerData.state = "";
-        printerData.isPrinting = false;
-        printerData.toolTemp = "";
-        printerData.toolTargetTemp = "";
-        printerData.bedTemp = "";
-        printerData.bedTargetTemp = "";
-        return;
-    }
-
     float fileProgress = (float)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["progress"];
     printerData.progressFilepos = (const char*)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["file_position"];
     printerData.estimatedPrintTime = (float)(*jsonDoc)["result"]["status"]["toolhead"]["estimated_print_time"];
@@ -141,6 +125,41 @@ void KlipperClient::getPrinterJobResults() {
     */
     float totalPrintTime = printerData.progressPrintTime.toFloat() / fileProgress;
     printerData.progressPrintTimeLeft = String(totalPrintTime - printerData.progressPrintTime.toFloat());
+    
+    }
+ 
+    // // Req 3
+    // jsonDoc = this->jsonRequestClient->requestJson(
+    //     PRINTER_REQUEST_GET,
+    //     this->getInstanceServerTarget(),
+    //     this->getInstanceServerPort(),
+    //     this->encodedAuth,
+    //     "/printer/objects/query?toolhead&virtual_sdcard",
+    //     "",
+    //     bufferSize,
+    //     true
+    // );
+    // if (this->jsonRequestClient->getLastError() != "") {
+    //     this->debugController->printLn(this->jsonRequestClient->getLastError());
+    //     printerData.error = this->jsonRequestClient->getLastError();
+    //     printerData.state = "";
+    //     printerData.isPrinting = false;
+    //     printerData.toolTemp = "";
+    //     printerData.toolTargetTemp = "";
+    //     printerData.bedTemp = "";
+    //     printerData.bedTargetTemp = "";
+    //     return;
+    // }
+
+    // float fileProgress = (float)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["progress"];
+    // printerData.progressFilepos = (const char*)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["file_position"];
+    // printerData.estimatedPrintTime = (float)(*jsonDoc)["result"]["status"]["toolhead"]["estimated_print_time"];
+
+    // /*
+    // printerData.progressPrintTimeLeft : No metadata is available, print duration and progress can be used to calculate the ETA:
+    // */
+    // float totalPrintTime = printerData.progressPrintTime.toFloat() / fileProgress;
+    // printerData.progressPrintTimeLeft = String(totalPrintTime - printerData.progressPrintTime.toFloat());
     
 
 
