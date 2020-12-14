@@ -82,7 +82,7 @@ void KlipperClient::getPrinterJobResults() {
     }
 
     // Req 2
-    if (printerData.isPrinting = true) {
+    if (printerData.state == "printing") {
         jsonDoc = this->jsonRequestClient->requestJson(
         PRINTER_REQUEST_GET,
         this->getInstanceServerTarget(),
