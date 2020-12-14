@@ -208,7 +208,7 @@ void GlobalDataController::setDisplayClient(BaseDisplayClient *baseDisplayClient
     this->baseDisplayClient = baseDisplayClient;
 }
 
-BaseDisplayClient *GlobalDataController::setDisplayClient() {
+BaseDisplayClient *GlobalDataController::getDisplayClient() {
     return this->baseDisplayClient;
 }
 

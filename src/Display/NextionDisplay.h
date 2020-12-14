@@ -18,6 +18,7 @@ public:
     void preSetup();
     void postSetup();
     void handleUpdate();
+    void flipDisplayUpdate();
     void showBootScreen();
     void showApAccessScreen(String apSsid, String apIp);
     void showWebserverSplashScreen(bool isEnabled);

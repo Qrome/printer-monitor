@@ -9,8 +9,8 @@
 class KlipperClient : public BasePrinterClient {
 private:
     char myServer[100];
+    char myServerIp[30];
     int myPort = 7125;
-    String myApiKey = "";
     String encodedAuth = "";
     boolean pollPsu;
     const String printerType = "Klipper";

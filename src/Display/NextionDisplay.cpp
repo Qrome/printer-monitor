@@ -20,6 +20,10 @@ void NextionDisplay::handleUpdate() {
 
 }
 
+void NextionDisplay::flipDisplayUpdate() {
+    
+}
+
 void NextionDisplay::showBootScreen() {
     String command("version.txt=");
     command += "\"for " + this->globalDataController->getPrinterClient()->getPrinterType() + " V" + this->globalDataController->getVersion() + "\"";

@@ -11,8 +11,8 @@ KlipperClient::KlipperClient(GlobalDataController *globalDataController, DebugCo
 
 void KlipperClient::updatePrintClient() {
     this->globalDataController->getPrinterHostName().toCharArray(this->myServer, 100);
-    myApiKey = this->globalDataController->getPrinterApiKey();
-    myPort = this->globalDataController->getPrinterPort();
+    this->globalDataController->getPrinterServer().toCharArray(this->myServerIp, 30);
+    this->myPort = this->globalDataController->getPrinterPort();
     encodedAuth = "";
     if (this->globalDataController->getPrinterAuthUser() != "") {
         String userpass = this->globalDataController->getPrinterAuthUser() + ":" + this->globalDataController->getPrinterAuthPass();
@@ -25,11 +25,8 @@ void KlipperClient::updatePrintClient() {
 boolean KlipperClient::validate() {
     boolean rtnValue = false;
     printerData.error = "";
-    if (String(myServer) == "") {
-        printerData.error += "Server address is required; ";
-    }
-    if (myApiKey == "") {
-        printerData.error += "ApiKey is required; ";
+    if ((String(this->myServer) == "") && (String(this->myServerIp) == "")) {
+        printerData.error += "Server address or host name is required; ";
     }
     if (printerData.error == "") {
         rtnValue = true;
@@ -40,14 +37,17 @@ boolean KlipperClient::validate() {
 WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
     WiFiClient printClient;
     printClient.setTimeout(5000);
+    const char *targetServer = this->myServerIp;
+    if (String(this->myServerIp) == "") {
+        targetServer = this->myServer;
+    }
 
     this->debugController->printLn("Getting Klipper Data via GET");
     this->debugController->printLn(apiGetData);
     result = "";
-    if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
+    if (printClient.connect(targetServer, myPort)) {  //starts client connection, checks for connection
         printClient.println(apiGetData);
-        printClient.println("Host: " + String(myServer) + ":" + String(myPort));
-        printClient.println("X-Api-Key: " + myApiKey);
+        printClient.println("Host: " + String(targetServer) + ":" + String(myPort));
         if (encodedAuth != "") {
         printClient.print("Authorization: ");
         printClient.println("Basic " + encodedAuth);
@@ -55,18 +55,18 @@ WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
         printClient.println("User-Agent: ArduinoWiFi/1.1");
         printClient.println("Connection: close");
         if (printClient.println() == 0) {
-        this->debugController->printLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
+        this->debugController->printLn("Connection to " + String(targetServer) + ":" + String(myPort) + " failed.");
         this->debugController->printLn("");
         resetPrintData();
-        printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
+        printerData.error = "Connection to " + String(targetServer) + ":" + String(myPort) + " failed.";
         return printClient;
         }
     } 
     else {
-        this->debugController->printLn("Connection to Klipper failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+        this->debugController->printLn("Connection to Klipper failed: " + String(targetServer) + ":" + String(myPort)); //error message if no client connect
         this->debugController->printLn("");
         resetPrintData();
-        printerData.error = "Connection to Klipper failed: " + String(myServer) + ":" + String(myPort);
+        printerData.error = "Connection to Klipper failed: " + String(targetServer) + ":" + String(myPort);
         return printClient;
     }
 
@@ -85,7 +85,7 @@ WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
     char endOfHeaders[] = "\r\n\r\n";
     if (!printClient.find(endOfHeaders)) {
         this->debugController->printLn("Invalid response");
-        printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
+        printerData.error = "Invalid response from " + String(targetServer) + ":" + String(myPort);
         printerData.state = "";
     }
 
@@ -95,18 +95,21 @@ WiFiClient KlipperClient::getSubmitRequest(String apiGetData) {
 WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody) {
     WiFiClient printClient;
     printClient.setTimeout(5000);
+    const char *targetServer = this->myServerIp;
+    if (String(this->myServerIp) == "") {
+        targetServer = this->myServer;
+    }
 
     this->debugController->printLn("Getting Klipper Data via POST");
     this->debugController->printLn(apiPostData + " | " + apiPostBody);
     result = "";
-    if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
+    if (printClient.connect(targetServer, myPort)) {  //starts client connection, checks for connection
         printClient.println(apiPostData);
-        printClient.println("Host: " + String(myServer) + ":" + String(myPort));
+        printClient.println("Host: " + String(targetServer) + ":" + String(myPort));
         printClient.println("Connection: close");
-        printClient.println("X-Api-Key: " + myApiKey);
         if (encodedAuth != "") {
-        printClient.print("Authorization: ");
-        printClient.println("Basic " + encodedAuth);
+            printClient.print("Authorization: ");
+            printClient.println("Basic " + encodedAuth);
         }
         printClient.println("User-Agent: ArduinoWiFi/1.1");
         printClient.println("Content-Type: application/json");
@@ -115,18 +118,18 @@ WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody)
         printClient.println();
         printClient.println(apiPostBody);
         if (printClient.println() == 0) {
-        this->debugController->printLn("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
-        this->debugController->printLn("");
-        resetPrintData();
-        printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
-        return printClient;
+            this->debugController->printLn("Connection to " + String(targetServer) + ":" + String(myPort) + " failed.");
+            this->debugController->printLn("");
+            resetPrintData();
+            printerData.error = "Connection to " + String(targetServer) + ":" + String(myPort) + " failed.";
+            return printClient;
         }
     } 
     else {
-        this->debugController->printLn("Connection to Klipper failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+        this->debugController->printLn("Connection to Klipper failed: " + String(targetServer) + ":" + String(myPort)); //error message if no client connect
         this->debugController->printLn("");
         resetPrintData();
-        printerData.error = "Connection to Klipper failed: " + String(myServer) + ":" + String(myPort);
+        printerData.error = "Connection to Klipper failed: " + String(targetServer) + ":" + String(myPort);
         return printClient;
     }
 
@@ -145,7 +148,7 @@ WiFiClient KlipperClient::getPostRequest(String apiPostData, String apiPostBody)
     char endOfHeaders[] = "\r\n\r\n";
     if (!printClient.find(endOfHeaders)) {
         this->debugController->printLn("Invalid response");
-        printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
+        printerData.error = "Invalid response from " + String(targetServer) + ":" + String(myPort);
         printerData.state = "";
     }
 
@@ -156,6 +159,11 @@ void KlipperClient::getPrinterJobResults() {
     if (!validate()) {
         return;
     }
+    const char *targetServer = this->myServerIp;
+    if (String(this->myServerIp) == "") {
+        targetServer = this->myServer;
+    }
+
     //**** get the Printer Job status
     String apiGetData = "GET /printer/objects/query?heater_bed&extruder&webhooks&virtual_sdcard&print_stats&toolhead&display_status";
     WiFiClient printClient = getSubmitRequest(apiGetData);
@@ -168,8 +176,8 @@ void KlipperClient::getPrinterJobResults() {
     // Parse JSON object
     DeserializationError error = deserializeJson(jsonBuffer, printClient);
     if (error) {
-        this->debugController->printLn("Klipper Data Parsing failed: " + String(myServer) + ":" + String(myPort));
-        printerData.error = "Klipper Data Parsing failed: " + String(myServer) + ":" + String(myPort);
+        this->debugController->printLn("Klipper Data Parsing failed: " + String(targetServer) + ":" + String(myPort));
+        printerData.error = "Klipper Data Parsing failed: " + String(targetServer) + ":" + String(myPort);
         printerData.state = "";
         printerData.isPrinting = false;
         printerData.toolTemp = "";

@@ -64,7 +64,7 @@ public:
     TimeClient *getTimeClient();
     OpenWeatherMapClient *getWeatherClient();
     BasePrinterClient *getPrinterClient();
-    BaseDisplayClient *setDisplayClient();
+    BaseDisplayClient *getDisplayClient();
     String getLastReportStatus();
     String getVersion();
     
