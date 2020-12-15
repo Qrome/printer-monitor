@@ -4,13 +4,7 @@
 #include <base64.h>
 #include "Debug.h"
 #include "../Network/JsonRequestClient.h"
-
-#define PRINTER_STATE_OFFLINE       (int)-2
-#define PRINTER_STATE_ERROR         (int)-1
-#define PRINTER_STATE_STANDBY       (int)0
-#define PRINTER_STATE_PRINTING      (int)1
-#define PRINTER_STATE_PAUSED        (int)2
-#define PRINTER_STATE_COMPLETED     (int)3
+#include "PrinterDataStruct.h"
 
 class BasePrinterClient {
 public:

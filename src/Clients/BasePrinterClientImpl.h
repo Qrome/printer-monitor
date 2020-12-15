@@ -10,29 +10,7 @@ protected:
     JsonRequestClient *jsonRequestClient;
     String printerType = "Octoprint";
 
-    typedef struct {
-        String averagePrintTime;
-        String estimatedPrintTime;
-        String fileName;
-        String fileSize;
-        String lastPrintTime;
-        String progressCompletion;
-        String progressFilepos;
-        String progressPrintTime;
-        String progressPrintTimeLeft;
-        int state;
-        String toolTemp;
-        String toolTargetTemp;
-        String filamentLength;
-        String bedTemp;
-        String bedTargetTemp;
-        boolean isPrinting;
-        boolean isPSUoff;
-        String error;
-        String printerName;
-    } PrinterStruct;
-
-    PrinterStruct printerData;
+    PrinterDataStruct printerData;
     String result;
     String encodedAuth = "";
     
