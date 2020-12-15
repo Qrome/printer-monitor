@@ -68,7 +68,7 @@ void KlipperClient::getPrinterJobResults() {
     printerData.fileName = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["filename"];
 
     if (BasePrinterClientImpl::isOperational()) {
-        this->debugController->printLn("Status: " + printerData.state);
+        this->debugController->printLn("Status: " + this->getStateAsText());
     } else {
         this->debugController->printLn("Printer Not Operational");
     }

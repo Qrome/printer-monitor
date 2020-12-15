@@ -65,7 +65,7 @@ void DuetClient::getPrinterJobResults() {
     printerData.state = this->translateState((const char*)(*jsonDoc)["status"]);
 
     if (BasePrinterClientImpl::isOperational()) {
-        this->debugController->printLn("Status: " + printerData.state);
+        this->debugController->printLn("Status: " + this->getStateAsText());
     } else {
         this->debugController->printLn("Printer Not Operational");
     }

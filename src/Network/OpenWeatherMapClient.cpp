@@ -23,7 +23,7 @@ void OpenWeatherMapClient::updateLanguage(String language) {
 
 void OpenWeatherMapClient::updateWeather() {
     
-    String apiGetData = "/data/2.5/group?id=" + myCityIDs + "&units=" + units + "&cnt=1&APPID=" + myApiKey + "&lang=" + lang + " HTTP/1.1";
+    String apiGetData = "/data/2.5/group?id=" + myCityIDs + "&units=" + units + "&cnt=1&APPID=" + myApiKey + "&lang=" + lang;
     this->debugController->printLn("Getting Weather Data");
     this->debugController->printLn(apiGetData);
     const size_t bufferSize = 1024;

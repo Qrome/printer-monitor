@@ -16,7 +16,7 @@ WiFiClient JsonRequestClient::requestWifiClient(
 ) {
     WiFiClient requestClient;
     requestClient.setTimeout(5000);
-    httpPath = (requestType == PRINTER_REQUEST_POST ? "POST " : "GET ") + httpPath;
+    httpPath = (requestType == PRINTER_REQUEST_POST ? "POST " : "GET ") + httpPath + " HTTP/1.1";
     String fullTarget = server + ":" + String(port) + httpPath;
 
     this->debugController->print("Request data from ");
