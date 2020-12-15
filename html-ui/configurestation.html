@@ -1,0 +1,201 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://unpkg.com/carbon-components/css/carbon-components.min.css" ></style>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
+        <style>.hidden{display:none} .bx--form-item{margin-bottom:20px};</style>
+    </head>
+    <body>
+        <header class="cv-header bx--header">
+            <a href="index.html" class="cv-header-name bx--header__name">
+                <span class="bx--header__name--prefix">Printer Buddy&nbsp;</span>
+                V4.0
+            </a>
+            <nav class="cv-header-nav bx--header__nav"></nav>
+            <div class="bx--header__global">
+                <button type="button" class="cv-header-global-action bx--header__action" onclick="openWifiInfo()">
+                    <i class="fas fa-wifi" style="color: white; font-size: 20px;"></i>
+                </button>
+                <button type="button" class="cv-header-global-action bx--header__action" onclick="openSidebar()">
+                    <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">       
+                        <path d="M14 4H18V8H14zM4 4H8V8H4zM24 4H28V8H24zM14 14H18V18H14zM4 14H8V18H4zM24 14H28V18H24zM14 24H18V28H14zM4 24H8V28H4zM24 24H28V28H24z"></path>
+                    </svg>
+                </button>
+            </div>
+            <div aria-hidden="false" id="sidebar" class="cv-header-panel bx--header-panel">
+                <ul class="cv-switcher bx--switcher__item">
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/"><i class="fa fa-home"></i> Home</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/configure"><i class="fa fa-cog"></i> Configure</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/configureweather"><i class="fa fa-cloud"></i> Weather</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/systemreset" onclick="return confirm(&quot;Do you want to reset to default settings?&quot;)"><i class="fa fa-undo"></i> Reset Settings</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/forgetwifi" onclick="return confirm(&quot;Do you want to forget to WiFi connection?&quot;)"><i class="fa fa-wifi"></i> Forget WiFi</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/update"><i class="fa fa-wrench"></i> Firmware Update</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="https://github.com/Qrome" target="_blank"><i class="fa fa-question-circle"></i> About</a></li>
+                </ul>
+            </div>
+            <div class="bx--toast-notification bx--toast-notification--info hidden" style="position: absolute; right: -16px; top: 40px;" id="wifiinfo">
+                <div class="bx--toast-notification__details">
+                    <h3 class="bx--toast-notification__title">WiFi Signal Strength</h3>
+                    <div class="bx--toast-notification__subtitle">
+                        <span>88%</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="bx--grid bx--grid--full-width" style='margin-top:88px'>
+            <div class="page-header" style="margin-bottom:20px"><h4 class="page-header__label">Configure</h4><h1 id="page-title" class="page-header__title">Station</h1></div>
+            
+            <form action="/updatestationconfig" method="get">
+                <div class="bx--row">
+                    <div class="bx--col bx--col--auto bx--form-item">
+                        <input class="bx--toggle-input bx--toggle-input--small" id="isClockEnabled" type="checkbox" name="isClockEnabled">
+                        <label class="bx--toggle-input__label" for="isClockEnabled">
+                        <span class="bx--toggle__switch">
+                            <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
+                                <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
+                            </svg>
+                            <span class="bx--toggle__text--off" aria-hidden="true">Display Clock when printer is off deactivated</span>
+                            <span class="bx--toggle__text--on" aria-hidden="true">Display Clock when printer is off activated</span>
+                        </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="bx--row">
+                    <div class="bx--col bx--col--auto bx--form-item">
+                        <input class="bx--toggle-input bx--toggle-input--small" id="is24hour" type="checkbox" name="is24hour">
+                        <label class="bx--toggle-input__label" for="is24hour">
+                        <span class="bx--toggle__switch">
+                            <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
+                                <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
+                            </svg>
+                            <span class="bx--toggle__text--off" aria-hidden="true">Use 24 Hour Clock (military time) deactivated</span>
+                            <span class="bx--toggle__text--on" aria-hidden="true">Use 24 Hour Clock (military time) activated</span>
+                        </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="bx--row">
+                    <div class="bx--col bx--col--auto bx--form-item">
+                        <input class="bx--toggle-input bx--toggle-input--small" id="invDisp" type="checkbox" name="invDisp">
+                        <label class="bx--toggle-input__label" for="invDisp">
+                        <span class="bx--toggle__switch">
+                            <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
+                                <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
+                            </svg>
+                            <span class="bx--toggle__text--off" aria-hidden="true">Flip display orientation deactivated</span>
+                            <span class="bx--toggle__text--on" aria-hidden="true">Flip display orientation activated</span>
+                        </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="bx--row">
+                    <div class="bx--col bx--col--auto bx--form-item">
+                        <input class="bx--toggle-input bx--toggle-input--small" id="useFlash" type="checkbox" name="useFlash">
+                        <label class="bx--toggle-input__label" for="useFlash">
+                        <span class="bx--toggle__switch">
+                            <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
+                                <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
+                            </svg>
+                            <span class="bx--toggle__text--off" aria-hidden="true">Flash System LED on Service Calls deactivated</span>
+                            <span class="bx--toggle__text--on" aria-hidden="true">Flash System LED on Service Calls activated</span>
+                        </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="bx--row">
+                    <div class="bx--form-item bx--col bx--col--auto bx--select">
+                        <label for="refresh" class="bx--label">Clock Sync / Weather Refresh (minutes)</label>
+                        <div class="bx--select-input__wrapper">
+                            <select id="refresh" class="bx--select-input" name="refresh">
+                                <option class="bx--select-option">10</option>
+                                <option class="bx--select-option">15</option>
+                                <option class="bx--select-option">20</option>
+                                <option class="bx--select-option">30</option>
+                                <option class="bx--select-option">60</option>
+                            </select>
+                            <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--select__arrow" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="bx--row">
+                    <div class="bx--form-item bx--col bx--col--auto">
+                        <label for="utcoffset" class="bx--label">UTC Time Offset</label>
+                        <input id="utcoffset" type="text"
+                            class="bx--text-input"
+                            name="utcoffset"
+                            value="0"
+                            maxlength="1">
+                    </div>
+                </div>
+                
+
+
+                <div class="bx--row">
+                    <div class="bx--col bx--col--auto bx--form-item">
+                        <input class="bx--toggle-input bx--toggle-input--small" id="isBasicAuth" type="checkbox" name="isBasicAuth">
+                        <label class="bx--toggle-input__label" for="isBasicAuth">
+                        <span class="bx--toggle__switch">
+                            <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
+                                <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
+                            </svg>
+                            <span class="bx--toggle__text--off" aria-hidden="true">Use Security Credentials for Configuration Changes deactivated</span>
+                            <span class="bx--toggle__text--on" aria-hidden="true">Use Security Credentials for Configuration Changes activated</span>
+                        </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="bx--row">
+                    <div class="bx--form-item bx--col bx--col--auto">
+                        <label for="userid" class="bx--label">User ID (for this interface)</label>
+                        <input id="userid" type="text"
+                            class="bx--text-input"
+                            name="userid"
+                            value="admin"
+                            maxlength="20">
+                    </div>
+                </div>
+                <div class="bx--row">
+                    <div class="bx--form-item bx--col bx--col--auto">
+                        <label for="stationpassword" class="bx--label">Password (for this interface)</label>
+                        <input id="stationpassword" type="password"
+                            class="bx--text-input"
+                            name="stationpassword"
+                            value="admin"
+                            maxlength="20">
+                    </div>
+                </div>
+
+
+
+
+
+
+
+                    <div class="bx--row">
+                        <div class="bx--form-item bx--col bx--col--auto">
+                            <button class="bx--btn bx--btn--primary" type="submit">Save</button>
+                        </div>
+                    </div>
+                </form>
+                
+                <br><br><br>
+
+            </div>
+            
+        </div>
+
+        <script src="https://unpkg.com/carbon-components/scripts/carbon-components.min.js"></script>
+        
+        <script>
+            function openSidebar() {
+                document.getElementById('sidebar').classList.toggle('bx--header-panel--expanded');
+                document.getElementById('wifiinfo').classList.add('hidden');
+            }
+            function openWifiInfo() {
+                document.getElementById('sidebar').classList.remove('bx--header-panel--expanded');
+                document.getElementById('wifiinfo').classList.toggle('hidden');
+            }
+        </script>
+        
+    </body>
+</html>

@@ -18,51 +18,6 @@ static const char THEME_FORM[] PROGMEM =   "<p>Theme Color <select class='w3-opt
                       "<p><label>Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='stationpassword' value='%STATIONPASSWORD%'></p>"
                       "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>";
 
-static const char WEATHER_FORM[] PROGMEM = "<form class='w3-container' action='/updateweatherconfig' method='get'><h2>Weather Config:</h2>"
-                      "<p><input name='isWeatherEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_WEATHER_CHECKED%> Display Weather when printer is off</p>"
-                      "<label>OpenWeatherMap API Key (get from <a href='https://openweathermap.org/' target='_BLANK'>here</a>)</label>"
-                      "<input class='w3-input w3-border w3-margin-bottom' type='text' name='openWeatherMapApiKey' value='%WEATHERKEY%' maxlength='60'>"
-                      "<p><label>%CITYNAME1% (<a href='http://openweathermap.org/find' target='_BLANK'><i class='fa fa-search'></i> Search for City ID</a>) "
-                      "<input class='w3-input w3-border w3-margin-bottom' type='text' name='city1' value='%CITY1%' onkeypress='return isNumberKey(event)'></p>"
-                      "<p><input name='metric' class='w3-check w3-margin-top' type='checkbox' %METRIC%> Use Metric (Celsius)</p>"
-                      "<p>Weather Language <select class='w3-option w3-padding' name='language'>%LANGUAGEOPTIONS%</select></p>"
-                      "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>"
-                      "<script>function isNumberKey(e){var h=e.which?e.which:event.keyCode;return!(h>31&&(h<48||h>57))}</script>";
-
-static const char LANG_OPTIONS[] PROGMEM = "<option>ar</option>"
-                      "<option>bg</option>"
-                      "<option>ca</option>"
-                      "<option>cz</option>"
-                      "<option>de</option>"
-                      "<option>el</option>"
-                      "<option>en</option>"
-                      "<option>fa</option>"
-                      "<option>fi</option>"
-                      "<option>fr</option>"
-                      "<option>gl</option>"
-                      "<option>hr</option>"
-                      "<option>hu</option>"
-                      "<option>it</option>"
-                      "<option>ja</option>"
-                      "<option>kr</option>"
-                      "<option>la</option>"
-                      "<option>lt</option>"
-                      "<option>mk</option>"
-                      "<option>nl</option>"
-                      "<option>pl</option>"
-                      "<option>pt</option>"
-                      "<option>ro</option>"
-                      "<option>ru</option>"
-                      "<option>se</option>"
-                      "<option>sk</option>"
-                      "<option>sl</option>"
-                      "<option>es</option>"
-                      "<option>tr</option>"
-                      "<option>ua</option>"
-                      "<option>vi</option>"
-                      "<option>zh_cn</option>"
-                      "<option>zh_tw</option>";
-
 static const char COLOR_THEMES[] PROGMEM = "<option>red</option>"
                       "<option>pink</option>"
                       "<option>purple</option>"
@@ -101,10 +56,12 @@ void WebServer::setup() {
     this->server->on("/", []() { obj->displayPrinterStatus(); });
     this->server->on("/systemreset", []() { obj->handleSystemReset(); });
     this->server->on("/forgetwifi", []() { obj->handleWifiReset(); });
-    this->server->on("/updateconfig", []() { obj->handleUpdateConfig(); });
-    this->server->on("/updateweatherconfig", []() { obj->handleUpdateWeather(); });
-    this->server->on("/configure", []() { obj->handleConfigure(); });
+    this->server->on("/configurestation", []() { obj->handleConfigureStation(); });
+    this->server->on("/configureprinter", []() { obj->handleConfigurePrinter(); });
     this->server->on("/configureweather", []() { obj->handleWeatherConfigure(); });
+    this->server->on("/updateconfig", []() { obj->handleUpdateConfig(); });
+    this->server->on("/updatestationconfig", []() { obj->handleUpdateStation(); });
+    this->server->on("/updateweatherconfig", []() { obj->handleUpdateWeather(); });
     this->server->on("/update", HTTP_GET, []() { obj->handleUpdatePage(); });
     this->server->onNotFound([]() { obj->redirectHome(); });
     this->serverUpdater->setup(this->server, "/update", this->globalDataController->getWebserverUsername(), this->globalDataController->getWebserverPassword());
@@ -252,28 +209,7 @@ void WebServer::displayPrinterStatus() {
     WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
 }
 
-void WebServer::handleSystemReset() {
-    if (!this->authentication()) {
-        return this->server->requestAuthentication();
-    }
-    this->debugController->printLn("Reset System Configuration");
-    if (this->globalDataController->resetConfig()) {
-        redirectHome();
-        ESP.restart();
-    }
-}
 
-void WebServer::handleWifiReset() {
-    if (!this->authentication()) {
-        return this->server->requestAuthentication();
-    }
-    //WiFiManager
-    //Local intialization. Once its business is done, there is no need to keep it around
-    redirectHome();
-    WiFiManager wifiManager;
-    wifiManager.resetSettings();
-    ESP.restart();
-}
 
 void WebServer::handleUpdateConfig() {
     boolean flipOld = this->globalDataController->isDisplayInverted();
@@ -349,23 +285,7 @@ void WebServer::findMDNS() {
     }
 }
 
-void WebServer::handleUpdateWeather() {
-    if (!this->authentication()) {
-        return this->server->requestAuthentication();
-    }
-    this->globalDataController->setWeatherShow(this->server->hasArg("isWeatherEnabled"));
-    this->globalDataController->setWeatherApiKey(this->server->arg("openWeatherMapApiKey"));
-    this->globalDataController->setWeatherCityId(this->server->arg("city1").toInt());
-    this->globalDataController->setWeatherIsMetric(this->server->hasArg("metric"));
-    this->globalDataController->setWeatherLang(this->server->arg("language"));
-    this->globalDataController->writeSettings();
-
-    //isClockOn = false; // this will force a check for the display
-    //checkDisplay();
-    this->globalDataController->getTimeClient()->resetLastEpoch();
-    this->redirectHome();
-}
-
+/*
 void WebServer::handleConfigure() {
     if (!this->authentication()) {
         return this->server->requestAuthentication();
@@ -470,55 +390,27 @@ void WebServer::handleConfigure() {
     form.replace("%PRINTERPASS%", this->globalDataController->getPrinterAuthPass());
     this->server->sendContent(form);
 
-    form = FPSTR(CLOCK_FORM);
     
-    String isClockChecked = "";
-    if (DISPLAYCLOCK) {
-        isClockChecked = "checked='checked'";
-    }
-    form.replace("%IS_CLOCK_CHECKED%", isClockChecked);
-    String is24hourChecked = "";
-    if (this->globalDataController->getClockIs24h()) {
-        is24hourChecked = "checked='checked'";
-    }
-    form.replace("%IS_24HOUR_CHECKED%", is24hourChecked);
-    String isInvDisp = "";
-    if (this->globalDataController->isDisplayInverted()) {
-        isInvDisp = "checked='checked'";
-    }
-    form.replace("%IS_INVDISP_CHECKED%", isInvDisp);
-    String isFlashLED = "";
-    if (USE_FLASH) {
-        isFlashLED = "checked='checked'";
-    }
-    form.replace("%USEFLASH%", isFlashLED);
-    String hasPSUchecked = "";
-    if (this->globalDataController->hasPrinterPsu()) {
-        hasPSUchecked = "checked='checked'";
-    }
-    form.replace("%HAS_PSU_CHECKED%", hasPSUchecked);
-    
-    String options = "<option>10</option><option>15</option><option>20</option><option>30</option><option>60</option>";
-    options.replace(">"+String(this->globalDataController->getClockResyncMinutes())+"<", " selected>"+String(this->globalDataController->getClockResyncMinutes())+"<");
-    form.replace("%OPTIONS%", options);
-
     this->server->sendContent(form);
-
-    form = FPSTR(THEME_FORM);
     
-    String themeOptions = FPSTR(COLOR_THEMES);
-    themeOptions.replace(">"+String(this->globalDataController->getWebserverTheme())+"<", " selected>"+String(this->globalDataController->getWebserverTheme())+"<");
-    form.replace("%THEME_OPTIONS%", themeOptions);
-    form.replace("%UTCOFFSET%", String(this->globalDataController->getClockUtcOffset()));
-    String isUseSecurityChecked = "";
-    if (this->globalDataController->getWebserverIsBasicAuth()) {
-        isUseSecurityChecked = "checked='checked'";
-    }
-    form.replace("%IS_BASICAUTH_CHECKED%", isUseSecurityChecked);
-    form.replace("%USERID%", String(this->globalDataController->getWebserverUsername()));
-    form.replace("%STATIONPASSWORD%", String(this->globalDataController->getWebserverPassword()));
+    WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
+}*/
 
-    this->server->sendContent(form);
+
+
+
+
+
+
+
+
+
+
+void WebServer::handleConfigurePrinter() {
+    if (!this->authentication()) {
+        return this->server->requestAuthentication();
+    }
+    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Configure", "Printers");
     
     WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
 }
@@ -538,6 +430,51 @@ void WebServer::handleConfigure() {
 
 
 
+
+
+
+/**
+ * @brief Send station configuration page to client
+ */
+void WebServer::handleConfigureStation() {
+    if (!this->authentication()) {
+        return this->server->requestAuthentication();
+    }
+    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Configure", "Station");
+    WebserverMemoryVariables::sendStationConfigForm(this->server, this->globalDataController);
+    WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
+}
+
+/**
+ * @brief Update configuration for station
+ */
+void WebServer::handleUpdateStation() {
+    boolean flipOld = this->globalDataController->isDisplayInverted();
+    if (!this->authentication()) {
+        return this->server->requestAuthentication();
+    }
+
+    this->globalDataController->setDisplayClock(this->server->hasArg("isClockEnabled"));
+    this->globalDataController->setIsDisplayInverted(this->server->hasArg("invDisp"));
+    this->globalDataController->setUseLedFlash(this->server->hasArg("useFlash"));
+    this->globalDataController->setClockIs24h(this->server->hasArg("is24hour"));
+    this->globalDataController->setClockResyncMinutes(this->server->arg("refresh").toInt());
+    this->globalDataController->setClockUtcOffset(this->server->arg("utcoffset").toFloat());
+    this->globalDataController->setWebserverIsBasicAuth(this->server->hasArg("isBasicAuth"));
+    String temp = this->server->arg("userid");
+    this->globalDataController->setWebserverUsername(temp);
+    temp = this->server->arg("stationpassword");
+    this->globalDataController->setWebserverPassword(temp);
+    this->globalDataController->writeSettings();
+
+    if (this->globalDataController->isDisplayInverted() != flipOld) {
+        this->globalDataController->getDisplayClient()->flipDisplayUpdate();
+    }
+    this->globalDataController->getDisplayClient()->handleUpdate();
+    this->globalDataController->getTimeClient()->resetLastEpoch();
+    this->redirectHome();
+}
+
 /**
  * @brief Send weather configuration page to client
  */
@@ -546,32 +483,56 @@ void WebServer::handleWeatherConfigure() {
         return this->server->requestAuthentication();
     }
     WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Configure", "Weather");
-
-    String html = "";
-
-    
-    
-    String form = FPSTR(WEATHER_FORM);
-    String isWeatherChecked = "";
-    if (DISPLAYWEATHER) {
-        isWeatherChecked = "checked='checked'";
-    }
-    form.replace("%IS_WEATHER_CHECKED%", this->globalDataController->getWeatherShow() ? "1" : "0");
-    form.replace("%WEATHERKEY%", this->globalDataController->getWeatherApiKey());
-    form.replace("%CITYNAME1%", this->globalDataController->getWeatherClient()->getCity(0));
-    form.replace("%CITY1%", String(this->globalDataController->getWeatherCityId()));
-    String checked = "";
-    if (this->globalDataController->getWeatherIsMetric()) {
-        checked = "checked='checked'";
-    }
-    form.replace("%METRIC%", checked);
-    String options = FPSTR(LANG_OPTIONS);
-    options.replace(">"+String(this->globalDataController->getWeatherLang())+"<", " selected>"+String(this->globalDataController->getWeatherLang())+"<");
-    form.replace("%LANGUAGEOPTIONS%", options);
-    this->server->sendContent(form);
-    
-
+    WebserverMemoryVariables::sendWeatherConfigForm(this->server, this->globalDataController);
     WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
+}
+
+/**
+ * @brief Update configuration for weather
+ */
+void WebServer::handleUpdateWeather() {
+    if (!this->authentication()) {
+        return this->server->requestAuthentication();
+    }
+    this->globalDataController->setWeatherShow(this->server->hasArg("isWeatherEnabled"));
+    this->globalDataController->setWeatherApiKey(this->server->arg("openWeatherMapApiKey"));
+    this->globalDataController->setWeatherCityId(this->server->arg("city1").toInt());
+    this->globalDataController->setWeatherIsMetric(this->server->hasArg("metric"));
+    this->globalDataController->setWeatherLang(this->server->arg("language"));
+    this->globalDataController->writeSettings();
+
+    this->globalDataController->getDisplayClient()->handleUpdate();
+    this->globalDataController->getTimeClient()->resetLastEpoch();
+    this->redirectHome();
+}
+
+/**
+ * @brief Reset internal configuration data
+ */
+void WebServer::handleSystemReset() {
+    if (!this->authentication()) {
+        return this->server->requestAuthentication();
+    }
+    this->debugController->printLn("Reset System Configuration");
+    if (this->globalDataController->resetConfig()) {
+        redirectHome();
+        ESP.restart();
+    }
+}
+
+/**
+ * @brief Reset internal WiFi configuration data
+ */
+void WebServer::handleWifiReset() {
+    if (!this->authentication()) {
+        return this->server->requestAuthentication();
+    }
+    //WiFiManager
+    //Local intialization. Once its business is done, there is no need to keep it around
+    redirectHome();
+    WiFiManager wifiManager;
+    wifiManager.resetSettings();
+    ESP.restart();
 }
 
 /**

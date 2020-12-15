@@ -26,8 +26,10 @@ public:
     void handleSystemReset();
     void handleWifiReset();
     void handleUpdateConfig();
+    void handleUpdateStation();
     void handleUpdateWeather();
-    void handleConfigure();
+    void handleConfigurePrinter();
+    void handleConfigureStation();
     void handleWeatherConfigure();
     void handleUpdatePage();
 };

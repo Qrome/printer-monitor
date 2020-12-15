@@ -1,0 +1,105 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://unpkg.com/carbon-components/css/carbon-components.min.css" ></style>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
+        <style>.hidden{display:none}</style>
+    </head>
+    <body>
+        <header class="cv-header bx--header">
+            <a href="index.html" class="cv-header-name bx--header__name">
+                <span class="bx--header__name--prefix">Printer Buddy&nbsp;</span>
+                V4.0
+            </a>
+            <nav class="cv-header-nav bx--header__nav"></nav>
+            <div class="bx--header__global">
+                <button type="button" class="cv-header-global-action bx--header__action" onclick="openWifiInfo()">
+                    <i class="fas fa-wifi" style="color: white; font-size: 20px;"></i>
+                </button>
+                <button type="button" class="cv-header-global-action bx--header__action" onclick="openSidebar()">
+                    <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">       
+                        <path d="M14 4H18V8H14zM4 4H8V8H4zM24 4H28V8H24zM14 14H18V18H14zM4 14H8V18H4zM24 14H28V18H24zM14 24H18V28H14zM4 24H8V28H4zM24 24H28V28H24z"></path>
+                    </svg>
+                </button>
+            </div>
+            <div aria-hidden="false" id="sidebar" class="cv-header-panel bx--header-panel">
+                <ul class="cv-switcher bx--switcher__item">
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/"><i class="fa fa-home"></i> Home</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/configure"><i class="fa fa-cog"></i> Configure</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/configureweather"><i class="fa fa-cloud"></i> Weather</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/systemreset" onclick="return confirm(&quot;Do you want to reset to default settings?&quot;)"><i class="fa fa-undo"></i> Reset Settings</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/forgetwifi" onclick="return confirm(&quot;Do you want to forget to WiFi connection?&quot;)"><i class="fa fa-wifi"></i> Forget WiFi</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/update"><i class="fa fa-wrench"></i> Firmware Update</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="https://github.com/Qrome" target="_blank"><i class="fa fa-question-circle"></i> About</a></li>
+                </ul>
+            </div>
+            <div class="bx--toast-notification bx--toast-notification--info hidden" style="position: absolute; right: -16px; top: 40px;" id="wifiinfo">
+                <div class="bx--toast-notification__details">
+                    <h3 class="bx--toast-notification__title">WiFi Signal Strength</h3>
+                    <div class="bx--toast-notification__subtitle">
+                        <span>88%</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="bx--grid bx--grid--full-width" style='margin-top:60px'>
+            <div class="page-header" style='margin-bottom:20px'><h4 class="page-header__label">Firmware</h4><h1 id="page-title" class="page-header__title">Update</h1></div>
+
+            <div class='bx--row'>
+                <div class='bx--col-md-4'>
+                    <form method='POST' action='' enctype='multipart/form-data'>
+                        <div class='cv-file-uploader cv-form-item bx--form-item'>
+                            <strong class='bx--file--label'>Update Firmware</strong>
+                            <p class='bx--label-description'>Select the firmware you want to upload</p>
+                            <div data-file='' class='bx--file'>
+                                <label for='firmware' role='button' tabindex='0' class='bx--file-browse-btn'>
+                                    <div data-file-drop-container='' class='bx--file__drop-container'>
+                                        Drag and drop file here or upload
+                                        <input type='file' id='firmware' accept='.bin,.bin.gz' class='bx--file-input' name='firmware' onchange='document.getElementById("ffile").innerHTML = ""'>
+                                    </div>
+                                </label>
+                                <div data-file-container='' class='bx--file-container' id='ffile'></div>
+                            </div>
+                        </div>
+                        <input type='submit' value='Update Firmware' class='bx--btn bx--btn--danger'>
+                    </form>
+                </div>
+
+
+                <div class='bx--col-md-4'>
+                    <form method='POST' action='' enctype='multipart/form-data'>
+                        <div class='cv-file-uploader cv-form-item bx--form-item'>
+                            <strong class='bx--file--label'>Update FileSystem</strong>
+                            <p class='bx--label-description'>Select the filesystem you want to upload</p>
+                            <div data-file='' class='bx--file'>
+                                <label for='filesystem' role='button' tabindex='0' class='bx--file-browse-btn'>
+                                    <div data-file-drop-container='' class='bx--file__drop-container'>
+                                        Drag and drop file here or upload
+                                        <input type='file' id='filesystem' accept='.bin,.bin.gz' class='bx--file-input' name='filesystem' onchange="document.getElementById('fsys').innerHTML = ''">
+                                    </div>
+                                </label>
+                                <div data-file-container='' class='bx--file-container' id='fsys'></div>
+                            </div>
+                        </div>
+                        <input type='submit' value='Update FileSystem' class='bx--btn bx--btn--danger'>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+
+        <script src="https://unpkg.com/carbon-components/scripts/carbon-components.min.js"></script>
+        
+        <script>
+            function openSidebar() {
+                document.getElementById('sidebar').classList.toggle('bx--header-panel--expanded');
+                document.getElementById('wifiinfo').classList.add('hidden');
+            }
+            function openWifiInfo() {
+                document.getElementById('sidebar').classList.remove('bx--header-panel--expanded');
+                document.getElementById('wifiinfo').classList.toggle('hidden');
+            }
+        </script>
+        
+    </body>
+</html>
