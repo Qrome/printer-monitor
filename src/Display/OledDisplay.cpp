@@ -58,11 +58,11 @@ void OledDisplay::showBootScreen() {
     this->oledDisplay->setTextAlignment(TEXT_ALIGN_CENTER);
     this->oledDisplay->setContrast(255); // default is 255
     this->oledDisplay->setFont(ArialMT_Plain_16);
-    this->oledDisplay->drawString(64, 1, "Printer Monitor");
+    this->oledDisplay->drawString(64, 1, "PrintBuddy");
     this->oledDisplay->setFont(ArialMT_Plain_10);
     this->oledDisplay->drawString(64, 18, "for " + this->globalDataController->getPrinterClient()->getPrinterType());
     this->oledDisplay->setFont(ArialMT_Plain_16);
-    this->oledDisplay->drawString(64, 30, "By Qrome");
+    this->oledDisplay->drawString(64, 30, "By XXXXXX");
     this->oledDisplay->drawString(64, 46, "V" + this->globalDataController->getVersion());
     this->oledDisplay->display();
 }
@@ -158,7 +158,7 @@ void OledDisplay::checkDisplay() {
             this->ui->setOverlays(clockOverlay, 1);
             this->isClockOn = true;
         } else if (printerClient->isPrinting() && !printerClient->isPSUoff() && this->isClockOn) {
-            this->debugController->printLn("Printer Monitor is active.");
+            this->debugController->printLn("PrintBuddy is active.");
             this->ui->setFrames(frames, 3);
             this->ui->setOverlays(overlays, 1);
             this->ui->enableAutoTransition();

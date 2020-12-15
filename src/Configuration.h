@@ -10,8 +10,8 @@
 /**
  * Basic software settings
  */
-#define VERSION                     "4.0"
-#define HOSTNAME                    "PrintMon-" 
+#define VERSION                     "1.0"
+#define HOSTNAME                    "PrintBuddy-" 
 #define CONFIG                      "/conf.txt"
 // true = Enables debug message on terminal | false = disable all debug messages
 #define DEBUG_MODE_ENABLE           true

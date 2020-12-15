@@ -1,12 +1,6 @@
 #include "WebServer.h"
 
-static const char WEB_ACTIONS[] PROGMEM =  "<a class='w3-bar-item w3-button' href='/'><i class='fa fa-home'></i> Home</a>"
-                      "<a class='w3-bar-item w3-button' href='/configure'><i class='fa fa-cog'></i> Configure</a>"
-                      "<a class='w3-bar-item w3-button' href='/configureweather'><i class='fa fa-cloud'></i> Weather</a>"
-                      "<a class='w3-bar-item w3-button' href='/systemreset' onclick='return confirm(\"Do you want to reset to default settings?\")'><i class='fa fa-undo'></i> Reset Settings</a>"
-                      "<a class='w3-bar-item w3-button' href='/forgetwifi' onclick='return confirm(\"Do you want to forget to WiFi connection?\")'><i class='fa fa-wifi'></i> Forget WiFi</a>"
-                      "<a class='w3-bar-item w3-button' href='/update'><i class='fa fa-wrench'></i> Firmware Update</a>"
-                      "<a class='w3-bar-item w3-button' href='https://github.com/Qrome' target='_blank'><i class='fa fa-question-circle'></i> About</a>";
+
 
 String CHANGE_FORM =  ""; // moved to config to make it dynamic
 
@@ -111,8 +105,10 @@ void WebServer::setup() {
     this->server->on("/updateweatherconfig", []() { obj->handleUpdateWeather(); });
     this->server->on("/configure", []() { obj->handleConfigure(); });
     this->server->on("/configureweather", []() { obj->handleWeatherConfigure(); });
+    this->server->on("/update", HTTP_GET, []() { obj->handleUpdatePage(); });
     this->server->onNotFound([]() { obj->redirectHome(); });
     this->serverUpdater->setup(this->server, "/update", this->globalDataController->getWebserverUsername(), this->globalDataController->getWebserverPassword());
+    
 
     // Start the server
     this->server->begin();
@@ -146,16 +142,10 @@ void WebServer::redirectHome() {
 }
 
 void WebServer::displayPrinterStatus() {
-    this->globalDataController->ledOnOff(true);
     BasePrinterClient *printerClient = this->globalDataController->getPrinterClient();
     String html = "";
 
-    this->server->sendHeader("Cache-Control", "no-cache, no-store");
-    this->server->sendHeader("Pragma", "no-cache");
-    this->server->sendHeader("Expires", "-1");
-    this->server->setContentLength(CONTENT_LENGTH_UNKNOWN);
-    this->server->send(200, "text/html", "");
-    this->server->sendContent(String(getHeader(true)));
+    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Status", "Monitor", true);
 
     String displayTime = 
         this->globalDataController->getTimeClient()->getAmPmHours() + ":" + 
@@ -259,10 +249,7 @@ void WebServer::displayPrinterStatus() {
         html = ""; // fresh start
     }
 
-    this->server->sendContent(String(getFooter()));
-    this->server->sendContent("");
-    this->server->client().stop();
-    this->globalDataController->ledOnOff(false);
+    WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
 }
 
 void WebServer::handleSystemReset() {
@@ -383,51 +370,76 @@ void WebServer::handleConfigure() {
     if (!this->authentication()) {
         return this->server->requestAuthentication();
     }
-    this->globalDataController->ledOnOff(true);
     BasePrinterClient *printerClient = this->globalDataController->getPrinterClient();
     String html = "";
+    
+    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Configure", "Station");
 
-    this->server->sendHeader("Cache-Control", "no-cache, no-store");
-    this->server->sendHeader("Pragma", "no-cache");
-    this->server->sendHeader("Expires", "-1");
-    this->server->setContentLength(CONTENT_LENGTH_UNKNOWN);
-    this->server->send(200, "text/html", "");
 
-    html = this->getHeader();
+    // send javascript functions for repetier server test
+    html = "<script>function testRepetier(){var e=document.getElementById(\"RepetierTest\"),r=document.getElementById(\"PrinterAddress\").value,"
+        "t=document.getElementById(\"PrinterPort\").value;if(\"\"==r||\"\"==t)return e.innerHTML=\"* Address and Port are required\","
+        "void(e.style.background=\"\");var n=\"http://\"+r+\":\"+t;n+=\"/printer/api/?a=listPrinter&apikey=\"+document.getElementById(\"PrinterApiKey\").value,"
+        "console.log(n);var o=new XMLHttpRequest;o.open(\"GET\",n,!0),o.onload=function(){if(200===o.status){var r=JSON.parse(o.responseText);"
+        "if(!r.error&&r.length>0){var t=\"<label>Connected -- Select Printer</label> \";t+=\"<select class='w3-option w3-padding' name='printer'>\";"
+        "var n=document.getElementById(\"selectedPrinter\").value,i=\"\";for(printer in r)i=r[printer].slug==n?\"selected\":\"\","
+        "t+=\"<option value='\"+r[printer].slug+\"' \"+i+\">\"+r[printer].name+\"</option>\";t+=\"</select>\","
+        "e.innerHTML=t,e.style.background=\"lime\"}else e.innerHTML=\"Error invalid API Key: \"+r.error,"
+        "e.style.background=\"red\"}else e.innerHTML=\"Error: \"+o.statusText,e.style.background=\"red\"},"
+        "o.onerror=function(){e.innerHTML=\"Error connecting to server -- check IP and Port\",e.style.background=\"red\"},o.send(null)}</script>";
     this->server->sendContent(html);
 
-    // send javascript functions
-    if (printerClient->getPrinterType() == "Repetier") {
-        html = "<script>function testRepetier(){var e=document.getElementById(\"RepetierTest\"),r=document.getElementById(\"PrinterAddress\").value,"
-            "t=document.getElementById(\"PrinterPort\").value;if(\"\"==r||\"\"==t)return e.innerHTML=\"* Address and Port are required\","
-            "void(e.style.background=\"\");var n=\"http://\"+r+\":\"+t;n+=\"/printer/api/?a=listPrinter&apikey=\"+document.getElementById(\"PrinterApiKey\").value,"
-            "console.log(n);var o=new XMLHttpRequest;o.open(\"GET\",n,!0),o.onload=function(){if(200===o.status){var r=JSON.parse(o.responseText);"
-            "if(!r.error&&r.length>0){var t=\"<label>Connected -- Select Printer</label> \";t+=\"<select class='w3-option w3-padding' name='printer'>\";"
-            "var n=document.getElementById(\"selectedPrinter\").value,i=\"\";for(printer in r)i=r[printer].slug==n?\"selected\":\"\","
-            "t+=\"<option value='\"+r[printer].slug+\"' \"+i+\">\"+r[printer].name+\"</option>\";t+=\"</select>\","
-            "e.innerHTML=t,e.style.background=\"lime\"}else e.innerHTML=\"Error invalid API Key: \"+r.error,"
-            "e.style.background=\"red\"}else e.innerHTML=\"Error: \"+o.statusText,e.style.background=\"red\"},"
-            "o.onerror=function(){e.innerHTML=\"Error connecting to server -- check IP and Port\",e.style.background=\"red\"},o.send(null)}</script>";
-
-        this->server->sendContent(html);
-    } 
-    else if (printerClient->getPrinterType() == "Klipper") {
-        html = "<script>function testKlipper(){var e=document.getElementById(\"KlipperTest\"),t=document.getElementById(\"PrinterAddress\").value,"
-            "n=document.getElementById(\"PrinterPort\").value;if(e.innerHTML=\"\",\"\"==t||\"\"==n)return e.innerHTML=\"* Address and Port are required\","
-            "void(e.style.background=\"\");var r=\"http://\"+t+\":\"+n;r+=\"/printer/info\",window.open(r,\"_blank\").focus()}</script>";
-        this->server->sendContent(html);
-    }    
-    else {
-        html = "<script>function testOctoPrint(){var e=document.getElementById(\"OctoPrintTest\"),t=document.getElementById(\"PrinterAddress\").value,"
-            "n=document.getElementById(\"PrinterPort\").value;if(e.innerHTML=\"\",\"\"==t||\"\"==n)return e.innerHTML=\"* Address and Port are required\","
-            "void(e.style.background=\"\");var r=\"http://\"+t+\":\"+n;r+=\"/api/job?apikey=\"+document.getElementById(\"PrinterApiKey\").value,window.open(r,\"_blank\").focus()}</script>";
+    // send javascript functions for klipper test
+    html = "<script>function testKlipper(){var e=document.getElementById(\"KlipperTest\"),t=document.getElementById(\"PrinterAddress\").value,"
+        "n=document.getElementById(\"PrinterPort\").value;if(e.innerHTML=\"\",\"\"==t||\"\"==n)return e.innerHTML=\"* Address and Port are required\","
+        "void(e.style.background=\"\");var r=\"http://\"+t+\":\"+n;r+=\"/printer/info\",window.open(r,\"_blank\").focus()}</script>";
+    this->server->sendContent(html);
+    
+    // send javascript functions for octoprint test
+    html = "<script>function testOctoPrint(){var e=document.getElementById(\"OctoPrintTest\"),t=document.getElementById(\"PrinterAddress\").value,"
+        "n=document.getElementById(\"PrinterPort\").value;if(e.innerHTML=\"\",\"\"==t||\"\"==n)return e.innerHTML=\"* Address and Port are required\","
+        "void(e.style.background=\"\");var r=\"http://\"+t+\":\"+n;r+=\"/api/job?apikey=\"+document.getElementById(\"PrinterApiKey\").value,window.open(r,\"_blank\").focus()}</script>";
+    this->server->sendContent(html);
+    
+    // Let us create a form for all printers
+    html  = "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>";
+    html += "<table id='printerData' class='table table-striped table-condensed'></table><script>var target ='#printerData'; var customFields = { data: {";
+    this->server->sendContent(html);
+    
+    for (int i=0; i<10; i++) {
+        html = "";
+        if (i > 0) {
+            html = ",";
+        }
+        html += String(i + 1) + ": { enabled:true, fieldName:'COMPANYCODE',prettyName:'Company Name', fieldType:'OEM', fieldValue:'' }";
         this->server->sendContent(html);
     }
+    html  = "},";
+    html += "xref: { // Key ['Label','column width',0|1] 1=admin only";
+    html += "  custom: ['#','10%',0],";
+    html += "  actions: ['Actions','5%',1],";
+    html += "  enabled: ['Enabled','5%',0],";
+    html += "  fieldName: ['Field','20%',0],";
+    html += "  prettyName: ['Pretty Name','20%',0],";
+    html += "  fieldType: ['Type','30%',0],";
+    html += "  fieldValue: ['Value','10%',0]";
+    html += "},";
+    html += "fieldTypes: [";
+    html += "  [' ',' '],";
+    html += "  ['ENV','Environment (ENV)'],";
+    html += "  ['REG','Registry (REG)'],";
+    html += "  ['WMI','Windows Management Inst. (WMI)'],";
+    html += "  ['OEM','Original Equipment Manuf.(OEM)']";
+    html += "],";
+    html += "admin:true,";
+    html += "multiedit:false";
+    html += "}";
+    html += "</script>";
+    this->server->sendContent(html);
 
 
-    String form =       "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>";
     
-    
+    String form = "";
     if (printerClient->getPrinterType() != "Klipper") {
         form    +=      "<p><label>" + printerClient->getPrinterType() + " API Key (get from your server)</label>"
                         "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' id='PrinterApiKey' value='%PRINTERAPIKEY%' maxlength='60'></p>";
@@ -508,28 +520,36 @@ void WebServer::handleConfigure() {
 
     this->server->sendContent(form);
     
-    html = this->getFooter();
-    this->server->sendContent(html);
-    this->server->sendContent("");
-    this->server->client().stop();
-    this->globalDataController->ledOnOff(false);
+    WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * @brief Send weather configuration page to client
+ */
 void WebServer::handleWeatherConfigure() {
     if (!this->authentication()) {
         return this->server->requestAuthentication();
     }
-    this->globalDataController->ledOnOff(true);
+    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Configure", "Weather");
+
     String html = "";
 
-    this->server->sendHeader("Cache-Control", "no-cache, no-store");
-    this->server->sendHeader("Pragma", "no-cache");
-    this->server->sendHeader("Expires", "-1");
-    this->server->setContentLength(CONTENT_LENGTH_UNKNOWN);
-    this->server->send(200, "text/html", "");
-
-    html = getHeader();
-    this->server->sendContent(html);
+    
     
     String form = FPSTR(WEATHER_FORM);
     String isWeatherChecked = "";
@@ -550,61 +570,18 @@ void WebServer::handleWeatherConfigure() {
     form.replace("%LANGUAGEOPTIONS%", options);
     this->server->sendContent(form);
     
-    html = this->getFooter();
-    this->server->sendContent(html);
-    this->server->sendContent("");
-    this->server->client().stop();
-    this->globalDataController->ledOnOff(false);
+
+    WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
 }
 
-String WebServer::getHeader() {
-  return this->getHeader(false);
-}
-
-String WebServer::getHeader(boolean refresh) {
-    String menu = FPSTR(WEB_ACTIONS);
-
-    String html = "<!DOCTYPE HTML>";
-    html += "<html><head><title>Printer Monitor</title><link rel='icon' href='data:;base64,='>";
-    html += "<meta charset='UTF-8'>";
-    html += "<meta name='viewport' content='width=device-width, initial-scale=1'>";
-    if (refresh) {
-        html += "<meta http-equiv=\"refresh\" content=\"30\">";
+/**
+ * @brief Send firmware/filesystem update page to client
+ */
+void WebServer::handleUpdatePage() {
+    if (!this->authentication()) {
+        return this->server->requestAuthentication();
     }
-    html += "<link rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css'>";
-    html += "<link rel='stylesheet' href='https://www.w3schools.com/lib/w3-theme-" + this->globalDataController->getWebserverTheme() + ".css'>";
-    html += "<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'>";
-    html += "</head><body>";
-    html += "<nav class='w3-sidebar w3-bar-block w3-card' style='margin-top:88px' id='mySidebar'>";
-    html += "<div class='w3-container w3-theme-d2'>";
-    html += "<span onclick='closeSidebar()' class='w3-button w3-display-topright w3-large'><i class='fa fa-times'></i></span>";
-    html += "<div class='w3-cell w3-left w3-xxxlarge' style='width:60px'><i class='fa fa-cube'></i></div>";
-    html += "<div class='w3-padding'>Menu</div></div>";
-    html += menu;
-    html += "</nav>";
-    html += "<header class='w3-top w3-bar w3-theme'><button class='w3-bar-item w3-button w3-xxxlarge w3-hover-theme' onclick='openSidebar()'><i class='fa fa-bars'></i></button><h2 class='w3-bar-item'>Printer Monitor</h2></header>";
-    html += "<script>";
-    html += "function openSidebar(){document.getElementById('mySidebar').style.display='block'}function closeSidebar(){document.getElementById('mySidebar').style.display='none'}closeSidebar();";
-    html += "</script>";
-    html += "<br><div class='w3-container w3-large' style='margin-top:88px'>";
-    return html;
-}
-
-String WebServer::getFooter() {
-  int8_t rssi = this->globalDataController->getWifiQuality();
-  Serial.print("Signal Strength (RSSI): ");
-  Serial.print(rssi);
-  this->debugController->printLn("%");
-  String html = "<br><br><br>";
-  html += "</div>";
-  html += "<footer class='w3-container w3-bottom w3-theme w3-margin-top'>";
-  if (this->globalDataController->getLastReportStatus() != "") {
-    html += "<i class='fa fa-external-link'></i> Report Status: " + this->globalDataController->getLastReportStatus() + "<br>";
-  }
-  html += "<i class='fa fa-paper-plane-o'></i> Version: " + String(VERSION) + "<br>";
-  html += "<i class='fa fa-rss'></i> Signal Strength: ";
-  html += String(rssi) + "%";
-  html += "</footer>";
-  html += "</body></html>";
-  return html;
+    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Firmware", "Update");
+    WebserverMemoryVariables::sendUpdateForm(this->server, this->globalDataController);
+    WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
 }
