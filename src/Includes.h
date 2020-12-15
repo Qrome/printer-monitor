@@ -41,9 +41,9 @@ WebServer webServer(&globalDataController, &debugController);
 #elif (PRINTERCLIENT == KLIPPER_CLIENT)
     KlipperClient printerClient(&globalDataController, &debugController, &jsonRequestClient);
 #elif (PRINTERCLIENT == DUET_CLIENT)
-    //DuetClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU, debugHandle);
+    DuetClient printerClient(&globalDataController, &debugController, &jsonRequestClient);
 #else
-    //OctoPrintClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU, debugHandle);
+    OctoPrintClient printerClient(&globalDataController, &debugController, &jsonRequestClient);
 #endif
 
 // Construct correct display client
