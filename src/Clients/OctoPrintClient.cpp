@@ -1,3 +1,4 @@
+// Octoprint API: https://docs.octoprint.org/en/master/api/index.html
 // ArduinoJSON Assistant: https://arduinojson.org/v6/assistant/
 
 #include "OctoPrintClient.h"
@@ -76,14 +77,10 @@ void OctoPrintClient::getPrinterJobResults() {
     printerData.state = this->translateState((const char*)(*jsonDoc)["state"]);
 
     if (BasePrinterClientImpl::isOperational()) {
-        this->debugController->printLn("Status: " + printerData.state);
+        this->debugController->printLn("Status: " + this->getStateAsText());
     } else {
         this->debugController->printLn("Printer Not Operational");
     }
-
-
-
-
 
     // Req 2
     jsonDoc = this->jsonRequestClient->requestJson(
@@ -108,86 +105,76 @@ void OctoPrintClient::getPrinterJobResults() {
         return;
     }
 
-    printerData.progressCompletion = (int)(*jsonDoc)["result"]["status"]["display_status"]["progress"];
-    printerData.toolTemp = (int)(*jsonDoc)["result"]["status"]["extruder"]["temperature"];
-    printerData.toolTargetTemp = (int)(*jsonDoc)["result"]["status"]["extruder"]["target"];
-    printerData.bedTemp = (int)(*jsonDoc)["result"]["status"]["heater_bed"]["temperature"];
-    printerData.bedTargetTemp = (int)(*jsonDoc)["result"]["status"]["heater_bed"]["target"];
-    float fileProgress = (float)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["progress"];
-    printerData.progressFilepos = (const char*)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["file_position"];
-    printerData.estimatedPrintTime = (float)(*jsonDoc)["result"]["status"]["toolhead"]["estimated_print_time"];
+    String printing = (const char*)(*jsonDoc)["state"]["flags"]["printing"];
+    if (printing == "true") {
+        printerData.isPrinting = true;
+    } else {
+        printerData.isPrinting = false;
+    }
+    printerData.toolTemp = (const char*)(*jsonDoc)["temperature"]["tool0"]["actual"];
+    printerData.toolTargetTemp = (const char*)(*jsonDoc)["temperature"]["tool0"]["target"];
+    printerData.bedTemp = (const char*)(*jsonDoc)["temperature"]["bed"]["actual"];
+    printerData.bedTargetTemp = (const char*)(*jsonDoc)["temperature"]["bed"]["target"];
 
-    /*
-    printerData.progressPrintTimeLeft : No metadata is available, print duration and progress can be used to calculate the ETA:
-    */
-    float totalPrintTime = printerData.progressPrintTime.toFloat() / fileProgress;
-    printerData.progressPrintTimeLeft = String(totalPrintTime - printerData.progressPrintTime.toFloat());
-    
     if (BasePrinterClientImpl::isOperational()) {
         this->debugController->printLn("Status: " + this->getStateAsText() + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
     }
 }
 
 void OctoPrintClient::getPrinterPsuState() {
-    /*// get the PSU state (if enabled and printer operational)
+    const size_t bufferSize = 364; // according to ArduinoJson assistant
+    DynamicJsonDocument *jsonDoc;
+
+    // get the PSU state (if enabled and printer operational)
     if (pollPsu && BasePrinterClientImpl::isOperational()) {
         if (!validate()) {
             printerData.isPSUoff = false; // we do not know PSU state, so assume on.
             return;
         }
-        String apiPostData = "POST /api/plugin/psucontrol HTTP/1.1";
-        String apiPostBody = "{\"command\":\"getPSUState\"}";
-        WiFiClient printClient = getPostRequest(apiPostData,apiPostBody);
-        if (printerData.error != "") {
-            printerData.isPSUoff = false; // we do not know PSU state, so assume on.
+        // Req 2
+        jsonDoc = this->jsonRequestClient->requestJson(
+            PRINTER_REQUEST_POST,
+            this->getInstanceServerTarget(),
+            this->getInstanceServerPort(),
+            this->encodedAuth,
+            "/api/plugin/psucontrol",
+            "{\"command\":\"getPSUState\"}",
+            bufferSize,
+            true
+        );
+        if (this->jsonRequestClient->getLastError() != "") {
+            // we do not know PSU state, so assume on.
+            printerData.isPSUoff = false;
             return;
         }
-        const size_t bufferSize3 = JSON_OBJECT_SIZE(2) + 300;
-        DynamicJsonDocument jsonBuffer(bufferSize3);
     
-        // Parse JSON object
-        DeserializationError error = deserializeJson(jsonBuffer, printClient);
-        if (error) {
-            printerData.isPSUoff = false; // we do not know PSU state, so assume on
-            return;
-        }
-    
-        String psu = (const char*)jsonBuffer["isPSUOn"];
+        String psu = (const char*)(*jsonDoc)["isPSUOn"];
         if (psu == "true") {
             printerData.isPSUoff = false; // PSU checked and is on
         } else {
             printerData.isPSUoff = true; // PSU checked and is off, set flag
         }
-        printClient.stop(); //stop client
     } else {
         printerData.isPSUoff = false; // we are not checking PSU state, so assume on
-    } */
+    }
 }
 
 /**
  * We translate the avail states 
- *  - "standby": No print in progress
- *  - "printing": The printer is currently printing
- *  - "paused": A print in progress has been paused
- *  - "error": The print exited with an error. print_stats.message contains a related error message
- *  - "complete": The last print has completed
  */
 int OctoPrintClient::translateState(String stateText) {
     stateText.toLowerCase();
     stateText.trim();
-    if (stateText == "standby") {
+    if (stateText == "operational" || stateText == "ready" || stateText == "sdready") {
         return PRINTER_STATE_STANDBY;
     }
-    if (stateText == "printing") {
+    if (stateText == "printing" || stateText == "cancelling") {
         return PRINTER_STATE_PRINTING;
     }
     if (stateText == "paused") {
         return PRINTER_STATE_PAUSED;
     }
-    if (stateText == "complete") {
-        return PRINTER_STATE_COMPLETED;
-    }
-    if (stateText == "error") {
+    if (stateText == "error" || stateText == "closedorerror") {
         return PRINTER_STATE_ERROR;
     }
     return PRINTER_STATE_OFFLINE;
