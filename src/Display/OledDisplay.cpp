@@ -339,7 +339,7 @@ void OledDisplay::drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiStat
     }
     if (printerClient->isPSUoff()) {
         display->drawString(printerStateDrawXPos, 47, "psu off");
-    } else if (printerClient->getState() == "Operational") {
+    } else if (printerClient->getState() != PRINTER_STATE_OFFLINE) {
         display->drawString(printerStateDrawXPos, 47, "online");
     } else {
         display->drawString(printerStateDrawXPos, 47, "offline");

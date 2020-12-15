@@ -23,7 +23,7 @@ void BasePrinterClientImpl::resetPrintData() {
     this->printerData.progressFilepos = "";
     this->printerData.progressPrintTime = "";
     this->printerData.progressPrintTimeLeft = "";
-    this->printerData.state = "";
+    this->printerData.state = PRINTER_STATE_OFFLINE;
     this->printerData.toolTemp = "";
     this->printerData.toolTargetTemp = "";
     this->printerData.filamentLength = "";
@@ -74,8 +74,26 @@ String BasePrinterClientImpl::getProgressPrintTimeLeft() {
     return rtnValue;
 }
 
-String BasePrinterClientImpl::getState() {
+int BasePrinterClientImpl::getState() {
     return printerData.state;
+}
+
+String BasePrinterClientImpl::getStateAsText() {
+    switch (this->getState())
+    {
+    case PRINTER_STATE_ERROR:
+        return "Error";
+    case PRINTER_STATE_STANDBY:
+        return "Standby";
+    case PRINTER_STATE_PRINTING:
+        return "Printing";
+    case PRINTER_STATE_PAUSED:
+        return "Paused";
+    case PRINTER_STATE_COMPLETED:
+        return "Completed";
+    default:
+        return "Offline";
+    }
 }
 
 boolean BasePrinterClientImpl::isPrinting() {
@@ -88,7 +106,7 @@ boolean BasePrinterClientImpl::isPSUoff() {
 
 boolean BasePrinterClientImpl::isOperational() {
     boolean operational = false;
-    if (printerData.state == "I" || isPrinting()) {
+    if ((printerData.state != PRINTER_STATE_OFFLINE) || isPrinting()) {
         operational = true;
     }
     return operational;

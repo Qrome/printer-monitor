@@ -20,7 +20,7 @@ protected:
         String progressFilepos;
         String progressPrintTime;
         String progressPrintTimeLeft;
-        String state;
+        int state;
         String toolTemp;
         String toolTargetTemp;
         String filamentLength;
@@ -53,7 +53,8 @@ public:
     String getProgressFilepos();
     String getProgressPrintTime();
     String getProgressPrintTimeLeft();
-    String getState();
+    int getState();
+    String getStateAsText();
     boolean isPrinting();
     boolean isOperational();
     boolean isPSUoff();
@@ -69,6 +70,7 @@ public:
     String getPrinterName();
     void setPrinterName(String printer);
 
+    
 protected:
     String getInstanceServerTarget();
     int getInstanceServerPort();

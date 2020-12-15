@@ -30,9 +30,6 @@ boolean KlipperClient::validate() {
     return rtnValue;
 }
 
-
-
-
 void KlipperClient::getPrinterJobResults() {
     // const size_t bufferSize = JSON_ARRAY_SIZE(4) + JSON_OBJECT_SIZE(1) + 4*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(7) + JSON_OBJECT_SIZE(9) + 426;
     const size_t bufferSize = 1536; // according to ArduinoJson assistant
@@ -56,7 +53,7 @@ void KlipperClient::getPrinterJobResults() {
     if (this->jsonRequestClient->getLastError() != "") {
         this->debugController->printLn(this->jsonRequestClient->getLastError());
         printerData.error = this->jsonRequestClient->getLastError();
-        printerData.state = "";
+        printerData.state = PRINTER_STATE_OFFLINE;
         printerData.isPrinting = false;
         printerData.toolTemp = "";
         printerData.toolTargetTemp = "";
@@ -65,25 +62,27 @@ void KlipperClient::getPrinterJobResults() {
         return;
     }
 
-    printerData.state = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["state"];
+    printerData.state = this->translateState((const char*)(*jsonDoc)["result"]["status"]["print_stats"]["state"]);
     printerData.filamentLength = (const char*)(*jsonDoc)["result"]["status"]["job"]["print_stats"]["filament_used"];
     printerData.progressPrintTime = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["print_duration"];
     printerData.fileName = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["filename"];
 
-    if (printerData.state == "printing") {
-        printerData.isPrinting = true;
-    } else {
-        printerData.isPrinting = false;
-    }
     if (BasePrinterClientImpl::isOperational()) {
         this->debugController->printLn("Status: " + printerData.state);
     } else {
         this->debugController->printLn("Printer Not Operational");
     }
 
+    if (printerData.state == PRINTER_STATE_PRINTING) {
+        printerData.isPrinting = true;
+    } else {
+        // We dont printing, so abort function here
+        printerData.isPrinting = false;
+        return;
+    }
+
     // Req 2
-    if (printerData.state == "printing") {
-        jsonDoc = this->jsonRequestClient->requestJson(
+    jsonDoc = this->jsonRequestClient->requestJson(
         PRINTER_REQUEST_GET,
         this->getInstanceServerTarget(),
         this->getInstanceServerPort(),
@@ -96,7 +95,7 @@ void KlipperClient::getPrinterJobResults() {
     if (this->jsonRequestClient->getLastError() != "") {
         this->debugController->printLn(this->jsonRequestClient->getLastError());
         printerData.error = this->jsonRequestClient->getLastError();
-        printerData.state = "";
+        printerData.state = PRINTER_STATE_OFFLINE;
         printerData.isPrinting = false;
         printerData.toolTemp = "";
         printerData.toolTargetTemp = "";
@@ -120,99 +119,8 @@ void KlipperClient::getPrinterJobResults() {
     float totalPrintTime = printerData.progressPrintTime.toFloat() / fileProgress;
     printerData.progressPrintTimeLeft = String(totalPrintTime - printerData.progressPrintTime.toFloat());
     
-    }
- 
-    // // Req 3
-    // jsonDoc = this->jsonRequestClient->requestJson(
-    //     PRINTER_REQUEST_GET,
-    //     this->getInstanceServerTarget(),
-    //     this->getInstanceServerPort(),
-    //     this->encodedAuth,
-    //     "/printer/objects/query?toolhead&virtual_sdcard",
-    //     "",
-    //     bufferSize,
-    //     true
-    // );
-    // if (this->jsonRequestClient->getLastError() != "") {
-    //     this->debugController->printLn(this->jsonRequestClient->getLastError());
-    //     printerData.error = this->jsonRequestClient->getLastError();
-    //     printerData.state = "";
-    //     printerData.isPrinting = false;
-    //     printerData.toolTemp = "";
-    //     printerData.toolTargetTemp = "";
-    //     printerData.bedTemp = "";
-    //     printerData.bedTargetTemp = "";
-    //     return;
-    // }
-
-    // float fileProgress = (float)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["progress"];
-    // printerData.progressFilepos = (const char*)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["file_position"];
-    // printerData.estimatedPrintTime = (float)(*jsonDoc)["result"]["status"]["toolhead"]["estimated_print_time"];
-
-    // /*
-    // printerData.progressPrintTimeLeft : No metadata is available, print duration and progress can be used to calculate the ETA:
-    // */
-    // float totalPrintTime = printerData.progressPrintTime.toFloat() / fileProgress;
-    // printerData.progressPrintTimeLeft = String(totalPrintTime - printerData.progressPrintTime.toFloat());
-    
-
-
-
-
-//     // &webhooks&virtual_sdcard&print_stats
-    
-
-    /*
-    
-    printerData.averagePrintTime = (int)jsonBuffer["result"]["status"]["toolhead"]["averagePrintTime"];
-    // printerData.fileSize = (const char*)jsonBuffer["job"]["file"]["size"];
-    printerData.lastPrintTime = (const char*)jsonBuffer["job"]["lastPrintTime"];
-    ;
-    
-    
-    */
-/**
-printerData.progressPrintTimeLeft : 
-If no metadata is available, print duration and progress can be used to calculate the ETA:
-
-// assume "result" is the response from the status query
-let vsd = result.status.virtual_sdcard;
-let pstats = result.status.print_stats;
-let total_time = pstats.print_duration / vsd.progress;
-let eta = total_time - pstats.print_duration; */
-
-
-    /*
-
-    // get the fileseize
-    apiGetData = "GET /server/files/metadata?filename=" + printerData.fileName;
-    printClient = getSubmitRequest(apiGetData);
-    if (printerData.error != "") {
-        return;
-    }
-    const size_t bufferSize2 = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(8) + 128;
-    DynamicJsonDocument jsonBuffer2(bufferSize2);
-    
-    // Parse JSON object
-    DeserializationError error2 = deserializeJson(jsonBuffer2, printClient);
-    if (error2) {
-        printerData.isPrinting = false;
-        printerData.toolTemp = "";
-        printerData.toolTargetTemp = "";
-        printerData.bedTemp = "";
-        printerData.bedTargetTemp = (int)jsonBuffer["result"]["status"]["heater_bed"]["target"];
-        return;
-    }
-
-    String printing = (const char*)jsonBuffer["result"]["status"]["print_stats"]["state"];
-    
-    
-    printerData.fileSize = (long)jsonBuffer2["result"]["size"];
-
-    */
-
     if (BasePrinterClientImpl::isOperational()) {
-        this->debugController->printLn("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
+        this->debugController->printLn("Status: " + this->getStateAsText() + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
     }
 }
 
@@ -250,4 +158,33 @@ void KlipperClient::getPrinterPsuState() {
     } else {
         printerData.isPSUoff = false; // we are not checking PSU state, so assume on
     } */
+}
+
+/**
+ * We translate the avail states 
+ *  - "standby": No print in progress
+ *  - "printing": The printer is currently printing
+ *  - "paused": A print in progress has been paused
+ *  - "error": The print exited with an error. print_stats.message contains a related error message
+ *  - "complete": The last print has completed
+ */
+int KlipperClient::translateState(String stateText) {
+    stateText.toLowerCase();
+    stateText.trim();
+    if (stateText == "standby") {
+        return PRINTER_STATE_STANDBY;
+    }
+    if (stateText == "printing") {
+        return PRINTER_STATE_PRINTING;
+    }
+    if (stateText == "paused") {
+        return PRINTER_STATE_PAUSED;
+    }
+    if (stateText == "complete") {
+        return PRINTER_STATE_COMPLETED;
+    }
+    if (stateText == "error") {
+        return PRINTER_STATE_ERROR;
+    }
+    return PRINTER_STATE_OFFLINE;
 }

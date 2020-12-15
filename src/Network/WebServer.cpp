@@ -182,7 +182,7 @@ void WebServer::displayPrinterStatus() {
         html += "Status: Offline<br>";
         html += "Reason: " + printerClient->getError() + "<br>";
     } else {
-        html += "Status: " + printerClient->getState();
+        html += "Status: " + printerClient->getStateAsText();
         if (printerClient->isPSUoff() && this->globalDataController->hasPrinterPsu()) {  
         html += ", PSU off";
         }

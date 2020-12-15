@@ -18,4 +18,6 @@ public:
     void getPrinterJobResults() override;
     void getPrinterPsuState() override;
     void updatePrintClient() override;
+
+    int translateState(String stateText);
 };

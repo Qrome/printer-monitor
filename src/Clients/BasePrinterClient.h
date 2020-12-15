@@ -5,6 +5,13 @@
 #include "Debug.h"
 #include "../Network/JsonRequestClient.h"
 
+#define PRINTER_STATE_OFFLINE       (int)-2
+#define PRINTER_STATE_ERROR         (int)-1
+#define PRINTER_STATE_STANDBY       (int)0
+#define PRINTER_STATE_PRINTING      (int)1
+#define PRINTER_STATE_PAUSED        (int)2
+#define PRINTER_STATE_COMPLETED     (int)3
+
 class BasePrinterClient {
 public:
   virtual void getPrinterJobResults();
@@ -20,7 +27,8 @@ public:
   virtual String getProgressFilepos() = 0;
   virtual String getProgressPrintTime() = 0;
   virtual String getProgressPrintTimeLeft() = 0;
-  virtual String getState() = 0;
+  virtual int getState() = 0;
+  virtual String getStateAsText() = 0;
   virtual boolean isPrinting() = 0;
   virtual boolean isOperational() = 0;
   virtual boolean isPSUoff() = 0;
