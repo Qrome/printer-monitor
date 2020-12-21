@@ -1,5 +1,7 @@
 #include "WebserverMemoryVariables.h"
 
+String WebserverMemoryVariables::rowExtraClass = "";
+
 /**
  * @brief Send out header for webpage
  * @param server                    Send out instancce
@@ -63,6 +65,12 @@ void WebserverMemoryVariables::sendHeader(
         errorBlock.replace("%ERRORMSG%", globalDataController->getSystemSettings()->lastError);
         server->sendContent(errorBlock);
     }
+    if (globalDataController->getSystemSettings()->lastOk.length() > 0) {
+        String okBlock = FPSTR(HEADER_BLOCK_OK);
+        okBlock.replace("%OKMSG%", globalDataController->getSystemSettings()->lastOk);
+        server->sendContent(okBlock);
+        globalDataController->getSystemSettings()->lastOk = "";
+    }
 }
 
 /**
@@ -71,6 +79,28 @@ void WebserverMemoryVariables::sendHeader(
  * @param globalDataController      Access to global data
  */
 void WebserverMemoryVariables::sendFooter(ESP8266WebServer *server, GlobalDataController *globalDataController) {
+
+
+    WebserverMemoryVariables::sendModalDanger(
+        server,
+        "resetSettingsModal",
+        FPSTR(GLOBAL_TEXT_WARNING),
+        FPSTR(GLOBAL_TEXT_TRESET),
+        FPSTR(GLOBAL_TEXT_CRESET),
+        FPSTR(GLOBAL_TEXT_ABORT),
+        FPSTR(GLOBAL_TEXT_RESET),
+        "onclick='openUrl(\"/systemreset\")'"
+    );
+    WebserverMemoryVariables::sendModalDanger(
+        server,
+        "resetWifiModal",
+        FPSTR(GLOBAL_TEXT_WARNING),
+        FPSTR(GLOBAL_TEXT_TFWIFI),
+        FPSTR(GLOBAL_TEXT_CFWIFI),
+        FPSTR(GLOBAL_TEXT_ABORT),
+        FPSTR(GLOBAL_TEXT_RESET),
+        "onclick='openUrl(\"/forgetwifi\")'"
+    );
     server->sendContent(String(FPSTR(FOOTER_BLOCK)));
     server->sendContent("");
     server->client().stop();
@@ -97,34 +127,53 @@ void WebserverMemoryVariables::sendWeatherConfigForm(ESP8266WebServer *server, G
         server,
         FPSTR(WEATHER_FORM1_ID),
         globalDataController->getWeatherSettings()->show,
-        FPSTR(WEATHER_FORM1_LABEL)
+        FPSTR(WEATHER_FORM1_LABEL),
+        true,
+        ""
     );
     WebserverMemoryVariables::sendFormCheckbox(
         server,
         FPSTR(WEATHER_FORM2_ID),
         globalDataController->getWeatherSettings()->isMetric,
         FPSTR(WEATHER_FORM2_LABEL_ON),
-        FPSTR(WEATHER_FORM2_LABEL_OFF)
+        FPSTR(WEATHER_FORM2_LABEL_OFF),
+        true,
+        ""
     );
-
-    String form = FPSTR(WEATHER_FORM3);
-    form.replace("%WEATHERKEY%", globalDataController->getWeatherSettings()->apiKey);
-    server->sendContent(form);
-
-    form = FPSTR(WEATHER_FORM4);
-    form.replace("%CITY1%", String(globalDataController->getWeatherSettings()->cityId));
-    form.replace("%CITYNAME1%", globalDataController->getWeatherClient()->getCity(0));
-    server->sendContent(form);
-
-    form = FPSTR(WEATHER_FORM_OPTIONS);
-    form.replace(
-        ">"+String(globalDataController->getWeatherSettings()->lang)+"<",
-        " selected>"+String(globalDataController->getWeatherSettings()->lang)+"<"
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(WEATHER_FORM3_ID),
+        FPSTR(WEATHER_FORM3_LABEL),
+        globalDataController->getWeatherSettings()->apiKey,
+        60,
+        "",
+        false,
+        true,
+        ""
     );
-    server->sendContent(form);
-
-    form = FPSTR(WEATHER_FORM5);
-    server->sendContent(form);
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(WEATHER_FORM4_ID),
+        globalDataController->getWeatherClient()->getCity(0) + FPSTR(WEATHER_FORM4_LABEL),
+        String(globalDataController->getWeatherSettings()->cityId),
+        120,
+        "onkeypress='return isNumberKey(event)'",
+        false,
+        true,
+        ""
+    );
+    WebserverMemoryVariables::sendFormSelect(
+        server,
+        FPSTR(WEATHER_FORM5_ID),
+        FPSTR(WEATHER_FORM5_LABEL),
+        String(globalDataController->getWeatherSettings()->lang),
+        "",
+        FPSTR(WEATHER_FORM5_OPTIONS),
+        true,
+        ""
+    );
+    WebserverMemoryVariables::sendFormSubmitButton(server, true);
+    server->sendContent(FPSTR(WEATHER_FORM_END));
 }
 
 /**
@@ -138,52 +187,90 @@ void WebserverMemoryVariables::sendStationConfigForm(ESP8266WebServer *server, G
         server,
         FPSTR(STATION_CONFIG_FORM1_ID),
         globalDataController->getClockSettings()->show,
-        FPSTR(STATION_CONFIG_FORM1_LABEL)
+        FPSTR(STATION_CONFIG_FORM1_LABEL),
+        true,
+        ""
     );
     WebserverMemoryVariables::sendFormCheckbox(
         server,
         FPSTR(STATION_CONFIG_FORM2_ID),
         globalDataController->getClockSettings()->is24h,
-        FPSTR(STATION_CONFIG_FORM2_LABEL)
+        FPSTR(STATION_CONFIG_FORM2_LABEL),
+        true,
+        ""
     );
     WebserverMemoryVariables::sendFormCheckbox(
         server,
         FPSTR(STATION_CONFIG_FORM3_ID),
         globalDataController->getSystemSettings()->invertDisplay,
-        FPSTR(STATION_CONFIG_FORM3_LABEL)
+        FPSTR(STATION_CONFIG_FORM3_LABEL),
+        true,
+        ""
     );
     WebserverMemoryVariables::sendFormCheckbox(
         server,
         FPSTR(STATION_CONFIG_FORM4_ID),
         globalDataController->getSystemSettings()->useLedFlash,
-        FPSTR(STATION_CONFIG_FORM4_LABEL)
+        FPSTR(STATION_CONFIG_FORM4_LABEL),
+        true,
+        ""
     );
-
-    String form = FPSTR(STATION_CONFIG_FORM5);
-    String options = FPSTR(STATION_CONFIG_FORM5OPT);
-    options.replace(
-        ">"+String(globalDataController->getSystemSettings()->clockWeatherResyncMinutes)+"<",
-        " selected>"+String(globalDataController->getSystemSettings()->clockWeatherResyncMinutes)+"<"
+    WebserverMemoryVariables::sendFormSelect(
+        server,
+        FPSTR(STATION_CONFIG_FORM5_ID),
+        FPSTR(STATION_CONFIG_FORM5_LABEL),
+        String(globalDataController->getSystemSettings()->clockWeatherResyncMinutes),
+        "",
+        FPSTR(STATION_CONFIG_FORM5_OPTIONS),
+        true,
+        ""
     );
-    form.replace("%OPTIONS%", options);
-    server->sendContent(form);
-
-    form = FPSTR(STATION_CONFIG_FORM6);
-    form.replace("%UTCOFFSET%", String(globalDataController->getClockSettings()->utcOffset));
-    server->sendContent(form);
-
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(STATION_CONFIG_FORM6_ID),
+        FPSTR(STATION_CONFIG_FORM6_LABEL),
+        String(globalDataController->getClockSettings()->utcOffset),
+        120,
+        "onkeypress='return isNumberKey(event)'",
+        false,
+        true,
+        ""
+    );
     WebserverMemoryVariables::sendFormCheckboxEvent(
         server,
         FPSTR(STATION_CONFIG_FORM7_ID),
         globalDataController->getSystemSettings()->hasBasicAuth,
         FPSTR(STATION_CONFIG_FORM7_LABEL),
-        "showhide(this, 'uspw')"
+        "showhide('isBasicAuth', 'uspw')",
+        true,
+        ""
     );
-
-    form = FPSTR(STATION_CONFIG_FORM8);
-    form.replace("%USERID%", globalDataController->getSystemSettings()->webserverUsername);
-    form.replace("%STATIONPASSWORD%", globalDataController->getSystemSettings()->webserverPassword);
-    server->sendContent(form);
+    WebserverMemoryVariables::rowExtraClass = "data-sh='uspw'";
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(STATION_CONFIG_FORM8_ID),
+        FPSTR(STATION_CONFIG_FORM8_LABEL),
+        globalDataController->getSystemSettings()->webserverUsername,
+        20,
+        "",
+        false,
+        true,
+        ""
+    );
+    WebserverMemoryVariables::rowExtraClass = "data-sh='uspw'";
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(STATION_CONFIG_FORM9_ID),
+        FPSTR(STATION_CONFIG_FORM9_LABEL),
+        globalDataController->getSystemSettings()->webserverPassword,
+        120,
+        "",
+        true,
+        true,
+        ""
+    );
+    WebserverMemoryVariables::sendFormSubmitButton(server, true);
+    server->sendContent(FPSTR(STATION_CONFIG_FORM_END));
 }
 
 /**
@@ -213,46 +300,138 @@ void WebserverMemoryVariables::sendPrinterConfigForm(ESP8266WebServer *server, G
 
     // Generate all modals
     for(int i=0; i<totalPrinters; i++) {
-        WebserverMemoryVariables::sendPrinterConfigFormAEModal(server, i + 1, &printerConfigs[i]);
+        WebserverMemoryVariables::sendPrinterConfigFormAEModal(server, i + 1, &printerConfigs[i], globalDataController);
     }
-    WebserverMemoryVariables::sendPrinterConfigFormAEModal(server, 0, NULL);
-
-    
-
-/*static const char CONFPRINTER_FORM_ROW_OFFLINE[] PROGMEM =  "<div class='bx--tag bx--tag--magenta'>"
-                                        "Offline"
-                                    "</div>";
-static const char CONFPRINTER_FORM_ROW_ONLINE[] PROGMEM =  "<div class='bx--tag bx--tag--green'>"
-                                        "Online"
-                                    "</div>";
-*/
-
-
-
+    WebserverMemoryVariables::sendPrinterConfigFormAEModal(server, 0, NULL, globalDataController);
     server->sendContent(FPSTR(CONFPRINTER_FORM_END));
 } 
 
-void WebserverMemoryVariables::sendPrinterConfigFormAEModal(ESP8266WebServer *server, int id, PrinterDataStruct *forPrinter) {
-    String printerEditModal = FPSTR(CONFPRINTER_FORM_ADDEDIT1);
-    printerEditModal.replace("%ID%", String(id));
+/**
+ * @brief Modal for printer edit/add
+ * 
+ * @param server 
+ * @param id 
+ * @param forPrinter 
+ * @param globalDataController      Access to global data
+ */
+void WebserverMemoryVariables::sendPrinterConfigFormAEModal(ESP8266WebServer *server, int id, PrinterDataStruct *forPrinter, GlobalDataController *globalDataController) {
+    
+    String modalData = FPSTR(CONFPRINTER_FORM_ADDEDIT_START);
+    modalData.replace("%ID%", String(id));
     if (id == 0) {
-        printerEditModal.replace("%TITLE%", FPSTR(CONFPRINTER_FORM_ADDEDIT_TA));
+        modalData.replace("%TITLE%", FPSTR(CONFPRINTER_FORM_ADDEDIT_TA));
     } else {
-        printerEditModal.replace("%TITLE%", FPSTR(CONFPRINTER_FORM_ADDEDIT_TE));
+        modalData.replace("%TITLE%", FPSTR(CONFPRINTER_FORM_ADDEDIT_TE));
     }
-
-    if (forPrinter == NULL) {
-        printerEditModal.replace("%NAME%", "");
-        printerEditModal.replace("%TARGETADDR%", "");
-        printerEditModal.replace("%TARGETPORT%", "80");
-    } else {
-        printerEditModal.replace("%NAME%", String(forPrinter->customName));
-        printerEditModal.replace("%TARGETADDR%", String(forPrinter->remoteAddress));
-        printerEditModal.replace("%TARGETPORT%", String(forPrinter->remotePort));
+    server->sendContent(modalData);
+    
+    String optionData = "";
+    BasePrinterClient** printerInstances = globalDataController->getRegisteredPrinterClients();
+    for (int i=0; i<globalDataController->getRegisteredPrinterClientsNum(); i++) {
+        if (printerInstances[i] == NULL) {
+            continue;
+        }
+        optionData += "<option class='bx--select-option' value='" + String(i) + "'";
+        
+        if (printerInstances[i]->clientNeedApiKey()) {
+            optionData += " data-need-api='true'";
+        }
+        if ((forPrinter != NULL) && (forPrinter->apiType == i)) {
+            optionData += " selected='selected'";
+        }
+        optionData += ">" + printerInstances[i]->getClientType() + "</option>";
     }
     
-
-    server->sendContent(printerEditModal);
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(CONFPRINTER_FORM_ADDEDIT1_ID),
+        FPSTR(CONFPRINTER_FORM_ADDEDIT1_LABEL),
+        id > 0 ? String(forPrinter->customName) : "",
+        20,
+        "",
+        false,
+        false,
+        String(id)
+    );
+    WebserverMemoryVariables::sendFormSelect(
+        server,
+        FPSTR(CONFPRINTER_FORM_ADDEDIT2_ID),
+        FPSTR(CONFPRINTER_FORM_ADDEDIT2_LABEL),
+        "",
+        "",
+        optionData,
+        false,
+        String(id)
+    );
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(CONFPRINTER_FORM_ADDEDIT3_ID),
+        FPSTR(CONFPRINTER_FORM_ADDEDIT3_LABEL),
+        id > 0 ? String(forPrinter->apiKey) : "",
+        60,
+        "",
+        false,
+        false,
+        String(id)
+    );
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(CONFPRINTER_FORM_ADDEDIT4_ID),
+        FPSTR(CONFPRINTER_FORM_ADDEDIT4_LABEL),
+        id > 0 ? String(forPrinter->remoteAddress) : "",
+        60,
+        "",
+        false,
+        false,
+        String(id)
+    );
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(CONFPRINTER_FORM_ADDEDIT5_ID),
+        FPSTR(CONFPRINTER_FORM_ADDEDIT5_LABEL),
+        id > 0 ? String(forPrinter->remotePort) : "80",
+        5,
+        "onkeypress='return isNumberKey(event)'",
+        false,
+        false,
+        String(id)
+    );
+    WebserverMemoryVariables::sendFormCheckboxEvent(
+        server,
+        FPSTR(CONFPRINTER_FORM_ADDEDIT6_ID),
+        id > 0 ? forPrinter->basicAuthNeeded : true,
+        FPSTR(CONFPRINTER_FORM_ADDEDIT6_LABEL),
+        "showhide('" + String(FPSTR(CONFPRINTER_FORM_ADDEDIT6_ID)) + "-" + String(id) + "', 'apac-" + String(id) + "')",
+        false,
+        String(id)
+    );
+    WebserverMemoryVariables::rowExtraClass = "data-sh='apac-" + String(id) + "'";
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(STATION_CONFIG_FORM7_ID),
+        FPSTR(STATION_CONFIG_FORM7_LABEL),
+        id > 0 ? String(forPrinter->basicAuthUsername) : "",
+        30,
+        "",
+        false,
+        false,
+        String(id)
+    );
+    WebserverMemoryVariables::rowExtraClass = "data-sh='apac-" + String(id) + "'";
+    WebserverMemoryVariables::sendFormInput(
+        server,
+        FPSTR(STATION_CONFIG_FORM8_ID),
+        FPSTR(STATION_CONFIG_FORM8_LABEL),
+        id > 0 ? String(forPrinter->basicAuthPassword) : "",
+        120,
+        "",
+        true,
+        false,
+        String(id)
+    );
+    modalData = FPSTR(CONFPRINTER_FORM_ADDEDIT_END);
+    modalData.replace("%ID%", String(id));
+    server->sendContent(modalData);
 }
 
 
@@ -283,9 +462,10 @@ void WebserverMemoryVariables::sendPrinterConfigFormAEModal(ESP8266WebServer *se
  * @param formId                    Form id/name
  * @param isChecked                 Checkbox checked
  * @param label                     Text for activated/deactivated
+ * @param inRow                     Extend the field with row div
  */
-void WebserverMemoryVariables::sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String label) {
-    WebserverMemoryVariables::sendFormCheckboxEvent(server, formId, isChecked, label, "");
+void WebserverMemoryVariables::sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String label, bool inRow, String uniqueId = "") {
+    WebserverMemoryVariables::sendFormCheckboxEvent(server, formId, isChecked, label, "", inRow, uniqueId);
 }
 
 /**
@@ -295,9 +475,10 @@ void WebserverMemoryVariables::sendFormCheckbox(ESP8266WebServer *server, String
  * @param isChecked                 Checkbox checked
  * @param labelOn                   Text for activated
  * @param labelOff                  Text for deactivated
+ * @param inRow                     Extend the field with row div
  */
-void WebserverMemoryVariables::sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff) {
-    WebserverMemoryVariables::sendFormCheckboxEvent(server, formId, isChecked, labelOn, labelOff, "");
+void WebserverMemoryVariables::sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff, bool inRow, String uniqueId = "") {
+    WebserverMemoryVariables::sendFormCheckboxEvent(server, formId, isChecked, labelOn, labelOff, "", inRow, uniqueId);
 }
 
 /**
@@ -307,13 +488,21 @@ void WebserverMemoryVariables::sendFormCheckbox(ESP8266WebServer *server, String
  * @param isChecked                 Checkbox checked
  * @param label                     Text for activated/deactivated
  * @param onChange                  Javascript function
+ * @param inRow                     Extend the field with row div
  */
-void WebserverMemoryVariables::sendFormCheckboxEvent(ESP8266WebServer *server, String formId, bool isChecked, String label, String onChange) {
+void WebserverMemoryVariables::sendFormCheckboxEvent(
+    ESP8266WebServer *server,
+    String formId,
+    bool isChecked,
+    String label,
+    String onChange,
+    bool inRow,
+    String uniqueId = ""
+) {
     String onAdd = FPSTR(FORM_ITEM_CHECKBOX_ON);
     String offAdd = FPSTR(FORM_ITEM_CHECKBOX_OFF);
-    WebserverMemoryVariables::sendFormCheckboxEvent(server, formId, isChecked, label + onAdd, label + offAdd, onChange);
+    WebserverMemoryVariables::sendFormCheckboxEvent(server, formId, isChecked, label + onAdd, label + offAdd, onChange, inRow, uniqueId);
 }
-
 
 /**
  * @brief Send out an single checkbox form row with onChangeEvent
@@ -323,8 +512,18 @@ void WebserverMemoryVariables::sendFormCheckboxEvent(ESP8266WebServer *server, S
  * @param labelOn                   Text for activated
  * @param labelOff                  Text for deactivated
  * @param onChange                  Javascript function
+ * @param inRow                     Extend the field with row div
  */
-void WebserverMemoryVariables::sendFormCheckboxEvent(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff, String onChange) {
+void WebserverMemoryVariables::sendFormCheckboxEvent(
+    ESP8266WebServer *server,
+    String formId,
+    bool isChecked,
+    String labelOn,
+    String labelOff,
+    String onChange,
+    bool inRow,
+    String uniqueId = ""
+) {
     String isCheckedText = "";
     String onChangeText = "";
     if (isChecked) {
@@ -339,5 +538,177 @@ void WebserverMemoryVariables::sendFormCheckboxEvent(ESP8266WebServer *server, S
     form.replace("%LABELON%", labelOn);
     form.replace("%LABELOFF%", labelOff);
     form.replace("%ONCHANGE%", onChangeText);
-    server->sendContent(form);
+    WebserverMemoryVariables::sendForm(server, formId, form, inRow, uniqueId);
 }
+
+
+/**
+ * @brief Send out an single input field form row
+ * @param server                    Send out instancce
+ * @param formId                    Form id/name
+ * @param label                     Text for label head
+ * @param value                     Value in field
+ * @param maxLen                    Max text len in input field
+ * @param events                    Extra events for input field
+ * @param isPassword                True if password field
+ * @param inRow                     Extend the field with row div
+ * @param uniqueId                  Unique key for ids
+ */
+void WebserverMemoryVariables::sendFormInput(
+    ESP8266WebServer *server,
+    String formId,
+    String label,
+    String value,
+    int maxLen,
+    String events,
+    bool isPassword,
+    bool inRow,
+    String uniqueId = ""
+) {
+    String form = FPSTR(FORM_ITEM_INPUT);
+    form.replace("%FORMID%", formId);
+    form.replace("%LABEL%", label);
+    form.replace("%VALUE%", value);
+    form.replace("%MAXLEN%", String(maxLen));
+    form.replace("%EVENTS%", events);
+    
+    if (isPassword) {
+        form.replace("%FIELDTYPE%", "password");
+    }
+    else {
+        form.replace("%FIELDTYPE%", "text");
+    }
+    WebserverMemoryVariables::sendForm(server, formId, form, inRow, uniqueId);
+}
+
+/**
+ * @brief Send out an single input field form row
+ * @param server                    Send out instancce
+ * @param formId                    Form id/name
+ * @param label                     Text for label head
+ * @param value                     Value in field
+ * @param events                    Extra events for input field
+ * @param inRow                     Extend the field with row div
+ * @param uniqueId                  Unique key for ids
+ */
+void WebserverMemoryVariables::sendFormSelect(
+    ESP8266WebServer *server,
+    String formId,
+    String label,
+    String value,
+    String events,
+    String options,
+    bool inRow,
+    String uniqueId = ""
+) {
+    String form = FPSTR(FORM_ITEM_SELECT_START);
+    form.replace("%FORMID%", formId);
+    form.replace("%LABEL%", label);
+    form.replace("%EVENTS%", events);
+
+    if (value.length() > 0) {
+        options.replace(
+            ">"+ value + "<",
+            " selected>" + String(value) + "<"
+        );
+    }
+    
+    WebserverMemoryVariables::sendForm(
+        server,
+        formId,
+        form + options + FPSTR(FORM_ITEM_SELECT_END),
+        inRow,
+        uniqueId
+    );   
+}
+
+/**
+ * @brief Send form out to client
+ * 
+ * @param server                    Send out instancce
+ * @param formElement               Form element
+ * @param inRow                     True if in row
+ */
+void WebserverMemoryVariables::sendFormSubmitButton(
+    ESP8266WebServer *server,
+    bool inRow
+) {
+    WebserverMemoryVariables::sendForm(
+        server,
+        "",
+        FPSTR(FORM_ITEM_SUBMIT),
+        inRow,
+        ""
+    );
+}
+
+/**
+ * @brief Send form out to client
+ * 
+ * @param server                    Send out instance
+ * @param formId                    Form id/name
+ * @param formElement               Form element
+ * @param inRow                     True if in row
+ * @param uniqueId                  Unique key for ids
+ */
+void WebserverMemoryVariables::sendForm(
+    ESP8266WebServer *server,
+    String formId,
+    String formElement,
+    bool inRow,
+    String uniqueId
+) {
+    if (uniqueId.length() > 0) {
+        formElement.replace("id='" + formId + "'", "id='" + formId + "-" + uniqueId + "'");
+        formElement.replace("for='" + formId + "'", "for='" + formId + "-"  + uniqueId + "'");
+    }
+    if (inRow) {
+        String rowStartData = FPSTR(FORM_ITEM_ROW_START);
+        rowStartData.replace("%ROWEXTRACLASS%", WebserverMemoryVariables::rowExtraClass);
+        WebserverMemoryVariables::rowExtraClass = "";
+        server->sendContent(rowStartData);
+        formElement.replace("%ROWEXT%", FPSTR(FORM_ITEM_ROW_EXT));
+        formElement.replace("%DIVEXTRACLASS%", "");
+    } else {
+        formElement.replace("%ROWEXT%", "");
+        formElement.replace("%DIVEXTRACLASS%", WebserverMemoryVariables::rowExtraClass);
+    }
+    server->sendContent(formElement);
+    if (inRow) {
+        server->sendContent(FPSTR(FORM_ITEM_ROW_END));
+    }
+}
+
+/**
+ * @brief Send danger modal out to client
+ * 
+ * @param server                    Send out instancce
+ * @param formId                    ID of element
+ * @param label                     Label top
+ * @param title                     Dialog title
+ * @param content                   Dialog detailed content
+ * @param secActionTitle            Title of secondary button
+ * @param primActionTitle           Title of primary button
+ * @param primActionEvent           Event of primary button
+ */
+void WebserverMemoryVariables::sendModalDanger(
+    ESP8266WebServer *server,
+    String formId,
+    String label,
+    String title,
+    String content,
+    String secActionTitle,
+    String primActionTitle,
+    String primActionEvent
+) {
+    String modalDialog = FPSTR(MODAL_DANGER);
+    modalDialog.replace("%ID%", formId);
+    modalDialog.replace("%LABEL%", label);
+    modalDialog.replace("%HEADING%", title);
+    modalDialog.replace("%CONTENT%", content);
+    modalDialog.replace("%SECACTION%", secActionTitle);
+    modalDialog.replace("%MAINACTION%", primActionTitle);
+    modalDialog.replace("%MAINEVENT%", primActionEvent);
+    server->sendContent(modalDialog);
+}
+

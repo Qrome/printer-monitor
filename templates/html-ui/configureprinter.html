@@ -262,7 +262,7 @@
                             </label>
                         </div>
                         <div class="bx--form-item">
-                            <input class="bx--toggle-input bx--toggle-input--small" id="e-tapipw" type="checkbox" name="e-tapipw" onchange="showhide(this, 'apac')" checked="checked">
+                            <input class="bx--toggle-input bx--toggle-input--small" id="e-tapipw" type="checkbox" name="e-tapipw" onchange="showhide('e-tapipw', 'apac')" checked="checked">
                             <label class="bx--toggle-input__label" for="e-tapipw">
                             <span class="bx--toggle__switch">
                                 <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
@@ -366,8 +366,9 @@
 
             function showhide(a,b) {
                 var e = $("[data-sh='"+b+"']");
-                console.log();
-                if (a.checked||a.prop('checked')) {
+                var f = $("#" + a);
+
+                if (f.checked||f.prop('checked')) {
                     e.removeClass('hidden');
                 } else {
                     e.addClass('hidden');
@@ -381,7 +382,7 @@
             $(function() {
                 $('form').on("submit", function(e){$('#pageloading').removeClass('hidden'); e.preventDefault(); return false;})
             });
-            showhide($('#e-tapipw'), 'apac');
+            showhide('e-tapipw', 'apac');
         </script>
         
     </body>

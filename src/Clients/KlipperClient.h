@@ -14,6 +14,7 @@ public:
     KlipperClient(GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient);
     void getPrinterJobResults(PrinterDataStruct *printerData) override;
     void getPrinterPsuState(PrinterDataStruct *printerData) override;
+    boolean clientNeedApiKey() override { return false; };
 
 private:    
     static int translateState(String stateText);

@@ -16,6 +16,7 @@ public:
     BasePrinterClientImpl(String clientType, GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient);
     void getPrinterJobResults(PrinterDataStruct *printerData) {};
     void getPrinterPsuState(PrinterDataStruct *printerData) {};
+    boolean clientNeedApiKey() { return false; };
     void updatePrintClient(PrinterDataStruct *printerData);
     String getClientType();
     boolean isOperational(PrinterDataStruct *printerData);

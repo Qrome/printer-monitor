@@ -32,10 +32,10 @@ typedef struct {
     char    fileName[60];
     int     fileSize;
     int     lastPrintTime;
-    char    progressCompletion[60];
+    int     progressCompletion;
     int     progressFilepos;
-    int     progressPrintTime;
-    int     progressPrintTimeLeft;
+    float   progressPrintTime;
+    float   progressPrintTimeLeft;
     int     state;
     float   toolTemp;
     float   toolTargetTemp;

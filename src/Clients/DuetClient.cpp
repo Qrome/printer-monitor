@@ -85,23 +85,21 @@ void DuetClient::getPrinterJobResults(PrinterDataStruct *printerData) {
         return;
     }
 
-    //printerData.filamentLength = (const char*)(*jsonDoc)["result"]["status"]["job"]["print_stats"]["filament_used"];
-    //printerData.progressPrintTime = (const char*)(*jsonDoc)["printDuration"];
-    //printerData.fileName = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["filename"];
-    //printerData.progressCompletion = (int)(*jsonDoc)["fractionPrinted"];
+    printerData->filamentLength = (float)(*jsonDoc)["result"]["status"]["job"]["print_stats"]["filament_used"];
+    printerData->progressPrintTime = (float)(*jsonDoc)["printDuration"];
+    MemoryHelper::stringToChar(
+        (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["filename"],
+        printerData->fileName,
+        60
+    );
+    printerData->progressCompletion = (int)(*jsonDoc)["fractionPrinted"];
     printerData->toolTemp = (int)(*jsonDoc)["temps"]["current"][1];
     printerData->toolTargetTemp = (int)(*jsonDoc)["temps"]["tools"]["active"][0][0];
     printerData->bedTemp = (int)(*jsonDoc)["temps"]["bed"]["current"];
     printerData->bedTargetTemp = (int)(*jsonDoc)["temps"]["bed"]["active"];
-    float fileProgress = (float)(*jsonDoc)["fractionPrinted"];
-    //printerData.progressFilepos = (const char*)(*jsonDoc)["filePosition"];
+    printerData->progressFilepos = (int)(*jsonDoc)["filePosition"];
     printerData->estimatedPrintTime = (float)(*jsonDoc)["file"];
-
-    /*
-    printerData.progressPrintTimeLeft : No metadata is available, print duration and progress can be used to calculate the ETA:
-    */
-    //float totalPrintTime = printerData.progressPrintTime.toFloat() / fileProgress;
-    //printerData.progressPrintTimeLeft = String(totalPrintTime - printerData.progressPrintTime.toFloat());
+    printerData->progressPrintTimeLeft = (float)(*jsonDoc)["timesLeft"]["file"];
 
     if (this->isOperational(printerData)) {
         this->debugController->printLn("Status: "

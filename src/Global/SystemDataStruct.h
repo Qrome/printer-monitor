@@ -13,4 +13,5 @@ typedef struct {
     int     clockWeatherResyncMinutes;
     String  version;
     String  lastError;
+    String  lastOk;
 } SystemDataStruct;

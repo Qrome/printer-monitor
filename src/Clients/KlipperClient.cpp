@@ -48,9 +48,13 @@ void KlipperClient::getPrinterJobResults(PrinterDataStruct *printerData) {
     }
 
     printerData->state = KlipperClient::translateState((const char*)(*jsonDoc)["result"]["status"]["print_stats"]["state"]);
-    //printerData.filamentLength = (const char*)(*jsonDoc)["result"]["status"]["job"]["print_stats"]["filament_used"];
-    //printerData.progressPrintTime = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["print_duration"];
-    //printerData.fileName = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["filename"];
+    printerData->filamentLength = (float)(*jsonDoc)["result"]["status"]["job"]["print_stats"]["filament_used"];
+    printerData->progressPrintTime = (float)(*jsonDoc)["result"]["status"]["print_stats"]["print_duration"];
+    MemoryHelper::stringToChar(
+        (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["filename"],
+        printerData->fileName,
+        60
+    );
 
     if (this->isOperational(printerData)) {
         this->debugController->printLn("Status: " + this->globalDataController->getPrinterStateAsText(printerData));
@@ -87,21 +91,20 @@ void KlipperClient::getPrinterJobResults(PrinterDataStruct *printerData) {
         return;
     }
 
-    //printerData.progressCompletion = (int)(*jsonDoc)["result"]["status"]["display_status"]["progress"];
+    float progressCompletion = (float)(*jsonDoc)["result"]["status"]["display_status"]["progress"];
     printerData->toolTemp = (int)(*jsonDoc)["result"]["status"]["extruder"]["temperature"];
     printerData->toolTargetTemp = (int)(*jsonDoc)["result"]["status"]["extruder"]["target"];
     printerData->bedTemp = (int)(*jsonDoc)["result"]["status"]["heater_bed"]["temperature"];
     printerData->bedTargetTemp = (int)(*jsonDoc)["result"]["status"]["heater_bed"]["target"];
     float fileProgress = (float)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["progress"];
-    //printerData.progressFilepos = (const char*)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["file_position"];
+    printerData->progressFilepos = (int)(*jsonDoc)["result"]["status"]["virtual_sdcard"]["file_position"];
     printerData->estimatedPrintTime = (float)(*jsonDoc)["result"]["status"]["toolhead"]["estimated_print_time"];
+    printerData->progressPrintTime = (float)(*jsonDoc)["result"]["status"]["print_stats"]["print_duration"];
 
-    /*
-    printerData.progressPrintTimeLeft : No metadata is available, print duration and progress can be used to calculate the ETA:
-    */
-    //float totalPrintTime = printerData.progressPrintTime.toFloat() / fileProgress;
-    //printerData.progressPrintTimeLeft = String(totalPrintTime - printerData.progressPrintTime.toFloat());
-    
+    float totalPrintTime = printerData->progressPrintTime / fileProgress;
+    printerData->progressPrintTimeLeft = totalPrintTime - printerData->progressPrintTime;
+    printerData->progressCompletion = progressCompletion * 100;
+
     if (this->isOperational(printerData)) {
         this->debugController->printLn("Status: "
             + this->globalDataController->getPrinterStateAsText(printerData) + " "

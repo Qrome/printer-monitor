@@ -439,6 +439,24 @@ void GlobalDataController::registerPrinterClient(int id, BasePrinterClient *base
 }
 
 /**
+ * @brief Get all registred printer clients
+ * 
+ * @return BasePrinterClient** 
+ */
+BasePrinterClient** GlobalDataController::getRegisteredPrinterClients() {
+    return this->basePrinterClients;
+}
+
+/**
+ * @brief Get number of registred printer clients
+ * 
+ * @return int 
+ */
+int GlobalDataController::getRegisteredPrinterClientsNum() {
+    return this->basePrinterCount;
+}
+
+/**
  * @brief Get viewable type of client for printer
  * @param printerHandle     Handle to printer data
  * @return String 

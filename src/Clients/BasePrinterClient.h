@@ -17,6 +17,7 @@ public:
     virtual void updatePrintClient(PrinterDataStruct *printerData) = 0;
     virtual String getClientType() = 0;
     virtual boolean isValidConfig(PrinterDataStruct *printerData) = 0;
+    virtual boolean clientNeedApiKey() = 0;
 
     /**
      * @brief Reset all dynamic variables for printer
@@ -36,7 +37,7 @@ public:
         MemoryHelper::stringToChar("", printerData->fileName, 60);
         printerData->fileSize = 0;
         printerData->lastPrintTime = 0;
-        MemoryHelper::stringToChar("", printerData->progressCompletion, 60);
+        printerData->progressCompletion = 0;
         printerData->progressFilepos = 0;
         printerData->progressPrintTime = 0;
         printerData->progressPrintTimeLeft = 0;

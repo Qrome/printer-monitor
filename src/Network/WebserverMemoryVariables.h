@@ -7,8 +7,12 @@
 /**
  * Webpage form items for reuse
  */
-static const char FORM_ITEM_CHECKBOX[] PROGMEM = "<div class='bx--row'>"
-                    "<div class='bx--col bx--col--auto bx--form-item'>"
+static const char FORM_ITEM_ROW_START[] PROGMEM = "<div class='bx--row' %ROWEXTRACLASS%>";
+static const char FORM_ITEM_ROW_EXT[] PROGMEM = "bx--col bx--col--auto";
+static const char FORM_ITEM_ROW_END[] PROGMEM = "</div>";
+
+
+static const char FORM_ITEM_CHECKBOX[] PROGMEM = "<div class='%ROWEXT% bx--form-item' %DIVEXTRACLASS%>"
                         "<input class='bx--toggle-input bx--toggle-input--small' id='%FORMID%' type='checkbox' name='%FORMID%' %CHECKED% %ONCHANGE%>"
                         "<label class='bx--toggle-input__label' for='%FORMID%'>"
                             "<span class='bx--toggle__switch'>"
@@ -19,10 +23,27 @@ static const char FORM_ITEM_CHECKBOX[] PROGMEM = "<div class='bx--row'>"
                                 "<span class='bx--toggle__text--on' aria-hidden='true'>%LABELON%</span>"
                             "</span>"
                         "</label>"
-                    "</div>"
-                "</div>";
+                    "</div>";
 static const char FORM_ITEM_CHECKBOX_ON[] PROGMEM = " activated";
 static const char FORM_ITEM_CHECKBOX_OFF[] PROGMEM = " deactivated";
+
+static const char FORM_ITEM_INPUT[] PROGMEM = "<div class='%ROWEXT% bx--form-item' %DIVEXTRACLASS%>"
+                            "<label for='%FORMID%' class='bx--label'>%LABEL%</label>"
+                            "<input id='%FORMID%' type='%FIELDTYPE%' class='bx--text-input' name='%FORMID%' value='%VALUE%' maxlength='%MAXLEN%' %EVENTS%>"
+                        "</div>";
+
+static const char FORM_ITEM_SELECT_START[] PROGMEM = "<div class='bx--form-item bx--select %ROWEXT%' %DIVEXTRACLASS%>"
+                            "<label for='%FORMID%' class='bx--label'>%LABEL%</label>"
+                            "<div class='bx--select-input__wrapper'>"
+                                "<select id='%FORMID%' class='bx--select-input' name='%FORMID%' %EVENTS%>";
+static const char FORM_ITEM_SELECT_END[] PROGMEM = "</select>"
+                                "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--select__arrow' width='10' height='6' viewBox='0 0 10 6' aria-hidden='true'><path d='M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z'></path></svg>"
+                            "</div>"
+                        "</div>";
+
+static const char FORM_ITEM_SUBMIT[] PROGMEM = "<div class='bx--form-item %ROWEXT%' %DIVEXTRACLASS%>"
+                        "<button class='bx--btn bx--btn--primary' type='submit'>Save</button>"
+                    "</div>";
 
 /**
  * Webpage side menu right for main items
@@ -48,11 +69,11 @@ static const char MENUE_ITEMS[] PROGMEM =
         "Configure Sensor"
         "<svg focusable='false' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'><path d='M30,19H26V15H24v9H8V8l9-.0009V6H13V2H11V6H8A2.002,2.002,0,0,0,6,8v3H2v2H6v6H2v2H6v3a2.0023,2.0023,0,0,0,2,2h3v4h2V26h6v4h2V26h3a2.0027,2.0027,0,0,0,2-2V21h4Z'></path><path d='M26,2a4.0042,4.0042,0,0,0-4,4,3.9556,3.9556,0,0,0,.5668,2.0192L19.5859,11H11V21H21V12.4141l2.9808-2.9808A3.9553,3.9553,0,0,0,26,10a4,4,0,0,0,0-8ZM19,19H13V13h6ZM26,8a2,2,0,1,1,2-2A2.0023,2.0023,0,0,1,26,8Z'></path></svg>"
     "</a></li>"
-    "<li class='cv-switcher-item bx--switcher__item'><a class='cv-switcher-item-link bx--switcher__item-link menitem' href='/systemreset' onclick='return confirm(\"Do you want to reset to default settings?\")'>"
+    "<li class='cv-switcher-item bx--switcher__item'><a class='cv-switcher-item-link bx--switcher__item-link menitem' onclick='openModal(\"resetSettingsModal\")'>"
         "Reset Settings"
         "<svg focusable='false' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'><path d='M18,28A12,12,0,1,0,6,16v6.2L2.4,18.6,1,20l6,6,6-6-1.4-1.4L8,22.2V16H8A10,10,0,1,1,18,26Z'></path></svg>"
     "</a></li>"
-    "<li class='cv-switcher-item bx--switcher__item'><a class='cv-switcher-item-link bx--switcher__item-link menitem' href='/forgetwifi' onclick='return confirm(\"Do you want to forget to WiFi connection?\")'>"
+    "<li class='cv-switcher-item bx--switcher__item'><a class='cv-switcher-item-link bx--switcher__item-link menitem' onclick='openModal(\"resetWifiModal\")'>"
         "Forget WiFi"
         "<svg focusable='false' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'><circle cx='16' cy='25' r='2'></circle><path d='M30 3.4141L28.5859 2 2 28.5859 3.4141 30 14.0962 19.3179a5.9359 5.9359 0 016.01 1.3193L21.52 19.2236a7.9669 7.9669 0 00-5.125-2.2041l3.3875-3.3877a11.9908 11.9908 0 014.5647 2.7647L25.76 14.9829A13.975 13.975 0 0021.334 12.08L24.3308 9.083a17.9364 17.9364 0 014.2546 3.0747L30 10.7432v-.002a20.02 20.02 0 00-4.1895-3.1377zM14.68 13.0776l2.0415-2.0415C16.481 11.0234 16.2437 11 16 11a13.9447 13.9447 0 00-9.771 3.9927l1.4136 1.4136A11.97 11.97 0 0114.68 13.0776zM16 7a17.87 17.87 0 014.2324.5254L21.875 5.8828A19.9537 19.9537 0 002 10.7412v.0225L3.4043 12.168A17.9193 17.9193 0 0116 7z'></path></svg>"
     "</a></li>"
@@ -77,9 +98,12 @@ static const char HEADER_BLOCK2[] PROGMEM = "<link rel='stylesheet' href='https:
         "<link rel='stylesheet' href='https://unpkg.com/carbon-components/css/carbon-components.min.css'></style>"
         "<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.15.1/css/all.css'>"
         "<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>"
-        "<script>function showhide(a,b) {var e=$(\"[data-sh='\"+b+\"']\");if(a.checked||a.prop('checked')){e.removeClass('hidden')}else{e.addClass('hidden')}}</script>"
         "<style>.hidden{display:none} .bx--form-item{margin-bottom:20px} .bx--table-column-menu{width: 3.25rem} .menitem{padding:6px 1rem;font-size:.875rem;font-weight:600;line-height:1.29;letter-spacing:.16px;display:flex;justify-content:space-between;text-decoration:none;color:#c6c6c6}</style>"
+        "<script>function showhide(a,b) {var e=$(\"[data-sh='\"+b+\"']\");var f=$(\"#\" + a);if (f.checked||f.prop('checked')){e.removeClass('hidden');}else{e.addClass('hidden');}}</script>"
         "<script>function openModal(refelementId){document.body.classList.add(\"bx--body--with-modal-open\");document.getElementById(refelementId).classList.add(\"is-visible\")} function closeModal(refelementId){document.getElementById(refelementId).classList.remove(\"is-visible\");document.body.classList.remove(\"bx--body--with-modal-open\")}</script>"
+        "<script>function isNumberKey(e){var h=e.which?e.which:event.keyCode;return!(h>31&&(h<48||h>57))}</script>"
+        "<script>function openUrl(e){window.location.assign(e)}</script>"
+        
         "</head><body>"
         "<header class='cv-header bx--header'>"
         "<a href='/' class='cv-header-name bx--header__name'>";
@@ -129,6 +153,15 @@ static const char HEADER_BLOCK_ERROR[] PROGMEM = "<div class='bx--inline-notific
             "</button>"
         "</div>";
 
+static const char HEADER_BLOCK_OK[] PROGMEM = "<div class='bx--inline-notification bx--inline-notification--success' role='alert' style='max-width:100%'>"
+            "<div class='bx--inline-notification__details'>"
+                "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--inline-notification__icon' width='20' height='20' viewBox='0 0 20 20' aria-hidden='true'><path d='M10,1c-4.9,0-9,4.1-9,9s4.1,9,9,9s9-4,9-9S15,1,10,1z M8.7,13.5l-3.2-3.2l1-1l2.2,2.2l4.8-4.8l1,1L8.7,13.5z'></path><path fill='none' d='M8.7,13.5l-3.2-3.2l1-1l2.2,2.2l4.8-4.8l1,1L8.7,13.5z' data-icon-path='inner-path' opacity='0'></path></svg>"
+                "<div class='bx--inline-notification__text-wrapper'>"
+                    "<p class='bx--inline-notification__title'>%OKMSG%</p>"
+                "</div>"
+            "</div>"
+        "</div>";
+
 static const char FOOTER_BLOCK[] PROGMEM = "<br><br><br></div>"
         "<div class='bx--loading-overlay hidden' id='pageloading'>"
             "<div data-loading class='bx--loading'>"
@@ -142,6 +175,18 @@ static const char FOOTER_BLOCK[] PROGMEM = "<br><br><br></div>"
         "<script>$(function(){$('form').on('submit',function(e){$('#pageloading').removeClass('hidden')})})</script>"
     "</body>"
 "</html>";
+
+
+/**
+ * Global Text
+ */
+static const char GLOBAL_TEXT_WARNING[] PROGMEM = "WARNING";
+static const char GLOBAL_TEXT_ABORT[] PROGMEM = "Abort";
+static const char GLOBAL_TEXT_RESET[] PROGMEM = "Reset";
+static const char GLOBAL_TEXT_TRESET[] PROGMEM = "Reset settings";
+static const char GLOBAL_TEXT_CRESET[] PROGMEM = "Do you want to reset to default settings?";
+static const char GLOBAL_TEXT_TFWIFI[] PROGMEM = "Reset wifi";
+static const char GLOBAL_TEXT_CFWIFI[] PROGMEM = "Do you want to reset wifi to default settings?";
 
 /**
  * Controls for update firmware/filesystem
@@ -197,39 +242,15 @@ static const char WEATHER_FORM2_ID[] PROGMEM = "metric";
 static const char WEATHER_FORM2_LABEL_ON[] PROGMEM = "Show in Celsius";
 static const char WEATHER_FORM2_LABEL_OFF[] PROGMEM = "Show in Fahrenheit";
 
-static const char WEATHER_FORM3[] PROGMEM = "<div class='bx--row'>"
-                        "<div class='bx--form-item bx--col bx--col--auto'>"
-                            "<label for='openWeatherMapApiKey' class='bx--label'>OpenWeatherMap API Key (get from <a href='https://openweathermap.org/' target='_BLANK'>here</a>)</label>"
-                            "<input id='openWeatherMapApiKey' type='text' class='bx--text-input' name='openWeatherMapApiKey' value='%WEATHERKEY%' maxlength='60'>"
-                        "</div>"
-                    "</div>";
+static const char WEATHER_FORM3_ID[] PROGMEM = "openWeatherMapApiKey";
+static const char WEATHER_FORM3_LABEL[] PROGMEM = "OpenWeatherMap API Key (get from <a href='https://openweathermap.org/' target='_BLANK'>here</a>)";
 
-static const char WEATHER_FORM4[] PROGMEM = "<div class='bx--row'>"
-                        "<div class='bx--form-item bx--col bx--col--auto'>"
-                            "<label for='city1' class='bx--label'>%CITYNAME1% (<a href='http://openweathermap.org/find' target='_BLANK'><i class='fa fa-search'></i> Search for City ID</a>)</label>"
-                            "<input id='city1' type='text' class='bx--text-input' name='city1' value='%CITY1%' onkeypress='return isNumberKey(event)'>"
-                        "</div>"
-                    "</div>"
-                    "<div class='bx--row'>"
-                        "<div class='bx--form-item bx--col bx--col--auto bx--select'>"
-                            "<label for='language' class='bx--label'>Weather Language</label>"
-                            "<div class='bx--select-input__wrapper'>"
-                                "<select id='language' class='bx--select-input' name='language'>";
+static const char WEATHER_FORM4_ID[] PROGMEM = "city1";
+static const char WEATHER_FORM4_LABEL[] PROGMEM = "(<a href='http://openweathermap.org/find' target='_BLANK'><i class='fa fa-search'></i> Search for City ID</a>)";
 
-static const char WEATHER_FORM5[] PROGMEM = "</select>"
-                                "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--select__arrow' width='10' height='6' viewBox='0 0 10 6' aria-hidden='true'><path d='M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z'></path></svg>"
-                            "</div>"
-                        "</div>"
-                    "</div>"
-                    "<div class='bx--row'>"
-                        "<div class='bx--form-item bx--col bx--col--auto'>"
-                            "<button class='bx--btn bx--btn--primary' type='submit'>Save</button>"
-                        "</div>"
-                    "</div>"
-                "</form>"
-                "<script>function isNumberKey(e){var h=e.which?e.which:event.keyCode;return!(h>31&&(h<48||h>57))}</script>";
-
-static const char WEATHER_FORM_OPTIONS[] PROGMEM = "<option class='bx--select-option'>ar</option>"
+static const char WEATHER_FORM5_ID[] PROGMEM = "language";
+static const char WEATHER_FORM5_LABEL[] PROGMEM = "Weather Language";
+static const char WEATHER_FORM5_OPTIONS[] PROGMEM = "<option class='bx--select-option'>ar</option>"
                                     "<option class='bx--select-option'>bg</option>"
                                     "<option class='bx--select-option'>ca</option>"
                                     "<option class='bx--select-option'>cz</option>"
@@ -263,6 +284,8 @@ static const char WEATHER_FORM_OPTIONS[] PROGMEM = "<option class='bx--select-op
                                     "<option class='bx--select-option'>zh_cn</option>"
                                     "<option class='bx--select-option'>zh_tw</option>";
 
+static const char WEATHER_FORM_END[] PROGMEM = "</form>";
+
 /**
  * Controls for station configuration
  */
@@ -280,52 +303,27 @@ static const char STATION_CONFIG_FORM3_LABEL[] PROGMEM = "Flip display orientati
 static const char STATION_CONFIG_FORM4_ID[] PROGMEM = "useFlash";
 static const char STATION_CONFIG_FORM4_LABEL[] PROGMEM = "Flash System LED on Service Call";
 
-static const char STATION_CONFIG_FORM5[] PROGMEM = "<div class='bx--row'>"
-                    "<div class='bx--form-item bx--col bx--col--auto bx--select'>"
-                        "<label for='refresh' class='bx--label'>Clock Sync / Weather Refresh (minutes)</label>"
-                        "<div class='bx--select-input__wrapper'>"
-                            "<select id='refresh' class='bx--select-input' name='refresh'>"
-                                "%OPTIONS%"
-                            "</select>"
-                            "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--select__arrow' width='10' height='6' viewBox='0 0 10 6' aria-hidden='true'><path d='M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z'></path></svg>"
-                        "</div>"
-                    "</div>"
-                "</div>";
-
-static const char STATION_CONFIG_FORM5OPT[] PROGMEM = "<option class='bx--select-option'>10</option>"
+static const char STATION_CONFIG_FORM5_ID[] PROGMEM = "refresh";
+static const char STATION_CONFIG_FORM5_LABEL[] PROGMEM = "Clock Sync / Weather Refresh (minutes)";
+static const char STATION_CONFIG_FORM5_OPTIONS[] PROGMEM = "<option class='bx--select-option'>10</option>"
                                 "<option class='bx--select-option'>15</option>"
                                 "<option class='bx--select-option'>20</option>"
                                 "<option class='bx--select-option'>30</option>"
                                 "<option class='bx--select-option'>60</option>";
 
-static const char STATION_CONFIG_FORM6[] PROGMEM = "<div class='bx--row'>"
-                    "<div class='bx--form-item bx--col bx--col--auto'>"
-                        "<label for='utcoffset' class='bx--label'>UTC Time Offset</label>"
-                        "<input id='utcoffset' type='text' class='bx--text-input' name='utcoffset' value='%UTCOFFSET%' maxlength='1'>"
-                    "</div>"
-                "</div>";
+static const char STATION_CONFIG_FORM6_ID[] PROGMEM = "utcoffset";
+static const char STATION_CONFIG_FORM6_LABEL[] PROGMEM = "UTC Time Offset";
 
 static const char STATION_CONFIG_FORM7_ID[] PROGMEM = "isBasicAuth";
 static const char STATION_CONFIG_FORM7_LABEL[] PROGMEM = "Use Security Credentials for Configuration Changes";
 
-static const char STATION_CONFIG_FORM8[] PROGMEM = "<div class='bx--row' data-sh='uspw'>"
-                    "<div class='bx--form-item bx--col bx--col--auto'>"
-                        "<label for='userid' class='bx--label'>User ID (for this interface)</label>"
-                        "<input id='userid' type='text' class='bx--text-input' name='userid' value='%USERID%' maxlength='20'>"
-                    "</div>"
-                "</div>"
-                "<div class='bx--row' data-sh='uspw'>"
-                    "<div class='bx--form-item bx--col bx--col--auto'>"
-                        "<label for='stationpassword' class='bx--label'>Password (for this interface)</label>"
-                        "<input id='stationpassword' type='password' class='bx--text-input' name='stationpassword' value='%STATIONPASSWORD%'>"
-                    "</div>"
-                "</div>"
-                "<div class='bx--row'>"
-                    "<div class='bx--form-item bx--col bx--col--auto'>"
-                        "<button class='bx--btn bx--btn--primary' type='submit'>Save</button>"
-                    "</div>"
-                "</div>"
-            "</form><script>showhide($('#isBasicAuth'), 'uspw')</script>";
+static const char STATION_CONFIG_FORM8_ID[] PROGMEM = "userid";
+static const char STATION_CONFIG_FORM8_LABEL[] PROGMEM = "User ID (for this interface)";
+
+static const char STATION_CONFIG_FORM9_ID[] PROGMEM = "stationpassword";
+static const char STATION_CONFIG_FORM9_LABEL[] PROGMEM = "Password (for this interface)";
+
+static const char STATION_CONFIG_FORM_END[] PROGMEM = "</form><script>showhide('isBasicAuth', 'uspw')</script>";
 
 /**
  * Controls for printer configuration
@@ -400,7 +398,7 @@ static const char CONFPRINTER_FORM_END[] PROGMEM = "</tbody>"
 static const char CONFPRINTER_FORM_ADDEDIT_TA[] PROGMEM = "Create new printer";
 static const char CONFPRINTER_FORM_ADDEDIT_TE[] PROGMEM = "Edit data for printer";
 
-static const char CONFPRINTER_FORM_ADDEDIT1[] PROGMEM = "<div data-modal id='mae-%ID%' class='bx--modal' role='dialog' aria-modal='true' aria-labelledby='mae-%ID%-label' aria-describedby='mae-%ID%-heading' tabindex='-1'>"
+static const char CONFPRINTER_FORM_ADDEDIT_START[] PROGMEM = "<div data-modal id='mae-%ID%' class='bx--modal' role='dialog' aria-modal='true' aria-labelledby='mae-%ID%-label' aria-describedby='mae-%ID%-heading' tabindex='-1'>"
                 "<div class='bx--modal-container'>"
                     "<form method='GET' action='/configureprinter/edit'>"
                         "<input type='hidden' name='id' value='%ID%'>"
@@ -411,64 +409,33 @@ static const char CONFPRINTER_FORM_ADDEDIT1[] PROGMEM = "<div data-modal id='mae
                                 "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon' width='16' height='16' viewBox='0 0 16 16' aria-hidden='true'><path d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'></path></svg>"
                             "</button>"
                         "</div>"
-                        "<div class='bx--modal-content bx--modal-content--with-form'>"
-                            "<div class='bx--form-item'>"
-                                "<label for='e-tname-%ID%' class='bx--label'>Printer Name</label>"
-                                "<input id='e-tname-%ID%' name='e-tname' type='text' class='bx--text-input' placeholder='Custom name' data-modal-primary-focus maxlength='20' value='%NAME%'>"
-                            "</div>"
-                            "<div class='bx--form-item bx--select'>"
-                                "<label for='e-tapi-%ID%' class='bx--label'>API Type</label>"
-                                "<div class='bx--select-input__wrapper'>"
-                                    "<select id='e-tapi-%ID%' class='bx--select-input' name='e-tapi'>"
-                                        "<option class='bx--select-option' value='0'>Duet</option>"
-                                        "<option class='bx--select-option' value='1'>Klipper</option>"
-                                        "<option class='bx--select-option' selected value='2'>Octoprint</option>"
-                                        "<option class='bx--select-option' value='3'>Repetier</option>"
-                                    "</select>"
-                                    "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--select__arrow' width='10' height='6' viewBox='0 0 10 6' aria-hidden='true'><path d='M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z'></path></svg>"
-                                "</div>"
-                            "</div>"
-                            "<div class='bx--form-item'>"
-                                "<label for='e-taddr-%ID%' class='bx--label'>Hostname or IP Address (do not include http://)</label>"
-                                "<input id='e-taddr-%ID%' name='e-taddr' type='text' class='bx--text-input' placeholder='Target Address' maxlength='60' value='%TARGETADDR%'>"
-                            "</div>"
-                            "<div class='bx--form-item'>"
-                                "<label for='e-tport-%ID%' class='bx--label'>Port</label>"
-                                "<input id='e-tport-%ID%' name='e-tport' type='text' class='bx--text-input' placeholder='Target port' maxlength='5' value='%TARGETPORT%'>"
-                            "</div>"
-                            "<div class='bx--form-item'>"
-                                "<input class='bx--toggle-input bx--toggle-input--small' id='e-tpsu-%ID%' type='checkbox' name='e-tpsu'>"
-                                "<label class='bx--toggle-input__label' for='e-tpsu-%ID%'>"
-                                "<span class='bx--toggle__switch'>"
-                                    "<svg class='bx--toggle__check' width='6px' height='5px' viewBox='0 0 6 5'>"
-                                        "<path d='M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z' />"
-                                    "</svg>"
-                                    "<span class='bx--toggle__text--off' aria-hidden='true'>PSU control deactivated</span>"
-                                    "<span class='bx--toggle__text--on' aria-hidden='true'>PSU control activated</span>"
-                                "</span>"
-                                "</label>"
-                            "</div>"
-                            "<div class='bx--form-item'>"
-                                "<input class='bx--toggle-input bx--toggle-input--small' id='e-tapipw-%ID%' type='checkbox' name='e-tapipw' onchange='showhide(this, \"apac-%ID%\")' checked='checked'>"
-                                "<label class='bx--toggle-input__label' for='e-tapipw-%ID%'>"
-                                "<span class='bx--toggle__switch'>"
-                                    "<svg class='bx--toggle__check' width='6px' height='5px' viewBox='0 0 6 5'>"
-                                        "<path d='M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z' />"
-                                    "</svg>"
-                                    "<span class='bx--toggle__text--off' aria-hidden='true'>Haproxy or basic auth deactivated</span>"
-                                    "<span class='bx--toggle__text--on' aria-hidden='true'>Haproxy or basic auth activated</span>"
-                                "</span>"
-                                "</label>"
-                            "</div>"
-                            "<div class='bx--form-item' data-sh='apac-%ID%'>"
-                                "<label for='e-tapiuser-%ID%' class='bx--label'>User ID (for this interface)</label>"
-                                "<input id='e-tapiuser-%ID%' type='text' class='bx--text-input' name='e-tapiuser' value='admin' maxlength='30'>"
-                            "</div>"
-                            "<div class='bx--form-item' data-sh='apac-%ID%'>"
-                                "<label for='e-tapipass-%ID%' class='bx--label'>Password (for this interface)</label>"
-                                "<input id='e-tapipass-%ID%' type='password' class='bx--text-input' name='e-tapipass' value='admin'>"
-                            "</div><br><br>"
-                        "</div>"
+                        "<div class='bx--modal-content bx--modal-content--with-form'>";
+
+static const char CONFPRINTER_FORM_ADDEDIT1_ID[] PROGMEM = "e-tname";
+static const char CONFPRINTER_FORM_ADDEDIT1_LABEL[] PROGMEM = "Printer Name";
+
+static const char CONFPRINTER_FORM_ADDEDIT2_ID[] PROGMEM = "e-tapi";
+static const char CONFPRINTER_FORM_ADDEDIT2_LABEL[] PROGMEM = "API Type";
+
+static const char CONFPRINTER_FORM_ADDEDIT3_ID[] PROGMEM = "e-tapikey";
+static const char CONFPRINTER_FORM_ADDEDIT3_LABEL[] PROGMEM = "API Key";
+
+static const char CONFPRINTER_FORM_ADDEDIT4_ID[] PROGMEM = "e-taddr";
+static const char CONFPRINTER_FORM_ADDEDIT4_LABEL[] PROGMEM = "Hostname or IP Address (do not include http://)";
+
+static const char CONFPRINTER_FORM_ADDEDIT5_ID[] PROGMEM = "e-tport";
+static const char CONFPRINTER_FORM_ADDEDIT5_LABEL[] PROGMEM = "Port";
+
+static const char CONFPRINTER_FORM_ADDEDIT6_ID[] PROGMEM = "e-tapipw";
+static const char CONFPRINTER_FORM_ADDEDIT6_LABEL[] PROGMEM = "Haproxy or basic auth";
+
+static const char CONFPRINTER_FORM_ADDEDIT7_ID[] PROGMEM = "e-tapiuser";
+static const char CONFPRINTER_FORM_ADDEDIT7_LABEL[] PROGMEM = "User ID";
+
+static const char CONFPRINTER_FORM_ADDEDIT8_ID[] PROGMEM = "e-tapipass";
+static const char CONFPRINTER_FORM_ADDEDIT8_LABEL[] PROGMEM = "Password";
+
+static const char CONFPRINTER_FORM_ADDEDIT_END[] PROGMEM = "<br><br></div>"
                         "<div class='bx--modal-content--overflow-indicator'></div>"
                         "<div class='bx--modal-footer'>"
                             "<button class='bx--btn bx--btn--secondary' type='reset' onclick='closeModal(\"mae-%ID%\")'>Abort</button>"
@@ -480,10 +447,42 @@ static const char CONFPRINTER_FORM_ADDEDIT1[] PROGMEM = "<div data-modal id='mae
             "</div>"
         "</div>";
 
+
+
+
+
+
+
+
+
+static const char MODAL_DANGER[] PROGMEM = "<div data-modal id='%ID%' class='bx--modal bx--modal--danger' role='dialog' aria-modal='true' aria-labelledby='%ID%-label' aria-describedby='%ID%-heading' tabindex='-1'>"
+    "<div class='bx--modal-container'>"
+        "<div class='bx--modal-header'>"
+            "<p class='bx--modal-header__label bx--type-delta' id='%ID%-label'>%LABEL%</p>"
+            "<p class='bx--modal-header__heading bx--type-beta' id='%ID%-heading'>%HEADING%</p>"
+            "<button class='bx--modal-close' type='button' aria-label='close modal' onclick='closeModal(\"%ID%\")'>"
+                "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon' width='16' height='16' viewBox='0 0 16 16' aria-hidden='true'><path d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'></path></svg>"
+            "</button>"
+        "</div>"
+        "<div class='bx--modal-content' >"
+            "<p>%CONTENT%</p><br><br><br>"
+        "</div>"
+        "<div class='bx--modal-content--overflow-indicator'></div>"
+        "<div class='bx--modal-footer'>"
+            "<button class='bx--btn bx--btn--secondary' type='button' onclick='closeModal(\"%ID%\")'>%SECACTION%</button>"
+            "<button class='bx--btn bx--btn--danger' type='button' aria-label='Danger' data-modal-primary-focus %MAINEVENT%>%MAINACTION%</button>"
+        "</div>"
+    "</div>"
+    "<span tabindex='0'></span>"
+"</div>";
+
 /**
  * @brief Class to generate HTML content from Memory
  */
 class WebserverMemoryVariables {
+private:
+    static String rowExtraClass;
+
 public:
     static void sendHeader(ESP8266WebServer *server, GlobalDataController *globalDataController, String pageLabel, String pageTitle);
     static void sendHeader(ESP8266WebServer *server, GlobalDataController *globalDataController, String pageLabel, String pageTitle, boolean refresh);
@@ -495,10 +494,16 @@ public:
     static void sendPrinterConfigForm(ESP8266WebServer *server, GlobalDataController *globalDataController);
 
 private:
-    static void sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String label);
-    static void sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff);
-    static void sendFormCheckboxEvent(ESP8266WebServer *server, String formId, bool isChecked, String label, String onChange);
-    static void sendFormCheckboxEvent(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff, String onChange);
+    static void sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String label, bool inRow, String uniqueId);
+    static void sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff, bool inRow, String uniqueId);
+    static void sendFormCheckboxEvent(ESP8266WebServer *server, String formId, bool isChecked, String label, String onChange, bool inRow, String uniqueId);
+    static void sendFormCheckboxEvent(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff, String onChange, bool inRow, String uniqueId);
+    static void sendFormInput(ESP8266WebServer *server, String formId, String label, String value, int maxLen, String events, bool isPassword, bool inRow, String uniqueId);
+    static void sendFormSelect(ESP8266WebServer *server, String formId, String label, String value, String events, String options, bool inRow, String uniqueId);
+    static void sendFormSubmitButton(ESP8266WebServer *server, bool inRow);
+    static void sendForm(ESP8266WebServer *server, String formId, String formElement, bool inRow, String uniqueId);
 
-    static void sendPrinterConfigFormAEModal(ESP8266WebServer *server, int id, PrinterDataStruct *forPrinter);
+    static void sendPrinterConfigFormAEModal(ESP8266WebServer *server, int id, PrinterDataStruct *forPrinter, GlobalDataController *globalDataController);
+
+    static void sendModalDanger(ESP8266WebServer *server, String formId, String label, String title, String content, String secActionTitle, String primActionTitle, String primActionEvent);
 };

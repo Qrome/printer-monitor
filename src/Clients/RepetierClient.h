@@ -14,6 +14,7 @@ public:
     RepetierClient(GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient);
     void getPrinterJobResults(PrinterDataStruct *printerData) override;
     void getPrinterPsuState(PrinterDataStruct *printerData) override;
+    boolean clientNeedApiKey() override { return true; };
 
 private:    
     static int translateState(String stateText);

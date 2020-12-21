@@ -14,7 +14,11 @@
 #include "../../include/MemoryHelper.h"
 #include "EspController.h"
 
-static const char ERROR_MESSAGES_ERR1[] PROGMEM = "[ERR1] Printer fo update not found!";
+static const char ERROR_MESSAGES_ERR1[] PROGMEM = "[ERR1] Printer for update not found!";
+
+static const char OK_MESSAGES_SAVE1[] PROGMEM = "[OK] Printer successfully saved";
+static const char OK_MESSAGES_SAVE2[] PROGMEM = "[OK] Weather api data successfully saved";
+static const char OK_MESSAGES_SAVE3[] PROGMEM = "[OK] Station data successfully saved";
 
 /**
  * @brief Handles all needed data for all instances
@@ -59,6 +63,8 @@ public:
     bool resetConfig();
     
     void registerPrinterClient(int id, BasePrinterClient *basePrinterClient);
+    BasePrinterClient** getRegisteredPrinterClients();
+    int getRegisteredPrinterClientsNum();
     PrinterDataStruct *getPrinterSettings();
     PrinterDataStruct *addPrinterSetting();
     int getNumPrinters();

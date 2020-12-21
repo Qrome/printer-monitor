@@ -463,18 +463,14 @@ void WebServer::handleUpdatePrinter() {
     targetPrinter->basicAuthNeeded = this->server->hasArg("e-tapipw");
     MemoryHelper::stringToChar(this->server->arg("e-tapiuser"), targetPrinter->basicAuthUsername, 30);
     MemoryHelper::stringToChar(this->server->arg("e-tapipass"), targetPrinter->basicAuthPassword, 60);
+    this->globalDataController->getSystemSettings()->lastOk = FPSTR(OK_MESSAGES_SAVE1);
 
     //http://192.168.0.239/configureprinter/show?id=0&e-tname=asdasd&e-tapi=Klipper&e-taddr=123.213.123.121&e-tport=80&e-tapipw=on&e-tapiuser=admin&e-tapipass=admin
     
 
-    this->globalDataController->getSystemSettings()->lastError = FPSTR(ERROR_MESSAGES_ERR1);
-    
     this->globalDataController->writeSettings();
     this->redirectTarget("/configureprinter/show");
 }
-
-
-
 
 /**
  * @brief Send station configuration page to client
@@ -518,6 +514,7 @@ void WebServer::handleUpdateStation() {
     
     this->globalDataController->getDisplayClient()->handleUpdate();
     this->globalDataController->getTimeClient()->resetLastEpoch();
+    this->globalDataController->getSystemSettings()->lastOk = FPSTR(OK_MESSAGES_SAVE3);
     this->redirectHome();
 }
 
@@ -551,6 +548,7 @@ void WebServer::handleUpdateWeather() {
 
     this->globalDataController->getDisplayClient()->handleUpdate();
     this->globalDataController->getTimeClient()->resetLastEpoch();
+    this->globalDataController->getSystemSettings()->lastOk = FPSTR(OK_MESSAGES_SAVE2);
     this->redirectHome();
 }
 
