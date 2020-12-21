@@ -1,46 +1,7 @@
 #include "WebServer.h"
 
 
-
 String CHANGE_FORM =  ""; // moved to config to make it dynamic
-
-static const char CLOCK_FORM[] PROGMEM = "<hr><p><input name='isClockEnabled' class='w3-check w3-margin-top' type='checkbox' %IS_CLOCK_CHECKED%> Display Clock when printer is off</p>"
-                      "<p><input name='is24hour' class='w3-check w3-margin-top' type='checkbox' %IS_24HOUR_CHECKED%> Use 24 Hour Clock (military time)</p>"
-                      "<p><input name='invDisp' class='w3-check w3-margin-top' type='checkbox' %IS_INVDISP_CHECKED%> Flip display orientation</p>"
-                      "<p><input name='useFlash' class='w3-check w3-margin-top' type='checkbox' %USEFLASH%> Flash System LED on Service Calls</p>"
-                      "<p><input name='hasPSU' class='w3-check w3-margin-top' type='checkbox' %HAS_PSU_CHECKED%> Use OctoPrint PSU control plugin for clock/blank</p>"
-                      "<p>Clock Sync / Weather Refresh (minutes) <select class='w3-option w3-padding' name='refresh'>%OPTIONS%</select></p>";
-                            
-static const char THEME_FORM[] PROGMEM =   "<p>Theme Color <select class='w3-option w3-padding' name='theme'>%THEME_OPTIONS%</select></p>"
-                      "<p><label>UTC Time Offset</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='utcoffset' value='%UTCOFFSET%' maxlength='12'></p><hr>"
-                      "<p><input name='isBasicAuth' class='w3-check w3-margin-top' type='checkbox' %IS_BASICAUTH_CHECKED%> Use Security Credentials for Configuration Changes</p>"
-                      "<p><label>User ID (for this interface)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='userid' value='%USERID%' maxlength='20'></p>"
-                      "<p><label>Password </label><input class='w3-input w3-border w3-margin-bottom' type='password' name='stationpassword' value='%STATIONPASSWORD%'></p>"
-                      "<button class='w3-button w3-block w3-grey w3-section w3-padding' type='submit'>Save</button></form>";
-
-static const char COLOR_THEMES[] PROGMEM = "<option>red</option>"
-                      "<option>pink</option>"
-                      "<option>purple</option>"
-                      "<option>deep-purple</option>"
-                      "<option>indigo</option>"
-                      "<option>blue</option>"
-                      "<option>light-blue</option>"
-                      "<option>cyan</option>"
-                      "<option>teal</option>"
-                      "<option>green</option>"
-                      "<option>light-green</option>"
-                      "<option>lime</option>"
-                      "<option>khaki</option>"
-                      "<option>yellow</option>"
-                      "<option>amber</option>"
-                      "<option>orange</option>"
-                      "<option>deep-orange</option>"
-                      "<option>blue-grey</option>"
-                      "<option>brown</option>"
-                      "<option>grey</option>"
-                      "<option>dark-grey</option>"
-                      "<option>black</option>"
-                      "<option>w3schools</option>";
 
 WebServer::WebServer(GlobalDataController *globalDataController, DebugController *debugController) {
     this->globalDataController = globalDataController;
@@ -50,21 +11,32 @@ WebServer::WebServer(GlobalDataController *globalDataController, DebugController
 void WebServer::setup() {
     static WebServer* obj = this;
 
-    this->server = new ESP8266WebServer(this->globalDataController->getWebserverPort());
+    this->server = new ESP8266WebServer(this->globalDataController->getSystemSettings()->webserverPort);
     this->serverUpdater = new ESP8266HTTPUpdateServer();
 
     this->server->on("/", []() { obj->displayPrinterStatus(); });
     this->server->on("/systemreset", []() { obj->handleSystemReset(); });
     this->server->on("/forgetwifi", []() { obj->handleWifiReset(); });
-    this->server->on("/configurestation", []() { obj->handleConfigureStation(); });
-    this->server->on("/configureprinter", []() { obj->handleConfigurePrinter(); });
-    this->server->on("/configureweather", []() { obj->handleWeatherConfigure(); });
-    this->server->on("/updateconfig", []() { obj->handleUpdateConfig(); });
-    this->server->on("/updatestationconfig", []() { obj->handleUpdateStation(); });
-    this->server->on("/updateweatherconfig", []() { obj->handleUpdateWeather(); });
+    this->server->on("/configurestation/show", []() { obj->handleConfigureStation(); });
+    this->server->on("/configurestation/update", []() { obj->handleUpdateStation(); });
+    this->server->on("/configureprinter/show", []() { obj->handleConfigurePrinter(); });
+    this->server->on("/configureprinter/edit", []() { obj->handleUpdatePrinter(); });
+    this->server->on("/configureprinter/delete", []() { obj->handleConfigurePrinter(); });
+    this->server->on("/configureweather/show", []() { obj->handleConfigureWeather(); });
+    this->server->on("/configureweather/update", []() { obj->handleUpdateWeather(); });
+    this->server->on("/configuresensor/show", []() { obj->handleConfigureSensor(); });
+    this->server->on("/configuresensor/update", []() { obj->handleConfigureSensor(); });
     this->server->on("/update", HTTP_GET, []() { obj->handleUpdatePage(); });
+
+    this->server->on("/updateconfig", []() { obj->handleUpdateConfig(); });
+
     this->server->onNotFound([]() { obj->redirectHome(); });
-    this->serverUpdater->setup(this->server, "/update", this->globalDataController->getWebserverUsername(), this->globalDataController->getWebserverPassword());
+    this->serverUpdater->setup(
+        this->server,
+        "/update",
+        this->globalDataController->getSystemSettings()->webserverUsername,
+        this->globalDataController->getSystemSettings()->webserverPassword
+    );
     
 
     // Start the server
@@ -76,21 +48,9 @@ void WebServer::handleClient() {
     this->server->handleClient();
 }
 
-boolean WebServer::authentication() {
-    if (this->globalDataController->getWebserverIsBasicAuth() &&
-        (this->globalDataController->getWebserverUsername().length() >= 1 && this->globalDataController->getWebserverPassword().length() >= 1)
-    ) {
-        return this->server->authenticate(
-            this->globalDataController->getWebserverUsername().c_str(),
-            this->globalDataController->getWebserverPassword().c_str()
-        );
-    } 
-    return true; // Authentication not required
-}
-
-void WebServer::redirectHome() {
+void WebServer::redirectTarget(String targetUri) {
     // Send them back to the Root Directory
-    this->server->sendHeader("Location", String("/"), true);
+    this->server->sendHeader("Location", targetUri, true);
     this->server->sendHeader("Cache-Control", "no-cache, no-store");
     this->server->sendHeader("Pragma", "no-cache");
     this->server->sendHeader("Expires", "-1");
@@ -98,18 +58,25 @@ void WebServer::redirectHome() {
     this->server->client().stop();
 }
 
+
+void WebServer::redirectHome() {
+    this->redirectTarget("/");
+}
+
 void WebServer::displayPrinterStatus() {
-    BasePrinterClient *printerClient = this->globalDataController->getPrinterClient();
+    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Status", "Monitor", true);
+
+    /*BasePrinterClient *printerClient = this->globalDataController->getPrinterClient();
     String html = "";
 
-    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Status", "Monitor", true);
+    
 
     String displayTime = 
         this->globalDataController->getTimeClient()->getAmPmHours() + ":" + 
         this->globalDataController->getTimeClient()->getMinutes() + ":" + 
         this->globalDataController->getTimeClient()->getSeconds() + " " + 
         this->globalDataController->getTimeClient()->getAmPm();
-    if (this->globalDataController->getClockIs24h()) {
+    if (this->globalDataController->getClockSettings()->is24h) {
         displayTime =
             this->globalDataController->getTimeClient()->getHours() + ":" +
             this->globalDataController->getTimeClient()->getMinutes() + ":" +
@@ -181,7 +148,7 @@ void WebServer::displayPrinterStatus() {
     this->server->sendContent(html); // spit out what we got
     html = "";
     
-    if (this->globalDataController->getWeatherShow()) {
+    if (this->globalDataController->getWeatherSettings()->show) {
         OpenWeatherMapClient *weatherClient = this->globalDataController->getWeatherClient();
         if (weatherClient->getCity(0) == "") {
             html += "<p>Please <a href='/configureweather'>Configure Weather</a> API</p>";
@@ -204,7 +171,7 @@ void WebServer::displayPrinterStatus() {
         
         this->server->sendContent(html); // spit out what we got
         html = ""; // fresh start
-    }
+    }*/
 
     WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
 }
@@ -212,7 +179,7 @@ void WebServer::displayPrinterStatus() {
 
 
 void WebServer::handleUpdateConfig() {
-    boolean flipOld = this->globalDataController->isDisplayInverted();
+    /*boolean flipOld = this->globalDataController->isDisplayInverted();
     if (!this->authentication()) {
         return this->server->requestAuthentication();
     }
@@ -239,7 +206,7 @@ void WebServer::handleUpdateConfig() {
     this->globalDataController->setWebserverUsername(temp);
     temp = this->server->arg("stationpassword");
     this->globalDataController->setWebserverPassword(temp);
-    this->globalDataController->setUseLedFlash(this->server->hasArg("useFlash"));
+    //this->globalDataController->setUseLedFlash(this->server->hasArg("useFlash"));
 
     this->globalDataController->writeSettings();
     this->findMDNS();
@@ -250,12 +217,14 @@ void WebServer::handleUpdateConfig() {
         this->globalDataController->getDisplayClient()->flipDisplayUpdate();
     }
     this->globalDataController->getDisplayClient()->handleUpdate();
-    this->globalDataController->getTimeClient()->resetLastEpoch();
+    this->globalDataController->getTimeClient()->resetLastEpoch();*/
     this->redirectHome();
 }
 
 void WebServer::findMDNS() {
-    if (this->globalDataController->getPrinterHostName() == "" || ENABLE_OTA == false) {
+    return; // nothing to do here
+
+    /*if (this->globalDataController->getPrinterHostName() == "" || ENABLE_OTA == false) {
         return; // nothing to do here
     }
     // We now query our network for 'web servers' service
@@ -282,7 +251,7 @@ void WebServer::findMDNS() {
             );
             this->globalDataController->writeSettings(); // update the settings
         }
-    }
+    }*/
 }
 
 /*
@@ -406,11 +375,14 @@ void WebServer::handleConfigure() {
 
 
 
-void WebServer::handleConfigurePrinter() {
+
+
+
+void WebServer::handleConfigureSensor() {
     if (!this->authentication()) {
         return this->server->requestAuthentication();
     }
-    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Configure", "Printers");
+    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Configure", "Sensor");
     
     WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
 }
@@ -427,8 +399,79 @@ void WebServer::handleConfigurePrinter() {
 
 
 
+/**
+ * @brief Handle authentification on all subsites
+ * @return boolean 
+ */
+boolean WebServer::authentication() {
+    SystemDataStruct *systemData = this->globalDataController->getSystemSettings();
+    if (systemData->hasBasicAuth && (systemData->webserverUsername.length() >= 1 && systemData->webserverPassword.length() >= 1)
+    ) {
+        return this->server->authenticate(systemData->webserverUsername.c_str(), systemData->webserverPassword.c_str());
+    } 
+    return true; // Authentication not required
+}
+
+/**
+ * @brief Send printer configuration page to client
+ */
+void WebServer::handleConfigurePrinter() {
+    if (!this->authentication()) {
+        return this->server->requestAuthentication();
+    }
+    WebserverMemoryVariables::sendHeader(this->server, this->globalDataController, "Configure", "Printers");
+    WebserverMemoryVariables::sendPrinterConfigForm(this->server, this->globalDataController);
+    WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
+}
 
 
+/**
+ * @brief Update configuration for Printer
+ */
+void WebServer::handleUpdatePrinter() {
+    
+    if (!this->authentication()) {
+        return this->server->requestAuthentication();
+    }
+
+    PrinterDataStruct *targetPrinter = NULL;
+    int targetPrinterId = this->server->arg("id").toInt() - 1;
+    if (targetPrinterId >= 0) {
+        PrinterDataStruct *existPrinters = this->globalDataController->getPrinterSettings();
+        for(int i=0; i<this->globalDataController->getNumPrinters(); i++) {
+            if (i == targetPrinterId) {
+                targetPrinter = &(existPrinters[i]);
+                break;
+            }
+        }
+    } else {
+        targetPrinter = this->globalDataController->addPrinterSetting();
+    }
+    if (targetPrinter == NULL) {
+        this->globalDataController->getSystemSettings()->lastError = FPSTR(ERROR_MESSAGES_ERR1);
+        this->redirectTarget("/configureprinter/show");
+        return;
+    }
+
+    // Set data
+    MemoryHelper::stringToChar(this->server->arg("e-tname"), targetPrinter->customName, 20);
+    targetPrinter->apiType = this->server->arg("e-tapi").toInt();
+    MemoryHelper::stringToChar("", targetPrinter->apiKey, 60);
+    MemoryHelper::stringToChar(this->server->arg("e-taddr"), targetPrinter->remoteAddress, 60);
+    targetPrinter->remotePort = this->server->arg("e-tport").toInt();
+    targetPrinter->hasPsuControl = this->server->hasArg("e-tpsu");
+    targetPrinter->basicAuthNeeded = this->server->hasArg("e-tapipw");
+    MemoryHelper::stringToChar(this->server->arg("e-tapiuser"), targetPrinter->basicAuthUsername, 30);
+    MemoryHelper::stringToChar(this->server->arg("e-tapipass"), targetPrinter->basicAuthPassword, 60);
+
+    //http://192.168.0.239/configureprinter/show?id=0&e-tname=asdasd&e-tapi=Klipper&e-taddr=123.213.123.121&e-tport=80&e-tapipw=on&e-tapiuser=admin&e-tapipass=admin
+    
+
+    this->globalDataController->getSystemSettings()->lastError = FPSTR(ERROR_MESSAGES_ERR1);
+    
+    this->globalDataController->writeSettings();
+    this->redirectTarget("/configureprinter/show");
+}
 
 
 
@@ -449,27 +492,30 @@ void WebServer::handleConfigureStation() {
  * @brief Update configuration for station
  */
 void WebServer::handleUpdateStation() {
-    boolean flipOld = this->globalDataController->isDisplayInverted();
+    
     if (!this->authentication()) {
         return this->server->requestAuthentication();
     }
+    SystemDataStruct *systemSettings = this->globalDataController->getSystemSettings();
+    ClockDataStruct *clockSettings = this->globalDataController->getClockSettings();
+    boolean flipOld = systemSettings->invertDisplay;
 
-    this->globalDataController->setDisplayClock(this->server->hasArg("isClockEnabled"));
-    this->globalDataController->setIsDisplayInverted(this->server->hasArg("invDisp"));
-    this->globalDataController->setUseLedFlash(this->server->hasArg("useFlash"));
-    this->globalDataController->setClockIs24h(this->server->hasArg("is24hour"));
-    this->globalDataController->setClockResyncMinutes(this->server->arg("refresh").toInt());
-    this->globalDataController->setClockUtcOffset(this->server->arg("utcoffset").toFloat());
-    this->globalDataController->setWebserverIsBasicAuth(this->server->hasArg("isBasicAuth"));
-    String temp = this->server->arg("userid");
-    this->globalDataController->setWebserverUsername(temp);
-    temp = this->server->arg("stationpassword");
-    this->globalDataController->setWebserverPassword(temp);
+    clockSettings->show = this->server->hasArg("isClockEnabled");
+    clockSettings->is24h = this->server->hasArg("is24hour");
+    clockSettings->utcOffset = this->server->arg("utcoffset").toInt();
+    systemSettings->clockWeatherResyncMinutes = this->server->arg("refresh").toInt();
+    systemSettings->hasBasicAuth = this->server->hasArg("isBasicAuth");
+    systemSettings->invertDisplay = this->server->hasArg("invDisp");
+    systemSettings->useLedFlash = this->server->hasArg("useFlash");
+    systemSettings->webserverPassword = this->server->arg("stationpassword");
+    systemSettings->webserverUsername = this->server->arg("userid");
     this->globalDataController->writeSettings();
+    this->findMDNS();
 
-    if (this->globalDataController->isDisplayInverted() != flipOld) {
+    if (systemSettings->invertDisplay != flipOld) {
         this->globalDataController->getDisplayClient()->flipDisplayUpdate();
     }
+    
     this->globalDataController->getDisplayClient()->handleUpdate();
     this->globalDataController->getTimeClient()->resetLastEpoch();
     this->redirectHome();
@@ -478,7 +524,7 @@ void WebServer::handleUpdateStation() {
 /**
  * @brief Send weather configuration page to client
  */
-void WebServer::handleWeatherConfigure() {
+void WebServer::handleConfigureWeather() {
     if (!this->authentication()) {
         return this->server->requestAuthentication();
     }
@@ -494,11 +540,13 @@ void WebServer::handleUpdateWeather() {
     if (!this->authentication()) {
         return this->server->requestAuthentication();
     }
-    this->globalDataController->setWeatherShow(this->server->hasArg("isWeatherEnabled"));
-    this->globalDataController->setWeatherApiKey(this->server->arg("openWeatherMapApiKey"));
-    this->globalDataController->setWeatherCityId(this->server->arg("city1").toInt());
-    this->globalDataController->setWeatherIsMetric(this->server->hasArg("metric"));
-    this->globalDataController->setWeatherLang(this->server->arg("language"));
+    WeatherDataStruct *weatherSettings = this->globalDataController->getWeatherSettings();
+
+    weatherSettings->show = this->server->hasArg("isWeatherEnabled");
+    weatherSettings->apiKey = this->server->arg("openWeatherMapApiKey");
+    weatherSettings->cityId = this->server->arg("city1").toInt();
+    weatherSettings->isMetric = this->server->hasArg("metric");
+    weatherSettings->lang = this->server->arg("language");
     this->globalDataController->writeSettings();
 
     this->globalDataController->getDisplayClient()->handleUpdate();

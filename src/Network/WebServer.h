@@ -6,6 +6,7 @@
 #include <ESP8266mDNS.h>
 #include "../Global/GlobalDataController.h"
 #include "WebserverMemoryVariables.h"
+#include "../../include/MemoryHelper.h"
 
 class WebServer {
 private:
@@ -22,14 +23,19 @@ public:
     void handleClient();
     boolean authentication();
     void redirectHome();
+    void redirectTarget(String targetUri);
     void displayPrinterStatus();
     void handleSystemReset();
     void handleWifiReset();
     void handleUpdateConfig();
-    void handleUpdateStation();
-    void handleUpdateWeather();
+    
+    
     void handleConfigurePrinter();
+    void handleUpdatePrinter();
     void handleConfigureStation();
-    void handleWeatherConfigure();
+    void handleUpdateStation();
+    void handleConfigureWeather();
+    void handleUpdateWeather();
+    void handleConfigureSensor();
     void handleUpdatePage();
 };

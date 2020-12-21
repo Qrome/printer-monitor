@@ -2,7 +2,13 @@
     <head>
         <link rel="stylesheet" href="https://unpkg.com/carbon-components/css/carbon-components.min.css" ></style>
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
-        <style>.hidden{display:none} .bx--form-item{margin-bottom:20px};</style>
+        <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+        <style>.hidden{display:none} .bx--form-item{margin-bottom:20px} .menitem{padding:6px 1rem;font-size:.875rem;font-weight:600;line-height:1.29;letter-spacing:.16px;display:flex;justify-content:space-between;text-decoration:none;color:#c6c6c6}</style>
+
+
+        <style>
+            
+        </style>
     </head>
     <body>
         <header class="cv-header bx--header">
@@ -13,7 +19,9 @@
             <nav class="cv-header-nav bx--header__nav"></nav>
             <div class="bx--header__global">
                 <button type="button" class="cv-header-global-action bx--header__action" onclick="openWifiInfo()">
-                    <i class="fas fa-wifi" style="color: white; font-size: 20px;"></i>
+                    <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">
+                        <path d="M11,11V21H21V11Zm8,8H13V13h6Z"></path><path d="M30,13V11H26V8a2,2,0,0,0-2-2H21V2H19V6H13V2H11V6H8A2,2,0,0,0,6,8v3H2v2H6v6H2v2H6v3a2,2,0,0,0,2,2h3v4h2V26h6v4h2V26h3a2,2,0,0,0,2-2V21h4V19H26V13ZM24,24H8V8H24Z"></path>
+                    </svg>
                 </button>
                 <button type="button" class="cv-header-global-action bx--header__action" onclick="openSidebar()">
                     <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">       
@@ -23,15 +31,25 @@
             </div>
             <div aria-hidden="false" id="sidebar" class="cv-header-panel bx--header-panel">
                 <ul class="cv-switcher bx--switcher__item">
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/"><i class="fa fa-home"></i> Home</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/configure"><i class="fa fa-cog"></i> Configure</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/configureweather"><i class="fa fa-cloud"></i> Weather</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/systemreset" onclick="return confirm(&quot;Do you want to reset to default settings?&quot;)"><i class="fa fa-undo"></i> Reset Settings</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/forgetwifi" onclick="return confirm(&quot;Do you want to forget to WiFi connection?&quot;)"><i class="fa fa-wifi"></i> Forget WiFi</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/update"><i class="fa fa-wrench"></i> Firmware Update</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="https://github.com/Qrome" target="_blank"><i class="fa fa-question-circle"></i> About</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/">
+                        Home
+                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M16.6123,2.2138a1.01,1.01,0,0,0-1.2427,0L1,13.4194l1.2427,1.5717L4,13.6209V26a2.0041,2.0041,0,0,0,2,2H26a2.0037,2.0037,0,0,0,2-2V13.63L29.7573,15,31,13.4282ZM18,26H14V18h4Zm2,0V18a2.0023,2.0023,0,0,0-2-2H14a2.002,2.002,0,0,0-2,2v8H6V12.0615l10-7.79,10,7.8005V26Z"></path></svg>
+                    </a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/configure">
+                        Configure
+                        <svg focusable='false' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='32' height='32' viewBox='0 0 32 32' aria-hidden='true'><path d='M27,16.76c0-.25,0-.5,0-.76s0-.51,0-.77l1.92-1.68A2,2,0,0,0,29.3,11L26.94,7a2,2,0,0,0-1.73-1,2,2,0,0,0-.64.1l-2.43.82a11.35,11.35,0,0,0-1.31-.75l-.51-2.52a2,2,0,0,0-2-1.61H13.64a2,2,0,0,0-2,1.61l-.51,2.52a11.48,11.48,0,0,0-1.32.75L7.43,6.06A2,2,0,0,0,6.79,6,2,2,0,0,0,5.06,7L2.7,11a2,2,0,0,0,.41,2.51L5,15.24c0,.25,0,.5,0,.76s0,.51,0,.77L3.11,18.45A2,2,0,0,0,2.7,21L5.06,25a2,2,0,0,0,1.73,1,2,2,0,0,0,.64-.1l2.43-.82a11.35,11.35,0,0,0,1.31.75l.51,2.52a2,2,0,0,0,2,1.61h4.72a2,2,0,0,0,2-1.61l.51-2.52a11.48,11.48,0,0,0,1.32-.75l2.42.82a2,2,0,0,0,.64.1,2,2,0,0,0,1.73-1L29.3,21a2,2,0,0,0-.41-2.51ZM25.21,24l-3.43-1.16a8.86,8.86,0,0,1-2.71,1.57L18.36,28H13.64l-.71-3.55a9.36,9.36,0,0,1-2.7-1.57L6.79,24,4.43,20l2.72-2.4a8.9,8.9,0,0,1,0-3.13L4.43,12,6.79,8l3.43,1.16a8.86,8.86,0,0,1,2.71-1.57L13.64,4h4.72l.71,3.55a9.36,9.36,0,0,1,2.7,1.57L25.21,8,27.57,12l-2.72,2.4a8.9,8.9,0,0,1,0,3.13L27.57,20Z'></path><path d='M16,22a6,6,0,1,1,6-6A5.94,5.94,0,0,1,16,22Zm0-10a3.91,3.91,0,0,0-4,4,3.91,3.91,0,0,0,4,4,3.91,3.91,0,0,0,4-4A3.91,3.91,0,0,0,16,12Z'></path></svg>
+                    </a>
+                    </li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/configureweather"><i class="fa fa-cloud"></i> Weather</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/systemreset" onclick="return confirm(&quot;Do you want to reset to default settings?&quot;)"><i class="fa fa-undo"></i> Reset Settings</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/forgetwifi" onclick="return confirm(&quot;Do you want to forget to WiFi connection?&quot;)"><i class="fa fa-wifi"></i> Forget WiFi</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/update"><i class="fa fa-wrench"></i> Firmware Update</a></li>
+                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="https://github.com/Qrome" target="_blank"><i class="fa fa-question-circle"></i> About</a></li>
                 </ul>
             </div>
+
+
+            <!-- <a role="button" tabindex="0" class="Switcher-module--link--3udRg" href="https://ibm.com/brand">IBM Brand Center<svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M24,14H22V8A6,6,0,0,0,10,8v6H8a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H24a2,2,0,0,0,2-2V16A2,2,0,0,0,24,14ZM12,8a4,4,0,0,1,8,0v6H12ZM24,28H8V16H24Z"></path></svg></a> -->
             <div class="bx--toast-notification bx--toast-notification--info hidden" style="position: absolute; right: -16px; top: 40px;" id="wifiinfo">
                 <div class="bx--toast-notification__details">
                     <h3 class="bx--toast-notification__title">WiFi Signal Strength</h3>
@@ -43,7 +61,7 @@
         </header>
         
         <div class="bx--grid bx--grid--full-width" style='margin-top:88px'>
-            <div class="page-header" style="margin-bottom:20px"><h4 class="page-header__label">Configure</h4><h1 id="page-title" class="page-header__title">Station</h1></div>
+            <div class="page-header" style="margin-bottom:20px"><h4 class="page-header__label">Configure</h4><h1 id="page-title" class="page-header__title">Printer</h1></div>
             
             <div class="bx--row">
                 <div class="bx--col bx--col--auto bx--data-table-container " data-table>
@@ -54,35 +72,106 @@
 
                     <section class="bx--table-toolbar ">  
                         <div class="bx--toolbar-content">
-                            <button class="bx--btn bx--btn--sm bx--btn--primary">
+                            <button class="bx--btn bx--btn--sm bx--btn--primary" onclick="openModal('modal-pyu0ribosn')">
                                 Add new
                                 <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--btn__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M17 15L17 7 15 7 15 15 7 15 7 17 15 17 15 25 17 25 17 17 25 17 25 15 17 15z"></path></svg>
                             </button>
                         </div>
                     </section>
 
-                    <table class="bx--data-table" >
+                    <table class="bx--data-table bx--data-table--visible-overflow-menu" >
                         <thead>
                             <tr>
+                                <th  class="bx--table-expand"></th>
                                 <th><span class="bx--table-header-label">Name</span></th>
                                 <th><span class="bx--table-header-label">Type</span></th>
-                                <th><span class="bx--table-header-label">Hostname</span></th>
-                                <th><span class="bx--table-header-label">IP</span></th>
                                 <th><span class="bx--table-header-label">State</span></th>
-                                <th><span class="bx--table-header-label">Api Key/User/Password</span></th>
                                 <th class="bx--table-column-menu" style="width: 3.25rem"></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
+                                <td class="bx--table-expand" data-event="expand">
+                                    <button class="bx--table-expand__button">
+                                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--table-expand__svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"></path></svg>
+                                    </button>
+                                </td>
                                 <td>I3 Mega</td>
                                 <td>Klipper</td>
-                                <td>--</td>
-                                <td>192.168.0.241:7125</td>
-                                <td>Offline</td>
-                                <td>Offline</td>
+                                <!--<td>anycubici3.local</td>
+                                <td>192.168.0.241:7125</td> -->
+                                <td>
+                                    <div class="bx--tag bx--tag--magenta">
+                                        Offline
+                                    </div>
+                                </td>
+                                <!--<td>
+                                    <div class="bx--tag bx--tag--cool-gray">
+                                        <span class="bx--tag__label">User</span>
+                                        <svg width="6px" height="5px" viewBox="0 0 6 5">
+                                            <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
+                                        </svg>
+                                    </div>
+                                    <div class="bx--tag bx--tag--cool-gray">
+                                        <span class="bx--tag__label">Password</span>
+                                        <svg width="6px" height="5px" viewBox="0 0 6 5">
+                                            <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
+                                        </svg>
+                                    </div>
+                                </td> -->
                                 <td class="bx--table-column-menu" style="width: 3.25rem">
-                                    <div data-overflow-menu role="menu" tabindex="0" aria-label="Overflow menu description" class="bx--overflow-menu">
+                                    <div data-overflow-menu role="menu" tabindex="0" class="bx--overflow-menu">
+                                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--overflow-menu__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3" r="1"></circle><circle cx="8" cy="8" r="1"></circle><circle cx="8" cy="13" r="1"></circle></svg>
+                                        <ul class="bx--overflow-menu-options bx--overflow-menu--flip" data-floating-menu-direction="bottom">
+                                            <li class="bx--overflow-menu-options__option bx--table-row--menu-option">
+                                              <button class="bx--overflow-menu-options__btn" onclick="openModal('modal-ed454ftfa4q')">
+                                                <div class="bx--overflow-menu-options__option-content">
+                                                 <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 13H15V14H1zM12.7 4.5c.4-.4.4-1 0-1.4 0 0 0 0 0 0l-1.8-1.8c-.4-.4-1-.4-1.4 0 0 0 0 0 0 0L2 8.8V12h3.2L12.7 4.5zM10.2 2L12 3.8l-1.5 1.5L8.7 3.5 10.2 2zM3 11V9.2l5-5L9.8 6l-5 5H3z"></path></svg> Edit
+                                                </div>
+                                              </button>
+                                            </li>
+                                            <li class="bx--overflow-menu-options__option bx--table-row--menu-option">
+                                              <button class="bx--overflow-menu-options__btn" onclick="openModal('modal-ed454ftfa4q')">
+                                                <div class="bx--overflow-menu-options__option-content">
+                                                  <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 6H7V12H6zM9 6H10V12H9z"></path><path d="M2 3v1h1v10c0 .6.4 1 1 1h8c.6 0 1-.4 1-1V4h1V3H2zM4 14V4h8v10H4zM6 1H10V2H6z"></path></svg> Delete
+                                                </div>
+                                              </button>
+                                            </li>
+                    
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+
+
+
+
+                            <tr>
+                                <td class="bx--table-expand" data-event="expand">
+                                    <button class="bx--table-expand__button">
+                                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--table-expand__svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"></path></svg>
+                                    </button>
+                                </td>
+                                <td>Anderer</td>
+                                <td>Repetier</td>
+                                <!--<td>--</td>
+                                <td>192.168.0.243:7125</td>-->
+                                <td>
+                                    <div class="bx--tag bx--tag--green">
+                                        Online
+                                    </div>
+                                </td>
+                                <!--<td>
+                                    <div class="bx--tag bx--tag--cool-gray">
+                                        <span class="bx--tag__label">Key</span>
+                                        <svg width="6px" height="5px" viewBox="0 0 6 5">
+                                            <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
+                                        </svg>
+                                    </div>
+                                </td> -->
+                                <td class="bx--table-column-menu" style="width: 3.25rem">
+                                    <div data-overflow-menu role="menu" tabindex="0" class="bx--overflow-menu">
                                         <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--overflow-menu__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3" r="1"></circle><circle cx="8" cy="8" r="1"></circle><circle cx="8" cy="13" r="1"></circle></svg>
                                         <ul class="bx--overflow-menu-options bx--overflow-menu--flip" data-floating-menu-direction="bottom">
                                             <li class="bx--overflow-menu-options__option bx--table-row--menu-option">
@@ -104,6 +193,8 @@
                                     </div>
                                 </td>
                             </tr>
+
+
                         </tbody>
                     </table>
                 </div>
@@ -111,132 +202,155 @@
 
 
 
+            <script>
+                function openModal(refelementId) {
+                    document.body.classList.add("bx--body--with-modal-open");
+                    document.getElementById(refelementId).classList.add('is-visible');                    
+                }
+                function closeModal(refelementId) {
+                    document.getElementById(refelementId).classList.remove('is-visible');
+                    document.body.classList.remove("bx--body--with-modal-open");
+                }
+            </script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                
-                <form action="/updateweatherconfig" method="get">
-                    <div class="bx--row">
-                        <div class="bx--col bx--col--auto bx--form-item">
-                            <input class="bx--toggle-input bx--toggle-input--small" id="isWeatherEnabled" type="checkbox" name="isWeatherEnabled">
-                            <label class="bx--toggle-input__label" for="isWeatherEnabled"
-                            aria-label="example toggle with state indicator text">
-                            <span class="bx--toggle__switch">
-                                <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
-                                <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
-                                </svg>
-                                <span class="bx--toggle__text--off" aria-hidden="true">Display Weather when printer is off deactivated</span>
-                                <span class="bx--toggle__text--on" aria-hidden="true">Display Weather when printer is off activated</span>
-                            </span>
-                            </label>
-                        </div>
+            <div data-modal id="modal-pyu0ribosn" class="bx--modal" role="dialog" aria-modal="true" aria-labelledby="modal-pyu0ribosn-label" aria-describedby="modal-pyu0ribosn-heading" tabindex="-1">
+                <div class="bx--modal-container">
+                    <div class="bx--modal-header">
+                        <p class="bx--modal-header__label bx--type-delta" id="modal-pyu0ribosn-label">Printer Configuration</p>
+                        <p class="bx--modal-header__heading bx--type-beta" id="modal-pyu0ribosn-heading">Create new entry</p>
+                        <button class="bx--modal-close" type="button" onclick="closeModal('modal-pyu0ribosn')">
+                            <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--modal-close__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z"></path></svg>
+                        </button>
                     </div>
-                    <div class="bx--row">
-                        <div class="bx--col bx--col--auto bx--form-item">
-                            <input class="bx--toggle-input bx--toggle-input--small" id="metric" type="checkbox" name="metric" checked="checked">
-                            <label class="bx--toggle-input__label" for="metric"
-                            aria-label="example toggle with state indicator text">
-                            <span class="bx--toggle__switch">
-                                <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
-                                <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
-                                </svg>
-                                <span class="bx--toggle__text--on" aria-hidden="true">Show in Celsius</span>
-                                <span class="bx--toggle__text--off" aria-hidden="true">Show in Fahrenheit</span>
-                            </span>
-                            </label>
+
+                    <!-- Note: Modals with content that scrolls, at any viewport, requires `tabindex="0"` on the `bx--modal-content` element -->
+                    <div class="bx--modal-content bx--modal-content--with-form" >
+                        <div class="bx--form-item">
+                            <label for="e-tname" class="bx--label">Printer Name</label>
+                            <input id="e-tname" type="text" class="bx--text-input" placeholder="Custom name" data-modal-primary-focus maxlength="20">
                         </div>
-                    </div>
-                    <div class="bx--row">
-                        <div class="bx--form-item bx--col bx--col--auto">
-                            <label for="openWeatherMapApiKey" class="bx--label">OpenWeatherMap API Key (get from <a href="https://openweathermap.org/" target="_BLANK">here</a>)</label>
-                            <input id="openWeatherMapApiKey" type="text"
-                                class="bx--text-input"
-                                name="openWeatherMapApiKey"
-                                value="e6df83d1aa3df77420f265a2e263a5d3"
-                                maxlength="60">
-                        </div>
-                    </div>
-                    <div class="bx--row">
-                        <div class="bx--form-item bx--col bx--col--auto">
-                            <label for="city1" class="bx--label">Zeuthen (<a href="http://openweathermap.org/find" target="_BLANK"><i class="fa fa-search"></i> Search for City ID</a>)</label>
-                            <input id="city1" type="text"
-                                class="bx--text-input"
-                                name="city1"
-                                value="2804646"
-                                onkeypress="return isNumberKey(event)">
-                        </div>
-                    </div>
-                    <div class="bx--row">
-                        <div class="bx--form-item bx--col bx--col--auto bx--select">
-                            <label for="language" class="bx--label">Weather Language</label>
+                        <div class="bx--form-item bx--select">
+                            <label for="e-tapi" class="bx--label">API Type</label>
                             <div class="bx--select-input__wrapper">
-                                <select id="language" class="bx--select-input" name="language">
-                                    <option class="bx--select-option">ar</option>
-                                    <option class="bx--select-option">bg</option>
-                                    <option class="bx--select-option">ca</option>
-                                    <option class="bx--select-option">cz</option>
-                                    <option class="bx--select-option" selected="">de</option>
-                                    <option class="bx--select-option">el</option>
-                                    <option class="bx--select-option">en</option>
-                                    <option class="bx--select-option">fa</option>
-                                    <option class="bx--select-option">fi</option>
-                                    <option class="bx--select-option">fr</option>
-                                    <option class="bx--select-option">gl</option>
-                                    <option class="bx--select-option">hr</option>
-                                    <option class="bx--select-option">hu</option>
-                                    <option class="bx--select-option">it</option>
-                                    <option class="bx--select-option">ja</option>
-                                    <option class="bx--select-option">kr</option>
-                                    <option class="bx--select-option">la</option>
-                                    <option class="bx--select-option">lt</option>
-                                    <option class="bx--select-option">mk</option>
-                                    <option class="bx--select-option">nl</option>
-                                    <option class="bx--select-option">pl</option>
-                                    <option class="bx--select-option">pt</option>
-                                    <option class="bx--select-option">ro</option>
-                                    <option class="bx--select-option">ru</option>
-                                    <option class="bx--select-option">se</option>
-                                    <option class="bx--select-option">sk</option>
-                                    <option class="bx--select-option">sl</option>
-                                    <option class="bx--select-option">es</option>
-                                    <option class="bx--select-option">tr</option>
-                                    <option class="bx--select-option">ua</option>
-                                    <option class="bx--select-option">vi</option>
-                                    <option class="bx--select-option">zh_cn</option>
-                                    <option class="bx--select-option">zh_tw</option>
+                                <select id="e-tapi" class="bx--select-input" name="e-tapi">
+                                    <option class="bx--select-option">Duet</option>
+                                    <option class="bx--select-option">Klipper</option>
+                                    <option class="bx--select-option" selected>Octoprint</option>
+                                    <option class="bx--select-option">Repetier</option>
                                 </select>
                                 <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--select__arrow" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z"></path></svg>
                             </div>
                         </div>
-                    </div>
-                    <div class="bx--row">
-                        <div class="bx--form-item bx--col bx--col--auto">
-                            <button class="bx--btn bx--btn--primary" type="submit">Save</button>
+                        <div class="bx--form-item">
+                            <label for="e-taddr" class="bx--label">Hostname or IP Address (do not include http://)</label>
+                            <input id="e-taddr" name="e-taddr" type="text" class="bx--text-input" placeholder="Target Address" maxlength="60">
                         </div>
+                        <div class="bx--form-item">
+                            <label for="e-tport" class="bx--label">Port</label>
+                            <input id="e-tport" name="e-tport" type="text" class="bx--text-input" placeholder="Target port" maxlength="5" value="80">
+                        </div>
+                        <div class="bx--form-item">
+                            <input class="bx--toggle-input bx--toggle-input--small" id="e-tpsu" type="checkbox" name="e-tpsu">
+                            <label class="bx--toggle-input__label" for="e-tpsu">
+                            <span class="bx--toggle__switch">
+                                <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
+                                    <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
+                                </svg>
+                                <span class="bx--toggle__text--off" aria-hidden="true">PSU control deactivated</span>
+                                <span class="bx--toggle__text--on" aria-hidden="true">PSU control activated</span>
+                            </span>
+                            </label>
+                        </div>
+                        <div class="bx--form-item">
+                            <input class="bx--toggle-input bx--toggle-input--small" id="e-tapipw" type="checkbox" name="e-tapipw" onchange="showhide(this, 'apac')" checked="checked">
+                            <label class="bx--toggle-input__label" for="e-tapipw">
+                            <span class="bx--toggle__switch">
+                                <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
+                                    <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
+                                </svg>
+                                <span class="bx--toggle__text--off" aria-hidden="true">Haproxy or basic auth deactivated</span>
+                                <span class="bx--toggle__text--on" aria-hidden="true">Haproxy or basic auth activated</span>
+                            </span>
+                            </label>
+                        </div>
+                        <div class="bx--form-item" data-sh="apac">
+                            <label for="e-tapiuser" class="bx--label">User ID (for this interface)</label>
+                            <input id="e-tapiuser" type="text"
+                                class="bx--text-input"
+                                name="e-tapiuser"
+                                value="admin"
+                                maxlength="30">
+                        </div>
+                        <div class="bx--form-item" data-sh="apac">
+                            <label for="e-tapipass" class="bx--label">Password (for this interface)</label>
+                            <input id="e-tapipass" type="password"
+                                class="bx--text-input"
+                                name="e-tapipass"
+                                value="admin">
+                        </div><br><br>
                     </div>
-                </form>
-                <script>function isNumberKey(e){var h=e.which?e.which:event.keyCode;return!(h>31&&(h<48||h>57))}</script>
-                <br><br><br>
+                    <div class="bx--modal-content--overflow-indicator"></div>
 
+                    <div class="bx--modal-footer">
+                        <button class="bx--btn bx--btn--secondary" type="button" onclick="closeModal('modal-pyu0ribosn')">Abort</button>
+                        <button class="bx--btn bx--btn--primary" type="button">Save</button>
+                    </div>
+                </div>
+                <!-- Note: focusable span allows for focus wrap feature within Modals -->
+                <span tabindex="0"></span>
+            </div>
+        </div>
+
+
+   
+          <div data-modal id="modal-ed454ftfa4q" class="bx--modal bx--modal--danger" role="dialog"
+            aria-modal="true" aria-labelledby="modal-ed454ftfa4q-label" aria-describedby="modal-ed454ftfa4q-heading" tabindex="-1">
+            <div class="bx--modal-container">
+                <form method="GET" >
+                    
+              <div class="bx--modal-header">
+                <p class="bx--modal-header__label bx--type-delta" id="modal-ed454ftfa4q-label">Warning!</p>
+                <p class="bx--modal-header__heading bx--type-beta" id="modal-ed454ftfa4q-heading">Delete configuration for I3 Mega</p>
+                <button class="bx--modal-close" type="button" data-modal-close aria-label="close modal" onclick="closeModal('modal-ed454ftfa4q')" >
+                  <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--modal-close__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z"></path></svg>
+                </button>
+              </div>
+          
+              <!-- Note: Modals with content that scrolls, at any viewport, requires `tabindex="0"` on the `bx--modal-content` element -->
+          
+              <div class="bx--modal-content" >
+                <p> you really want to delete the configured printer?</p><br><br>
+                </div>
+              <div class="bx--modal-content--overflow-indicator"></div>
+          
+              <div class="bx--modal-footer">
+                <button class="bx--btn bx--btn--secondary" type="reset" onclick="closeModal('modal-ed454ftfa4q')">Abort</button>
+                <button class="bx--btn bx--btn--danger" type="submit"  aria-label="Danger"
+                    data-modal-primary-focus>Delete</button>
+              </div>
+                </form>
             </div>
             
+            <!-- Note: focusable span allows for focus wrap feature within Modals -->
+            <span tabindex="0"></span>
+          </div>
+
+
+          <div class='bx--loading-overlay hidden' id='pageloading'>
+            <div data-loading class='bx--loading'>
+                <svg class='bx--loading__svg' viewBox='-75 -75 150 150'>
+                    <title>Loading</title>
+                    <circle class='bx--loading__stroke' cx='0' cy='0' r='37.5' />
+                </svg>
+            </div>
         </div>
+            
+
+        <form>
+            <button type="submit">Test</button>
+        </form>
+          
+        
 
         <script src="https://unpkg.com/carbon-components/scripts/carbon-components.min.js"></script>
         
@@ -249,6 +363,25 @@
                 document.getElementById('sidebar').classList.remove('bx--header-panel--expanded');
                 document.getElementById('wifiinfo').classList.toggle('hidden');
             }
+
+            function showhide(a,b) {
+                var e = $("[data-sh='"+b+"']");
+                console.log();
+                if (a.checked||a.prop('checked')) {
+                    e.removeClass('hidden');
+                } else {
+                    e.addClass('hidden');
+                }
+            }
+
+            function xtest(){
+                $('#pageloading').removeClass('hidden');
+            }
+            
+            $(function() {
+                $('form').on("submit", function(e){$('#pageloading').removeClass('hidden'); e.preventDefault(); return false;})
+            });
+            showhide($('#e-tapipw'), 'apac');
         </script>
         
     </body>

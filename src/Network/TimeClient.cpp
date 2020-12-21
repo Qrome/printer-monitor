@@ -18,8 +18,12 @@ bool TimeClient::handleSync(int snycDelayMinutes) {
 }
 
 int TimeClient::getMinutesFromLast(long lastEpochToUse) {
-    int minutes = (this->getCurrentEpoch() - lastEpochToUse) / 60;
-    return minutes;
+    return this->getSecondsFromLast(lastEpochToUse) / 60;
+}
+
+int TimeClient::getSecondsFromLast(long lastEpochToUse) {
+    int seconds = (this->getCurrentEpoch() - lastEpochToUse);
+    return seconds;
 }
 
 void TimeClient::resetLastEpoch() {
@@ -90,6 +94,14 @@ String TimeClient::getHours() {
     return String(hours); // print the hour (86400 equals secs per day)
 
 }
+
+int TimeClient::getMinutesNumber() {
+    if (localEpoc == 0) {
+      return 0;
+    }
+    return ((getCurrentEpochWithUtcOffset() % 3600) / 60);
+}
+
 String TimeClient::getMinutes() {
     if (localEpoc == 0) {
       return "--";
@@ -101,6 +113,14 @@ String TimeClient::getMinutes() {
     }
     return String(minutes);
 }
+
+int TimeClient::getSecondsNumber() {
+    if (localEpoc == 0) {
+      return 0;
+    }
+    return getCurrentEpochWithUtcOffset() % 60;
+}
+
 String TimeClient::getSeconds() {
     if (localEpoc == 0) {
       return "--";

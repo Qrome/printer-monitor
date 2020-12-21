@@ -6,18 +6,15 @@
 #include "BasePrinterClientImpl.h"
 #include "../Global/GlobalDataController.h"
 
+/**
+ * @brief KLIPPER Client implementation
+ */
 class KlipperClient : public BasePrinterClientImpl {
-private:
-    boolean pollPsu;
-
-    boolean validate();
- 
 public:
     KlipperClient(GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient);
+    void getPrinterJobResults(PrinterDataStruct *printerData) override;
+    void getPrinterPsuState(PrinterDataStruct *printerData) override;
 
-    void getPrinterJobResults() override;
-    void getPrinterPsuState() override;
-    void updatePrintClient() override;
-
-    int translateState(String stateText);
+private:    
+    static int translateState(String stateText);
 };

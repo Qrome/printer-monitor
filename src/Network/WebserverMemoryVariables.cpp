@@ -25,7 +25,7 @@ void WebserverMemoryVariables::sendHeader(
     boolean refresh
 ) {
     globalDataController->ledOnOff(true);
-    int8_t rssi = globalDataController->getWifiQuality();
+    int8_t rssi = EspController::getWifiQuality();
 
     server->sendHeader("Cache-Control", "no-cache, no-store");
     server->sendHeader("Pragma", "no-cache");
@@ -38,7 +38,7 @@ void WebserverMemoryVariables::sendHeader(
         server->sendContent("<meta http-equiv=\"refresh\" content=\"30\">");
     }
     server->sendContent(String(FPSTR(HEADER_BLOCK2)));
-    server->sendContent("<span class='bx--header__name--prefix'>PrintBuddy&nbsp;</span>V" + String(VERSION));
+    server->sendContent("<span class='bx--header__name--prefix'>PrintBuddy&nbsp;</span>V" + String(globalDataController->getSystemSettings()->version));
     server->sendContent(String(FPSTR(HEADER_BLOCK3)));
     server->sendContent(String(FPSTR(MENUE_ITEMS)));
     server->sendContent(String(FPSTR(HEADER_BLOCK4)));
@@ -46,17 +46,23 @@ void WebserverMemoryVariables::sendHeader(
     uint32_t heapFree = 0;
     uint16_t heapMax = 0;
     uint8_t heapFrag = 0;
-    ESP.getHeapStats(&heapFree, &heapMax, &heapFrag);
+    EspController::getHeap(&heapFree, &heapMax, &heapFrag);
 
     server->sendContent("<div>WiFi Signal Strength: " + String(rssi) + "%</div>");
     server->sendContent("<div>ESP ChipID: " + String(ESP.getChipId()) + "</div>");
     server->sendContent("<div>ESP CoreVersion: " + String(ESP.getCoreVersion()) + "</div>");
-    server->sendContent("<div>Heap (frag/free/max): " + String(heapFrag) + "|" +  String(heapFree) + "|" + String(heapMax) + "</div>");
+    server->sendContent("<div>Heap (frag/free/max): " + String(heapFrag) + "% |" +  String(heapFree) + " b|" + String(heapMax) + " b</div>");
     server->sendContent(String(FPSTR(HEADER_BLOCK5)));
     server->sendContent(pageLabel);
     server->sendContent("</h4><h1 id='page-title' class='page-header__title'>");
     server->sendContent(pageTitle);
     server->sendContent("</h1></div>");
+
+    if (globalDataController->getSystemSettings()->lastError.length() > 0) {
+        String errorBlock = FPSTR(HEADER_BLOCK_ERROR);
+        errorBlock.replace("%ERRORMSG%", globalDataController->getSystemSettings()->lastError);
+        server->sendContent(errorBlock);
+    }
 }
 
 /**
@@ -85,35 +91,36 @@ void WebserverMemoryVariables::sendUpdateForm(ESP8266WebServer *server, GlobalDa
  * @param server                    Send out instancce
  * @param globalDataController      Access to global data
  */
-void WebserverMemoryVariables::sendWeatherConfigForm(ESP8266WebServer *server, GlobalDataController *globalDataController) {
-    String isWeatherChecked = "";
-    String isMetricChecked = "";
-    if (globalDataController->getWeatherShow()) {
-        isWeatherChecked = "checked='checked'";
-    }
-    if (globalDataController->getWeatherIsMetric()) {
-        isMetricChecked = "checked='checked'";
-    }
+void WebserverMemoryVariables::sendWeatherConfigForm(ESP8266WebServer *server, GlobalDataController *globalDataController) {    
+    server->sendContent(FPSTR(WEATHER_FORM_START));
+    WebserverMemoryVariables::sendFormCheckbox(
+        server,
+        FPSTR(WEATHER_FORM1_ID),
+        globalDataController->getWeatherSettings()->show,
+        FPSTR(WEATHER_FORM1_LABEL)
+    );
+    WebserverMemoryVariables::sendFormCheckbox(
+        server,
+        FPSTR(WEATHER_FORM2_ID),
+        globalDataController->getWeatherSettings()->isMetric,
+        FPSTR(WEATHER_FORM2_LABEL_ON),
+        FPSTR(WEATHER_FORM2_LABEL_OFF)
+    );
 
-    String form = FPSTR(WEATHER_FORM1);
-    form.replace("%IS_WEATHER_CHECKED%", isWeatherChecked);
-    server->sendContent(form);
-
-    form = FPSTR(WEATHER_FORM2);
-    form.replace("%METRIC%", isMetricChecked);
-    server->sendContent(form);
-
-    form = FPSTR(WEATHER_FORM3);
-    form.replace("%WEATHERKEY%", globalDataController->getWeatherApiKey());
+    String form = FPSTR(WEATHER_FORM3);
+    form.replace("%WEATHERKEY%", globalDataController->getWeatherSettings()->apiKey);
     server->sendContent(form);
 
     form = FPSTR(WEATHER_FORM4);
-    form.replace("%CITY1%", String(globalDataController->getWeatherCityId()));
+    form.replace("%CITY1%", String(globalDataController->getWeatherSettings()->cityId));
     form.replace("%CITYNAME1%", globalDataController->getWeatherClient()->getCity(0));
     server->sendContent(form);
 
     form = FPSTR(WEATHER_FORM_OPTIONS);
-    form.replace(">"+String(globalDataController->getWeatherLang())+"<", " selected>"+String(globalDataController->getWeatherLang())+"<");
+    form.replace(
+        ">"+String(globalDataController->getWeatherSettings()->lang)+"<",
+        " selected>"+String(globalDataController->getWeatherSettings()->lang)+"<"
+    );
     server->sendContent(form);
 
     form = FPSTR(WEATHER_FORM5);
@@ -126,59 +133,211 @@ void WebserverMemoryVariables::sendWeatherConfigForm(ESP8266WebServer *server, G
  * @param globalDataController      Access to global data
  */
 void WebserverMemoryVariables::sendStationConfigForm(ESP8266WebServer *server, GlobalDataController *globalDataController) {
-    String isClockChecked = "";
-    String is24hourChecked = "";
-    String isInvDisp = "";
-    String isFlashLED = "";
-    String isUseSecurityChecked = "";
-    if (globalDataController->isDisplayInverted()) {
-        isInvDisp = "checked='checked'";
-    }
-    if (globalDataController->useLedFlash()) {
-        isFlashLED = "checked='checked'";
-    }
-    if (globalDataController->getDisplayClock()) {
-        isClockChecked = "checked='checked'";
-    }
-    if (globalDataController->getClockIs24h()) {
-        is24hourChecked = "checked='checked'";
-    }
-    if (globalDataController->getWebserverIsBasicAuth()) {
-        isUseSecurityChecked = "checked='checked'";
-    }
+    server->sendContent(FPSTR(STATION_CONFIG_FORM_START));
+    WebserverMemoryVariables::sendFormCheckbox(
+        server,
+        FPSTR(STATION_CONFIG_FORM1_ID),
+        globalDataController->getClockSettings()->show,
+        FPSTR(STATION_CONFIG_FORM1_LABEL)
+    );
+    WebserverMemoryVariables::sendFormCheckbox(
+        server,
+        FPSTR(STATION_CONFIG_FORM2_ID),
+        globalDataController->getClockSettings()->is24h,
+        FPSTR(STATION_CONFIG_FORM2_LABEL)
+    );
+    WebserverMemoryVariables::sendFormCheckbox(
+        server,
+        FPSTR(STATION_CONFIG_FORM3_ID),
+        globalDataController->getSystemSettings()->invertDisplay,
+        FPSTR(STATION_CONFIG_FORM3_LABEL)
+    );
+    WebserverMemoryVariables::sendFormCheckbox(
+        server,
+        FPSTR(STATION_CONFIG_FORM4_ID),
+        globalDataController->getSystemSettings()->useLedFlash,
+        FPSTR(STATION_CONFIG_FORM4_LABEL)
+    );
 
-    String form = FPSTR(STATION_CONFIG_FORM1);
-    form.replace("%IS_CLOCK_CHECKED%", isClockChecked);
-    server->sendContent(form);
-
-    form = FPSTR(STATION_CONFIG_FORM2);
-    form.replace("%IS_24HOUR_CHECKED%", is24hourChecked);
-    server->sendContent(form);
-
-    form = FPSTR(STATION_CONFIG_FORM3);
-    form.replace("%IS_INVDISP_CHECKED%", isInvDisp);
-    server->sendContent(form);
-
-    form = FPSTR(STATION_CONFIG_FORM4);
-    form.replace("%USEFLASH%", isFlashLED);
-    server->sendContent(form);
-
-    form = FPSTR(STATION_CONFIG_FORM5);
+    String form = FPSTR(STATION_CONFIG_FORM5);
     String options = FPSTR(STATION_CONFIG_FORM5OPT);
-    options.replace(">"+String(globalDataController->getClockResyncMinutes())+"<", " selected>"+String(globalDataController->getClockResyncMinutes())+"<");
+    options.replace(
+        ">"+String(globalDataController->getSystemSettings()->clockWeatherResyncMinutes)+"<",
+        " selected>"+String(globalDataController->getSystemSettings()->clockWeatherResyncMinutes)+"<"
+    );
     form.replace("%OPTIONS%", options);
     server->sendContent(form);
 
     form = FPSTR(STATION_CONFIG_FORM6);
-    form.replace("%UTCOFFSET%", String(globalDataController->getClockUtcOffset()));
+    form.replace("%UTCOFFSET%", String(globalDataController->getClockSettings()->utcOffset));
     server->sendContent(form);
 
-    form = FPSTR(STATION_CONFIG_FORM7);
-    form.replace("%IS_BASICAUTH_CHECKED%", isUseSecurityChecked);
-    server->sendContent(form);
+    WebserverMemoryVariables::sendFormCheckboxEvent(
+        server,
+        FPSTR(STATION_CONFIG_FORM7_ID),
+        globalDataController->getSystemSettings()->hasBasicAuth,
+        FPSTR(STATION_CONFIG_FORM7_LABEL),
+        "showhide(this, 'uspw')"
+    );
 
     form = FPSTR(STATION_CONFIG_FORM8);
-    form.replace("%USERID%", globalDataController->getWebserverUsername());
-    form.replace("%STATIONPASSWORD%", globalDataController->getWebserverPassword());
+    form.replace("%USERID%", globalDataController->getSystemSettings()->webserverUsername);
+    form.replace("%STATIONPASSWORD%", globalDataController->getSystemSettings()->webserverPassword);
+    server->sendContent(form);
+}
+
+/**
+ * @brief Send out configuration for printer
+ * @param server                    Send out instancce
+ * @param globalDataController      Access to global data
+ */
+void WebserverMemoryVariables::sendPrinterConfigForm(ESP8266WebServer *server, GlobalDataController *globalDataController) {
+    server->sendContent(FPSTR(CONFPRINTER_FORM_START));
+
+    int totalPrinters = globalDataController->getNumPrinters();
+    PrinterDataStruct *printerConfigs = globalDataController->getPrinterSettings();
+    for(int i=0; i<totalPrinters; i++) {
+        String printerEntryRow = FPSTR(CONFPRINTER_FORM_ROW);
+        printerEntryRow.replace("%ID%", String(i+1));
+        printerEntryRow.replace("%NAME%", String(printerConfigs[i].customName));
+        printerEntryRow.replace("%TYPE%", globalDataController->getPrinterClientType(&printerConfigs[i]));
+
+        String state = FPSTR(CONFPRINTER_FORM_ROW_OK);
+        if ((printerConfigs[i].state == PRINTER_STATE_OFFLINE) || (printerConfigs[i].state == PRINTER_STATE_ERROR)) {
+            state = FPSTR(CONFPRINTER_FORM_ROW_ERROR);
+        }
+        state.replace("%STATUS%", globalDataController->getPrinterStateAsText(&printerConfigs[i]));
+        printerEntryRow.replace("%STATE%", state);
+        server->sendContent(printerEntryRow);
+    }
+
+    // Generate all modals
+    for(int i=0; i<totalPrinters; i++) {
+        WebserverMemoryVariables::sendPrinterConfigFormAEModal(server, i + 1, &printerConfigs[i]);
+    }
+    WebserverMemoryVariables::sendPrinterConfigFormAEModal(server, 0, NULL);
+
+    
+
+/*static const char CONFPRINTER_FORM_ROW_OFFLINE[] PROGMEM =  "<div class='bx--tag bx--tag--magenta'>"
+                                        "Offline"
+                                    "</div>";
+static const char CONFPRINTER_FORM_ROW_ONLINE[] PROGMEM =  "<div class='bx--tag bx--tag--green'>"
+                                        "Online"
+                                    "</div>";
+*/
+
+
+
+    server->sendContent(FPSTR(CONFPRINTER_FORM_END));
+} 
+
+void WebserverMemoryVariables::sendPrinterConfigFormAEModal(ESP8266WebServer *server, int id, PrinterDataStruct *forPrinter) {
+    String printerEditModal = FPSTR(CONFPRINTER_FORM_ADDEDIT1);
+    printerEditModal.replace("%ID%", String(id));
+    if (id == 0) {
+        printerEditModal.replace("%TITLE%", FPSTR(CONFPRINTER_FORM_ADDEDIT_TA));
+    } else {
+        printerEditModal.replace("%TITLE%", FPSTR(CONFPRINTER_FORM_ADDEDIT_TE));
+    }
+
+    if (forPrinter == NULL) {
+        printerEditModal.replace("%NAME%", "");
+        printerEditModal.replace("%TARGETADDR%", "");
+        printerEditModal.replace("%TARGETPORT%", "80");
+    } else {
+        printerEditModal.replace("%NAME%", String(forPrinter->customName));
+        printerEditModal.replace("%TARGETADDR%", String(forPrinter->remoteAddress));
+        printerEditModal.replace("%TARGETPORT%", String(forPrinter->remotePort));
+    }
+    
+
+    server->sendContent(printerEditModal);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * @brief Send out an single checkbox form row
+ * @param server                    Send out instancce
+ * @param formId                    Form id/name
+ * @param isChecked                 Checkbox checked
+ * @param label                     Text for activated/deactivated
+ */
+void WebserverMemoryVariables::sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String label) {
+    WebserverMemoryVariables::sendFormCheckboxEvent(server, formId, isChecked, label, "");
+}
+
+/**
+ * @brief Send out an single checkbox form row
+ * @param server                    Send out instancce
+ * @param formId                    Form id/name
+ * @param isChecked                 Checkbox checked
+ * @param labelOn                   Text for activated
+ * @param labelOff                  Text for deactivated
+ */
+void WebserverMemoryVariables::sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff) {
+    WebserverMemoryVariables::sendFormCheckboxEvent(server, formId, isChecked, labelOn, labelOff, "");
+}
+
+/**
+ * @brief Send out an single checkbox form row with onChangeEvent
+ * @param server                    Send out instancce
+ * @param formId                    Form id/name
+ * @param isChecked                 Checkbox checked
+ * @param label                     Text for activated/deactivated
+ * @param onChange                  Javascript function
+ */
+void WebserverMemoryVariables::sendFormCheckboxEvent(ESP8266WebServer *server, String formId, bool isChecked, String label, String onChange) {
+    String onAdd = FPSTR(FORM_ITEM_CHECKBOX_ON);
+    String offAdd = FPSTR(FORM_ITEM_CHECKBOX_OFF);
+    WebserverMemoryVariables::sendFormCheckboxEvent(server, formId, isChecked, label + onAdd, label + offAdd, onChange);
+}
+
+
+/**
+ * @brief Send out an single checkbox form row with onChangeEvent
+ * @param server                    Send out instancce
+ * @param formId                    Form id/name
+ * @param isChecked                 Checkbox checked
+ * @param labelOn                   Text for activated
+ * @param labelOff                  Text for deactivated
+ * @param onChange                  Javascript function
+ */
+void WebserverMemoryVariables::sendFormCheckboxEvent(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff, String onChange) {
+    String isCheckedText = "";
+    String onChangeText = "";
+    if (isChecked) {
+        isCheckedText = "checked='checked'";
+    }
+    if (onChange.length() > 0) {
+        onChangeText = "onchange=\"" + onChange + "\"";
+    }
+    String form = FPSTR(FORM_ITEM_CHECKBOX);
+    form.replace("%FORMID%", formId);
+    form.replace("%CHECKED%", isCheckedText);
+    form.replace("%LABELON%", labelOn);
+    form.replace("%LABELOFF%", labelOff);
+    form.replace("%ONCHANGE%", onChangeText);
     server->sendContent(form);
 }

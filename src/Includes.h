@@ -10,15 +10,10 @@
 #include "Network/TimeClient.h"
 #include "Network/OpenWeatherMapClient.h"
 #include "Network/JsonRequestClient.h"
-#if (PRINTERCLIENT == REPETIER_CLIENT)
-    #include "Clients/RepetierClient.h"
-#elif (PRINTERCLIENT == KLIPPER_CLIENT)
-    #include "Clients/KlipperClient.h"
-#elif (PRINTERCLIENT == DUET_CLIENT)
-    #include "Clients/DuetClient.h"
-#else
-    #include "Clients/OctoPrintClient.h"
-#endif
+#include "Clients/RepetierClient.h"
+#include "Clients/KlipperClient.h"
+#include "Clients/DuetClient.h"
+#include "Clients/OctoPrintClient.h"
 #ifdef USE_NEXTION_DISPLAY
     #include "Display/NextionDisplay.h"
 #else
@@ -35,16 +30,11 @@ OpenWeatherMapClient weatherClient(WEATHER_APIKEY, WEATHER_CITYID, 1, WEATHER_ME
 GlobalDataController globalDataController(&timeClient, &weatherClient, &debugController);
 WebServer webServer(&globalDataController, &debugController);
 
-// Construct the correct printer client
-#if (PRINTERCLIENT == REPETIER_CLIENT)
-    //RepetierClient printerClient(&globalDataController);
-#elif (PRINTERCLIENT == KLIPPER_CLIENT)
-    KlipperClient printerClient(&globalDataController, &debugController, &jsonRequestClient);
-#elif (PRINTERCLIENT == DUET_CLIENT)
-    DuetClient printerClient(&globalDataController, &debugController, &jsonRequestClient);
-#else
-    OctoPrintClient printerClient(&globalDataController, &debugController, &jsonRequestClient);
-#endif
+// Register all printer clients
+DuetClient printerClient0(&globalDataController, &debugController, &jsonRequestClient);
+KlipperClient printerClient1(&globalDataController, &debugController, &jsonRequestClient);
+OctoPrintClient printerClient2(&globalDataController, &debugController, &jsonRequestClient);
+RepetierClient printerClient3(&globalDataController, &debugController, &jsonRequestClient);
 
 // Construct correct display client
 #ifdef USE_NEXTION_DISPLAY

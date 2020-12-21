@@ -22,14 +22,19 @@ public:
     void updateTime();
     bool handleSync(int snycDelayMinutes);
     int getMinutesFromLast(long lastEpochToUse);
+    int getSecondsFromLast(long lastEpochToUse);
     void resetLastEpoch();
     long getLastEpoch();
 
+    
+    
     void setUtcOffset(float utcOffset);
     String getHours();
     String getAmPmHours();
     String getAmPm();
+    int getMinutesNumber();
     String getMinutes();
+    int getSecondsNumber();
     String getSeconds();
     String getFormattedTime();
     String getAmPmFormattedTime();

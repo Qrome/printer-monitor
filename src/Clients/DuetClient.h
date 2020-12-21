@@ -6,18 +6,15 @@
 #include "BasePrinterClientImpl.h"
 #include "../Global/GlobalDataController.h"
 
+/**
+ * @brief DUET Client implementation
+ */
 class DuetClient : public BasePrinterClientImpl {
-private:
-    boolean pollPsu;
-
-    boolean validate();
- 
 public:
     DuetClient(GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient);
+    void getPrinterJobResults(PrinterDataStruct *printerData) override;
+    void getPrinterPsuState(PrinterDataStruct *printerData) override;
 
-    void getPrinterJobResults() override;
-    void getPrinterPsuState() override;
-    void updatePrintClient() override;
-
-    int translateState(String stateText);
+private:    
+    static int translateState(String stateText);
 };

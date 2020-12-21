@@ -5,16 +5,18 @@
 #pragma once
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
-#include "Clients/Clients.h"
 
 /**
  * Basic software settings
  */
 #define VERSION                     "1.0"
 #define HOSTNAME                    "PrintBuddy-" 
-#define CONFIG                      "/conf.txt"
-// true = Enables debug message on terminal | false = disable all debug messages
-#define DEBUG_MODE_ENABLE           true
+#define CONFIG                      "/conf.txt"         // EEProm config file for general settings
+#define PRINTERCONFIG               "/pconf.txt"        // EEProm config file for printer settings
+#define DEBUG_MODE_ENABLE           true                // true = Enables debug message on terminal | false = disable all debug messages
+#define MAX_PRINTERS                10                  // Limit of configurable printers, please not that many printers slow down the system!
+#define PRINTER_SYNC_SEC            60                  // Snyc printer when offline or not printing every x seconds
+#define PRINTER_SYNC_SEC_PRINTING   10                  // Snyc printer when printing every x seconds
 
 //===========================================================================
 //========================= MCU & Display config ============================
@@ -61,35 +63,6 @@
 #define EXTERNAL_LED            LED_BUILTIN
 // true = System LED will Flash on Service Calls; false = disabled LED flashing
 #define USE_FLASH               true
-
-//===========================================================================
-//========================== Client for requests ============================
-//===========================================================================
-
-/**
- * Printer client selection
- * Use one of following (defined in Clients/Clients.h):
- *          DUET_CLIENT
- *          KLIPPER_CLIENT
- *          REPETIER_CLIENT
- *          OCTOPRINT_CLIENT
- */
-#define PRINTERCLIENT   KLIPPER_CLIENT
-
-// Default: ApiKey from your User Account on client endpoint
-#define PRINTERCLIENT_APIKEY        ""
-// Default: HostName from your client endpoint
-#define PRINTERCLIENT_HOSTNAME      ""
-// Default: server ip (withot http://) for client endpoint
-#define PRINTERCLIENT_SERVER        ""
-// Default: The port you are running your client server on (usually 80)
-#define PRINTERCLIENT_PORT          80
-// Default: Only used if you have haproxy or basic athentintication turned on (not default)
-#define PRINTERCLIENT_AUTHUSER      ""
-// Default: Only used with haproxy or basic auth (only needed if you must authenticate)
-#define PRINTERCLIENT_AUTHPASS      ""
-// Default: Set to true if https://github.com/kantlivelong/OctoPrint-PSUControl/ in use
-#define PRINTERCLIENT_HASPSU        false
 
 //===========================================================================
 //=========================== Webserver config ==============================

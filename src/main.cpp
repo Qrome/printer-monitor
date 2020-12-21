@@ -3,12 +3,21 @@
 
 String lastMinute = "xx";
 String lastSecond = "xx";
+int knownPrintersToSync = 0;
+int currentRefreshPrinter = 0;
+
 void configModeCallback(WiFiManager *myWiFiManager);
 
+/**
+ * @brief Setup/Initialize ESP
+ */
 void setup() {
     LittleFS.begin();
     debugController.setup();
-    globalDataController.setPrinterClient(&printerClient);
+    globalDataController.registerPrinterClient(PRINTER_CLIENT_REPETIER, &printerClient3);
+    globalDataController.registerPrinterClient(PRINTER_CLIENT_OCTOPRINT, &printerClient2);
+    globalDataController.registerPrinterClient(PRINTER_CLIENT_KLIPPER, &printerClient1);
+    globalDataController.registerPrinterClient(PRINTER_CLIENT_DUET, &printerClient0);
     globalDataController.setDisplayClient(&displayClient);
     globalDataController.setup();
     displayClient.preSetup();
@@ -33,7 +42,7 @@ void setup() {
 
     // print the received signal strength:
     debugController.print("Signal Strength (RSSI): ");
-    debugController.print(globalDataController.getWifiQuality());
+    debugController.print(EspController::getWifiQuality());
     debugController.printLn("%");
 
     if (ENABLE_OTA) {
@@ -76,35 +85,55 @@ void setup() {
     debugController.printLn("*** Leaving setup()");
 }
 
+/**
+ * @brief Loop trough all
+ */
 void loop() {
 
     // Handle update of time
-    if(timeClient.handleSync(globalDataController.getClockResyncMinutes()) && globalDataController.getWeatherShow()) {
+    if(timeClient.handleSync(globalDataController.getSystemSettings()->clockWeatherResyncMinutes) 
+        && globalDataController.getWeatherSettings()->show
+    ) {
         // We sync time? Ok, sync weather also!
         debugController.printLn("Updating weather...");
         weatherClient.updateWeather();
     }
 
-    if (lastMinute != timeClient.getMinutes() && !printerClient.isPrinting()) {
-        // Check status every 60 seconds
-        globalDataController.ledOnOff(true);
-        lastMinute = timeClient.getMinutes(); // reset the check value
-        printerClient.getPrinterJobResults();
-        printerClient.getPrinterPsuState();
-        globalDataController.ledOnOff(false);
-    } else if (printerClient.isPrinting()) {
-        if (lastSecond != timeClient.getSeconds() && timeClient.getSeconds().endsWith("0")) {
-            lastSecond = timeClient.getSeconds();
-            // every 10 seconds while printing get an update
-            globalDataController.ledOnOff(true);
-            printerClient.getPrinterJobResults();
-            printerClient.getPrinterPsuState();
-            globalDataController.ledOnOff(false);
-        }
+    // Check printers 
+    if (knownPrintersToSync != globalDataController.getNumPrinters()) {
+        knownPrintersToSync = globalDataController.getNumPrinters();
+        currentRefreshPrinter = 0;
     }
 
+    // Sync only if we have printers
+    if (knownPrintersToSync > 0) {
+        if (currentRefreshPrinter >= globalDataController.getNumPrinters()) {
+            currentRefreshPrinter = 0;
+        }
+        PrinterDataStruct *refPrinter = &globalDataController.getPrinterSettings()[currentRefreshPrinter];
+
+        bool syncPrinter = false;
+        if ((refPrinter->lastSyncEpoch == 0)
+            || (!refPrinter->isPrinting && (timeClient.getSecondsFromLast(refPrinter->lastSyncEpoch) >= PRINTER_SYNC_SEC))
+            || (refPrinter->isPrinting && (timeClient.getSecondsFromLast(refPrinter->lastSyncEpoch) >= PRINTER_SYNC_SEC_PRINTING))
+        ) {
+            syncPrinter = true;
+        }
+        if (syncPrinter) {
+            globalDataController.ledOnOff(true);
+            refPrinter->lastSyncEpoch = timeClient.getCurrentEpoch();
+            globalDataController.syncPrinter(refPrinter);
+            globalDataController.ledOnOff(false);
+        }
+
+        // Next Time, next printer 
+        currentRefreshPrinter++;
+    }
+
+    // Handle Display
     displayClient.handleUpdate();
 
+    // Handle all Web stuff
     if (WEBSERVER_ENABLED) {
         webServer.handleClient();
     }
@@ -113,6 +142,10 @@ void loop() {
     }
 }
 
+/**
+ * @brief AP Mode for WiFi configuration
+ * @param myWiFiManager 
+ */
 void configModeCallback(WiFiManager *myWiFiManager) {
     debugController.printLn("Entered config mode");
     debugController.printLn(WiFi.softAPIP().toString());

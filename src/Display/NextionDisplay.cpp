@@ -26,7 +26,7 @@ void NextionDisplay::flipDisplayUpdate() {
 
 void NextionDisplay::showBootScreen() {
     String command("version.txt=");
-    command += "\"for " + this->globalDataController->getPrinterClient()->getPrinterType() + " V" + this->globalDataController->getVersion() + "\"";
+    //command += "\"for " + this->globalDataController->getPrinterClient()->getPrinterType() + " V" + this->globalDataController->getSystemSettings()->version + "\"";
     this->sendCommand("page 0");
     this->sendCommand(command.c_str());
 }

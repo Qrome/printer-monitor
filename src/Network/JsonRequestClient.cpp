@@ -44,17 +44,17 @@ WiFiClient JsonRequestClient::requestWifiClient(
         }
 
         if (requestClient.println() == 0) {
-            this->debugController->printLn("Connection to " + fullTarget + " failed.");
+            this->debugController->printLn("SOCKET: Connection to " + fullTarget + " failed.");
             this->debugController->printLn("");
-            this->lastError = "Connection to " + fullTarget + " failed.";
+            this->lastError = "SOCKET: Connection to " + fullTarget + " failed.";
             return requestClient;
         }
     } 
     else {
         // error message if no client connect
-        this->debugController->printLn("Connection failed: " + fullTarget);
+        this->debugController->printLn("SOCKET: Connection failed: " + fullTarget);
         this->debugController->printLn("");
-        this->lastError = "Connection failed: " + fullTarget;
+        this->lastError = "SOCKET: Connection failed: " + fullTarget;
         return requestClient;
     }
 
@@ -75,7 +75,7 @@ WiFiClient JsonRequestClient::requestWifiClient(
     if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0 && strcmp(status, "HTTP/1.1 503 Service Unavailable") != 0) {
         this->debugController->print("Unexpected response: ");
         this->debugController->printLn(status);
-        this->lastError = "Response: " + String(status);
+        this->lastError = "SOCKET: Response: " + String(status);
         return requestClient;
     }
 
@@ -83,7 +83,7 @@ WiFiClient JsonRequestClient::requestWifiClient(
     char endOfHeaders[] = "\r\n\r\n";
     if (!requestClient.find(endOfHeaders)) {
         this->debugController->printLn("Invalid response");
-        this->lastError = "Invalid response from " + fullTarget;
+        this->lastError = "SOCKET: Invalid response from " + fullTarget;
     }
 
     return requestClient;
@@ -112,7 +112,7 @@ DynamicJsonDocument *JsonRequestClient::requestJson(
     DeserializationError error = deserializeJson(*returnJson, reqClient);
     if (error) {
         this->debugController->printLn("Data Parsing failed: " + server + ":" + String(port) + "[" + error.c_str() + "]");
-        this->lastError = "Data Parsing failed: " + server + ":" + String(port);
+        this->lastError = "PARSER: Data Parsing failed: " + server + ":" + String(port);
         reqClient.stop();
         return NULL;
     }

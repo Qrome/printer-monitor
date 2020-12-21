@@ -3,48 +3,35 @@
 
 #include "DuetClient.h"
 
+/**
+ * @brief Construct a new Duet Client:: Duet Client object
+ * 
+ * @param globalDataController  Handle to global data controller
+ * @param debugController       Handle to debug controller
+ * @param jsonRequestClient     Handle to json request instance
+ */
 DuetClient::DuetClient(GlobalDataController *globalDataController, DebugController *debugController, JsonRequestClient *jsonRequestClient)
-: BasePrinterClientImpl("Duet", globalDataController, debugController, jsonRequestClient) {
-    this->updatePrintClient();
+    : BasePrinterClientImpl("Duet", globalDataController, debugController, jsonRequestClient) {
 }
 
-void DuetClient::updatePrintClient() {
-    encodedAuth = "";
-    if (this->globalDataController->getPrinterAuthUser() != "") {
-        String userpass = this->globalDataController->getPrinterAuthUser() + ":" + this->globalDataController->getPrinterAuthPass();
-        base64 b64;
-        encodedAuth = b64.encode(userpass, true);
-    }
-    pollPsu = this->globalDataController->hasPrinterPsu();
-}
-
-boolean DuetClient::validate() {
-    boolean rtnValue = false;
-    printerData.error = "";
-    if ((this->globalDataController->getPrinterServer() == "") && (this->globalDataController->getPrinterHostName() == "")) {
-        printerData.error += "Server address or host name is required; ";
-    }
-    if (printerData.error == "") {
-        rtnValue = true;
-    }
-    return rtnValue;
-}
-
-void DuetClient::getPrinterJobResults() {
-    // const size_t bufferSize = JSON_ARRAY_SIZE(4) + JSON_OBJECT_SIZE(1) + 4*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(7) + JSON_OBJECT_SIZE(9) + 426;
+/**
+ * @brief Refresh job and state data for printer
+ * @param printerData       Handle to printer struct
+ */
+void DuetClient::getPrinterJobResults(PrinterDataStruct *printerData) {
     const size_t bufferSize = 2048; // according to ArduinoJson assistant
     DynamicJsonDocument *jsonDoc;
-    if (!validate()) {
+    if (!this->isValidConfig(printerData)) {
         return;
     }
 
     // Req 1
-    this->debugController->printLn("Get Duet Data: " + this->getInstanceServerTarget() + ":" + String(this->getInstanceServerPort()));
+    this->debugController->printLn("Get Duet Data: " + String(printerData->remoteAddress) + ":" + String(printerData->remotePort));
     jsonDoc = this->jsonRequestClient->requestJson(
         PRINTER_REQUEST_GET,
-        this->getInstanceServerTarget(),
-        this->getInstanceServerPort(),
-        this->encodedAuth,
+        String(printerData->remoteAddress),
+        printerData->remotePort,
+        String(printerData->encAuth),
         "/rr_status?type=1",
         "",
         bufferSize,
@@ -52,29 +39,27 @@ void DuetClient::getPrinterJobResults() {
     );
     if (this->jsonRequestClient->getLastError() != "") {
         this->debugController->printLn(this->jsonRequestClient->getLastError());
-        printerData.error = this->jsonRequestClient->getLastError();
-        printerData.state = PRINTER_STATE_OFFLINE;
-        printerData.isPrinting = false;
-        printerData.toolTemp = "";
-        printerData.toolTargetTemp = "";
-        printerData.bedTemp = "";
-        printerData.bedTargetTemp = "";
+        BasePrinterClient::resetPrinterData(printerData);
+        if (this->jsonRequestClient->getLastError().indexOf("PARSER") == 0) {
+            MemoryHelper::stringToChar(this->jsonRequestClient->getLastError(), printerData->error, 120);
+            printerData->state = PRINTER_STATE_ERROR;
+        }
         return;
     }
 
-    printerData.state = this->translateState((const char*)(*jsonDoc)["status"]);
+    printerData->state = DuetClient::translateState((const char*)(*jsonDoc)["status"]);
 
-    if (BasePrinterClientImpl::isOperational()) {
-        this->debugController->printLn("Status: " + this->getStateAsText());
+    if (this->isOperational(printerData)) {
+        this->debugController->printLn("Status: " + this->globalDataController->getPrinterStateAsText(printerData));
     } else {
         this->debugController->printLn("Printer Not Operational");
     }
 
-    if (printerData.state == PRINTER_STATE_PRINTING) {
-        printerData.isPrinting = true;
+    if (printerData->state == PRINTER_STATE_PRINTING) {
+        printerData->isPrinting = true;
     } else {
         // We dont printing, so abort function here
-        printerData.isPrinting = false;
+        printerData->isPrinting = false;
         return;
     }
     
@@ -82,9 +67,9 @@ void DuetClient::getPrinterJobResults() {
     // Req 2
     jsonDoc = this->jsonRequestClient->requestJson(
         PRINTER_REQUEST_GET,
-        this->getInstanceServerTarget(),
-        this->getInstanceServerPort(),
-        this->encodedAuth,
+        String(printerData->remoteAddress),
+        printerData->remotePort,
+        String(printerData->encAuth),
         "/rr_status?type=3",
         "",
         bufferSize,
@@ -92,75 +77,47 @@ void DuetClient::getPrinterJobResults() {
     );
     if (this->jsonRequestClient->getLastError() != "") {
         this->debugController->printLn(this->jsonRequestClient->getLastError());
-        printerData.error = this->jsonRequestClient->getLastError();
-        printerData.state = PRINTER_STATE_OFFLINE;
-        printerData.isPrinting = false;
-        printerData.toolTemp = "";
-        printerData.toolTargetTemp = "";
-        printerData.bedTemp = "";
-        printerData.bedTargetTemp = "";
+        BasePrinterClient::resetPrinterData(printerData);
+        if (this->jsonRequestClient->getLastError().indexOf("PARSER") == 0) {
+            MemoryHelper::stringToChar(this->jsonRequestClient->getLastError(), printerData->error, 120);
+            printerData->state = PRINTER_STATE_ERROR;
+        }
         return;
     }
 
-    printerData.filamentLength = (const char*)(*jsonDoc)["result"]["status"]["job"]["print_stats"]["filament_used"];
-    printerData.progressPrintTime = (const char*)(*jsonDoc)["printDuration"];
-    printerData.fileName = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["filename"];
-    printerData.progressCompletion = (int)(*jsonDoc)["fractionPrinted"];
-    printerData.toolTemp = (int)(*jsonDoc)["temps"]["current"][1];
-    printerData.toolTargetTemp = (int)(*jsonDoc)["temps"]["tools"]["active"][0][0];
-    printerData.bedTemp = (int)(*jsonDoc)["temps"]["bed"]["current"];
-    printerData.bedTargetTemp = (int)(*jsonDoc)["temps"]["bed"]["active"];
+    //printerData.filamentLength = (const char*)(*jsonDoc)["result"]["status"]["job"]["print_stats"]["filament_used"];
+    //printerData.progressPrintTime = (const char*)(*jsonDoc)["printDuration"];
+    //printerData.fileName = (const char*)(*jsonDoc)["result"]["status"]["print_stats"]["filename"];
+    //printerData.progressCompletion = (int)(*jsonDoc)["fractionPrinted"];
+    printerData->toolTemp = (int)(*jsonDoc)["temps"]["current"][1];
+    printerData->toolTargetTemp = (int)(*jsonDoc)["temps"]["tools"]["active"][0][0];
+    printerData->bedTemp = (int)(*jsonDoc)["temps"]["bed"]["current"];
+    printerData->bedTargetTemp = (int)(*jsonDoc)["temps"]["bed"]["active"];
     float fileProgress = (float)(*jsonDoc)["fractionPrinted"];
-    printerData.progressFilepos = (const char*)(*jsonDoc)["filePosition"];
-    printerData.estimatedPrintTime = (float)(*jsonDoc)["file"];
+    //printerData.progressFilepos = (const char*)(*jsonDoc)["filePosition"];
+    printerData->estimatedPrintTime = (float)(*jsonDoc)["file"];
 
     /*
     printerData.progressPrintTimeLeft : No metadata is available, print duration and progress can be used to calculate the ETA:
     */
-    float totalPrintTime = printerData.progressPrintTime.toFloat() / fileProgress;
-    printerData.progressPrintTimeLeft = String(totalPrintTime - printerData.progressPrintTime.toFloat());
+    //float totalPrintTime = printerData.progressPrintTime.toFloat() / fileProgress;
+    //printerData.progressPrintTimeLeft = String(totalPrintTime - printerData.progressPrintTime.toFloat());
 
-    if (BasePrinterClientImpl::isOperational()) {
-        this->debugController->printLn("Status: " + this->getStateAsText() + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
+    if (this->isOperational(printerData)) {
+        this->debugController->printLn("Status: "
+            + this->globalDataController->getPrinterStateAsText(printerData) + " "
+            + String(printerData->fileName) + "("
+            + String(printerData->progressCompletion) + "%)"
+        );
     }
 }
 
-void DuetClient::getPrinterPsuState() {
-    /*// get the PSU state (if enabled and printer operational)
-    if (pollPsu && BasePrinterClientImpl::isOperational()) {
-        if (!validate()) {
-            printerData.isPSUoff = false; // we do not know PSU state, so assume on.
-            return;
-        }
-        String apiPostData = "POST /api/plugin/psucontrol HTTP/1.1";
-        String apiPostBody = "{\"command\":\"getPSUState\"}";
-        WiFiClient printClient = getPostRequest(apiPostData,apiPostBody);
-        if (printerData.error != "") {
-            printerData.isPSUoff = false; // we do not know PSU state, so assume on.
-            return;
-        }
-        const size_t bufferSize3 = JSON_OBJECT_SIZE(2) + 300;
-        DynamicJsonDocument jsonBuffer(bufferSize3);
-    
-        // Parse JSON object
-        DeserializationError error = deserializeJson(jsonBuffer, printClient);
-        if (error) {
-            printerData.isPSUoff = false; // we do not know PSU state, so assume on
-            return;
-        }
-    
-        String psu = (const char*)jsonBuffer["isPSUOn"];
-        if (psu == "true") {
-            printerData.isPSUoff = false; // PSU checked and is on
-        } else {
-            printerData.isPSUoff = true; // PSU checked and is off, set flag
-        }
-        printClient.stop(); //stop client
-    } else {
-        printerData.isPSUoff = false; // we are not checking PSU state, so assume on
-    } */
+/**
+ * @brief Refresh psu state data for printer
+ * @param printerData       Handle to printer struct
+ */
+void DuetClient::getPrinterPsuState(PrinterDataStruct *printerData)  {
 }
-
 
 /**
  * We translate the avail states 
