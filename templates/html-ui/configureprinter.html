@@ -1,389 +1,486 @@
+<!doctype html>
 <html>
-    <head>
-        <link rel="stylesheet" href="https://unpkg.com/carbon-components/css/carbon-components.min.css" ></style>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
-        <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
-        <style>.hidden{display:none} .bx--form-item{margin-bottom:20px} .menitem{padding:6px 1rem;font-size:.875rem;font-weight:600;line-height:1.29;letter-spacing:.16px;display:flex;justify-content:space-between;text-decoration:none;color:#c6c6c6}</style>
+<head>
+    <title>PrintBuddy</title>
+    <link rel='icon' href='data:;base64,='>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css'>
+    <link rel='stylesheet' href='https://unpkg.com/carbon-components/css/carbon-components.min.css'>
+    </style>
+    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.15.1/css/all.css'>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+    <style>
+        .hidden {
+            display: none
+        }
 
+        .bx--form-item {
+            margin-bottom: 20px
+        }
 
-        <style>
-            
-        </style>
-    </head>
-    <body>
-        <header class="cv-header bx--header">
-            <a href="index.html" class="cv-header-name bx--header__name">
-                <span class="bx--header__name--prefix">Printer Buddy&nbsp;</span>
-                V4.0
-            </a>
-            <nav class="cv-header-nav bx--header__nav"></nav>
-            <div class="bx--header__global">
-                <button type="button" class="cv-header-global-action bx--header__action" onclick="openWifiInfo()">
-                    <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">
-                        <path d="M11,11V21H21V11Zm8,8H13V13h6Z"></path><path d="M30,13V11H26V8a2,2,0,0,0-2-2H21V2H19V6H13V2H11V6H8A2,2,0,0,0,6,8v3H2v2H6v6H2v2H6v3a2,2,0,0,0,2,2h3v4h2V26h6v4h2V26h3a2,2,0,0,0,2-2V21h4V19H26V13ZM24,24H8V8H24Z"></path>
-                    </svg>
-                </button>
-                <button type="button" class="cv-header-global-action bx--header__action" onclick="openSidebar()">
-                    <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">       
-                        <path d="M14 4H18V8H14zM4 4H8V8H4zM24 4H28V8H24zM14 14H18V18H14zM4 14H8V18H4zM24 14H28V18H24zM14 24H18V28H14zM4 24H8V28H4zM24 24H28V28H24z"></path>
-                    </svg>
-                </button>
-            </div>
-            <div aria-hidden="false" id="sidebar" class="cv-header-panel bx--header-panel">
-                <ul class="cv-switcher bx--switcher__item">
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/">
-                        Home
-                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M16.6123,2.2138a1.01,1.01,0,0,0-1.2427,0L1,13.4194l1.2427,1.5717L4,13.6209V26a2.0041,2.0041,0,0,0,2,2H26a2.0037,2.0037,0,0,0,2-2V13.63L29.7573,15,31,13.4282ZM18,26H14V18h4Zm2,0V18a2.0023,2.0023,0,0,0-2-2H14a2.002,2.002,0,0,0-2,2v8H6V12.0615l10-7.79,10,7.8005V26Z"></path></svg>
-                    </a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/configure">
-                        Configure
-                        <svg focusable='false' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='32' height='32' viewBox='0 0 32 32' aria-hidden='true'><path d='M27,16.76c0-.25,0-.5,0-.76s0-.51,0-.77l1.92-1.68A2,2,0,0,0,29.3,11L26.94,7a2,2,0,0,0-1.73-1,2,2,0,0,0-.64.1l-2.43.82a11.35,11.35,0,0,0-1.31-.75l-.51-2.52a2,2,0,0,0-2-1.61H13.64a2,2,0,0,0-2,1.61l-.51,2.52a11.48,11.48,0,0,0-1.32.75L7.43,6.06A2,2,0,0,0,6.79,6,2,2,0,0,0,5.06,7L2.7,11a2,2,0,0,0,.41,2.51L5,15.24c0,.25,0,.5,0,.76s0,.51,0,.77L3.11,18.45A2,2,0,0,0,2.7,21L5.06,25a2,2,0,0,0,1.73,1,2,2,0,0,0,.64-.1l2.43-.82a11.35,11.35,0,0,0,1.31.75l.51,2.52a2,2,0,0,0,2,1.61h4.72a2,2,0,0,0,2-1.61l.51-2.52a11.48,11.48,0,0,0,1.32-.75l2.42.82a2,2,0,0,0,.64.1,2,2,0,0,0,1.73-1L29.3,21a2,2,0,0,0-.41-2.51ZM25.21,24l-3.43-1.16a8.86,8.86,0,0,1-2.71,1.57L18.36,28H13.64l-.71-3.55a9.36,9.36,0,0,1-2.7-1.57L6.79,24,4.43,20l2.72-2.4a8.9,8.9,0,0,1,0-3.13L4.43,12,6.79,8l3.43,1.16a8.86,8.86,0,0,1,2.71-1.57L13.64,4h4.72l.71,3.55a9.36,9.36,0,0,1,2.7,1.57L25.21,8,27.57,12l-2.72,2.4a8.9,8.9,0,0,1,0,3.13L27.57,20Z'></path><path d='M16,22a6,6,0,1,1,6-6A5.94,5.94,0,0,1,16,22Zm0-10a3.91,3.91,0,0,0-4,4,3.91,3.91,0,0,0,4,4,3.91,3.91,0,0,0,4-4A3.91,3.91,0,0,0,16,12Z'></path></svg>
-                    </a>
-                    </li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/configureweather"><i class="fa fa-cloud"></i> Weather</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/systemreset" onclick="return confirm(&quot;Do you want to reset to default settings?&quot;)"><i class="fa fa-undo"></i> Reset Settings</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/forgetwifi" onclick="return confirm(&quot;Do you want to forget to WiFi connection?&quot;)"><i class="fa fa-wifi"></i> Forget WiFi</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="/update"><i class="fa fa-wrench"></i> Firmware Update</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link menitem" href="https://github.com/Qrome" target="_blank"><i class="fa fa-question-circle"></i> About</a></li>
-                </ul>
-            </div>
+        .bx--table-column-menu {
+            width: 3.25rem
+        }
 
+        .menitem {
+            padding: 6px 1rem;
+            font-size: .875rem;
+            font-weight: 600;
+            line-height: 1.29;
+            letter-spacing: .16px;
+            display: flex;
+            justify-content: space-between;
+            text-decoration: none;
+            color: #c6c6c6
+        }
+    </style>
+    <script>function showhide(a, b) { var e = $("[data-sh='" + b + "']"); var f = $("#" + a); if (f.checked || f.prop('checked')) { e.removeClass('hidden'); } else { e.addClass('hidden'); } }</script>
+    <script>function openModal(refelementId) { document.body.classList.add("bx--body--with-modal-open"); document.getElementById(refelementId).classList.add("is-visible") } function closeModal(refelementId) { document.getElementById(refelementId).classList.remove("is-visible"); document.body.classList.remove("bx--body--with-modal-open") }</script>
+    <script>function isNumberKey(e) { var h = e.which ? e.which : event.keyCode; return !(h > 31 && (h < 48 || h > 57)) }</script>
+    <script>function openUrl(e) { window.location.assign(e) }</script>
+    <script>function apiTypeSelect(r,t){if($("#" + r).find(":selected").data('need-api')){$("[data-sh='" + t + "']").removeClass('hidden')}else{$("[data-sh='" + t + "']").addClass('hidden')}}</script>
 
-            <!-- <a role="button" tabindex="0" class="Switcher-module--link--3udRg" href="https://ibm.com/brand">IBM Brand Center<svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M24,14H22V8A6,6,0,0,0,10,8v6H8a2,2,0,0,0-2,2V28a2,2,0,0,0,2,2H24a2,2,0,0,0,2-2V16A2,2,0,0,0,24,14ZM12,8a4,4,0,0,1,8,0v6H12ZM24,28H8V16H24Z"></path></svg></a> -->
-            <div class="bx--toast-notification bx--toast-notification--info hidden" style="position: absolute; right: -16px; top: 40px;" id="wifiinfo">
-                <div class="bx--toast-notification__details">
-                    <h3 class="bx--toast-notification__title">WiFi Signal Strength</h3>
-                    <div class="bx--toast-notification__subtitle">
-                        <span>88%</span>
-                    </div>
+    
+</head>
+
+<body>
+    <header class='cv-header bx--header'><a href='/' class='cv-header-name bx--header__name'><span
+                class='bx--header__name--prefix'>PrintBuddy&nbsp;</span>V1.0</a>
+        <nav class='cv-header-nav bx--header__nav'></nav>
+        <div class='bx--header__global'><button type='button' class='cv-header-global-action bx--header__action'
+                onclick='openChipInfo()'><svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                    xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='20' height='20' viewBox='0 0 32 32'
+                    aria-hidden='true'>
+                    <path d='M11,11V21H21V11Zm8,8H13V13h6Z'></path>
+                    <path
+                        d='M30,13V11H26V8a2,2,0,0,0-2-2H21V2H19V6H13V2H11V6H8A2,2,0,0,0,6,8v3H2v2H6v6H2v2H6v3a2,2,0,0,0,2,2h3v4h2V26h6v4h2V26h3a2,2,0,0,0,2-2V21h4V19H26V13ZM24,24H8V8H24Z'>
+                    </path>
+                </svg></button><button type='button' class='cv-header-global-action bx--header__action'
+                onclick='openSidebar()'><svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                    xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='20' height='20' viewBox='0 0 32 32'
+                    aria-hidden='true'>
+                    <path
+                        d='M14 4H18V8H14zM4 4H8V8H4zM24 4H28V8H24zM14 14H18V18H14zM4 14H8V18H4zM24 14H28V18H24zM14 24H18V28H14zM4 24H8V28H4zM24 24H28V28H24z'>
+                    </path>
+                </svg></button></div>
+        <div id='sidebar' class='cv-header-panel bx--header-panel'>
+            <ul class='cv-switcher bx--switcher__item'>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem' href='/'>Home<svg
+                            focusable='false' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'
+                            fill='currentColor' width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M16.6123,2.2138a1.01,1.01,0,0,0-1.2427,0L1,13.4194l1.2427,1.5717L4,13.6209V26a2.0041,2.0041,0,0,0,2,2H26a2.0037,2.0037,0,0,0,2-2V13.63L29.7573,15,31,13.4282ZM18,26H14V18h4Zm2,0V18a2.0023,2.0023,0,0,0-2-2H14a2.002,2.002,0,0,0-2,2v8H6V12.0615l10-7.79,10,7.8005V26Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        href='/configureprinter/show'>Configure Printers<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M28,9H25V3H7V9H4a2,2,0,0,0-2,2V21a2,2,0,0,0,2,2H7v6H25V23h3a2,2,0,0,0,2-2V11A2,2,0,0,0,28,9ZM9,5H23V9H9ZM23,27H9V17H23Zm5-6H25V15H7v6H4V11H28Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        href='/configurestation/show'>Configure Station<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M27,16.76c0-.25,0-.5,0-.76s0-.51,0-.77l1.92-1.68A2,2,0,0,0,29.3,11L26.94,7a2,2,0,0,0-1.73-1,2,2,0,0,0-.64.1l-2.43.82a11.35,11.35,0,0,0-1.31-.75l-.51-2.52a2,2,0,0,0-2-1.61H13.64a2,2,0,0,0-2,1.61l-.51,2.52a11.48,11.48,0,0,0-1.32.75L7.43,6.06A2,2,0,0,0,6.79,6,2,2,0,0,0,5.06,7L2.7,11a2,2,0,0,0,.41,2.51L5,15.24c0,.25,0,.5,0,.76s0,.51,0,.77L3.11,18.45A2,2,0,0,0,2.7,21L5.06,25a2,2,0,0,0,1.73,1,2,2,0,0,0,.64-.1l2.43-.82a11.35,11.35,0,0,0,1.31.75l.51,2.52a2,2,0,0,0,2,1.61h4.72a2,2,0,0,0,2-1.61l.51-2.52a11.48,11.48,0,0,0,1.32-.75l2.42.82a2,2,0,0,0,.64.1,2,2,0,0,0,1.73-1L29.3,21a2,2,0,0,0-.41-2.51ZM25.21,24l-3.43-1.16a8.86,8.86,0,0,1-2.71,1.57L18.36,28H13.64l-.71-3.55a9.36,9.36,0,0,1-2.7-1.57L6.79,24,4.43,20l2.72-2.4a8.9,8.9,0,0,1,0-3.13L4.43,12,6.79,8l3.43,1.16a8.86,8.86,0,0,1,2.71-1.57L13.64,4h4.72l.71,3.55a9.36,9.36,0,0,1,2.7,1.57L25.21,8,27.57,12l-2.72,2.4a8.9,8.9,0,0,1,0,3.13L27.57,20Z'>
+                            </path>
+                            <path
+                                d='M16,22a6,6,0,1,1,6-6A5.94,5.94,0,0,1,16,22Zm0-10a3.91,3.91,0,0,0-4,4,3.91,3.91,0,0,0,4,4,3.91,3.91,0,0,0,4-4A3.91,3.91,0,0,0,16,12Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        href='/configureweather/show'>Configure Weather<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M24.8008,11.1382a8.9938,8.9938,0,0,0-17.6006,0A6.533,6.533,0,0,0,2,17.5H2V19a1,1,0,0,0,1,1H15a1,1,0,0,0,0-2H4v-.4966H4a4.5176,4.5176,0,0,1,4.144-4.4819l.8155-.064.0991-.812a6.9936,6.9936,0,0,1,13.8838,0l.0986.812.8154.064A4.4962,4.4962,0,0,1,23.5,22H7a1,1,0,0,0,0,2H23.5a6.4963,6.4963,0,0,0,1.3008-12.8618Z'>
+                            </path>
+                            <rect width='18' height='2' x='2' y='26' rx='1'></rect>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        href='/configuresensor/show'>Configure Sensor<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M30,19H26V15H24v9H8V8l9-.0009V6H13V2H11V6H8A2.002,2.002,0,0,0,6,8v3H2v2H6v6H2v2H6v3a2.0023,2.0023,0,0,0,2,2h3v4h2V26h6v4h2V26h3a2.0027,2.0027,0,0,0,2-2V21h4Z'>
+                            </path>
+                            <path
+                                d='M26,2a4.0042,4.0042,0,0,0-4,4,3.9556,3.9556,0,0,0,.5668,2.0192L19.5859,11H11V21H21V12.4141l2.9808-2.9808A3.9553,3.9553,0,0,0,26,10a4,4,0,0,0,0-8ZM19,19H13V13h6ZM26,8a2,2,0,1,1,2-2A2.0023,2.0023,0,0,1,26,8Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        onclick='openModal("resetSettingsModal")'>Reset Settings<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M18,28A12,12,0,1,0,6,16v6.2L2.4,18.6,1,20l6,6,6-6-1.4-1.4L8,22.2V16H8A10,10,0,1,1,18,26Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        onclick='openModal("resetWifiModal")'>Forget WiFi<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <circle cx='16' cy='25' r='2'></circle>
+                            <path
+                                d='M30 3.4141L28.5859 2 2 28.5859 3.4141 30 14.0962 19.3179a5.9359 5.9359 0 016.01 1.3193L21.52 19.2236a7.9669 7.9669 0 00-5.125-2.2041l3.3875-3.3877a11.9908 11.9908 0 014.5647 2.7647L25.76 14.9829A13.975 13.975 0 0021.334 12.08L24.3308 9.083a17.9364 17.9364 0 014.2546 3.0747L30 10.7432v-.002a20.02 20.02 0 00-4.1895-3.1377zM14.68 13.0776l2.0415-2.0415C16.481 11.0234 16.2437 11 16 11a13.9447 13.9447 0 00-9.771 3.9927l1.4136 1.4136A11.97 11.97 0 0114.68 13.0776zM16 7a17.87 17.87 0 014.2324.5254L21.875 5.8828A19.9537 19.9537 0 002 10.7412v.0225L3.4043 12.168A17.9193 17.9193 0 0116 7z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem' href='/update'>Firmware Update<svg
+                            focusable='false' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'
+                            fill='currentColor' width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path d='M28,12H20V4h8Zm-6-2h4V6H22Z'></path>
+                            <path d='M17,15V9H9V23H23V15Zm-6-4h4v4H11Zm4,10H11V17h4Zm6,0H17V17h4Z'></path>
+                            <path
+                                d='M26,28H6a2.0023,2.0023,0,0,1-2-2V6A2.0023,2.0023,0,0,1,6,4H16V6H6V26H26V16h2V26A2.0023,2.0023,0,0,1,26,28Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem' href='https://github.com/Qrome'
+                        target='_blank'>About<svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                            xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='16' height='16'
+                            viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,26A12,12,0,1,1,28,16,12,12,0,0,1,16,28Z'>
+                            </path>
+                            <circle cx='16' cy='23.5' r='1.5'></circle>
+                            <path
+                                d='M17,8H15.5A4.49,4.49,0,0,0,11,12.5V13h2v-.5A2.5,2.5,0,0,1,15.5,10H17a2.5,2.5,0,0,1,0,5H15v4.5h2V17a4.5,4.5,0,0,0,0-9Z'>
+                            </path>
+                        </svg></a></li>
+            </ul>
+        </div>
+        <div class='bx--toast-notification bx--toast-notification--info hidden'
+            style='position: absolute; right: -16px; top: 40px;' id='chipinfo'>
+            <div class='bx--toast-notification__details'>
+                <h3 class='bx--toast-notification__title'>ESP Details</h3>
+                <div class='bx--toast-notification__subtitle'>
+                    <div>WiFi Signal Strength: 100%</div>
+                    <div>ESP ChipID: 1152840</div>
+                    <div>ESP CoreVersion: 2_7_4</div>
+                    <div>Heap (frag/free/max): 3% |28536 b|27696 b</div>
                 </div>
             </div>
-        </header>
-        
-        <div class="bx--grid bx--grid--full-width" style='margin-top:88px'>
-            <div class="page-header" style="margin-bottom:20px"><h4 class="page-header__label">Configure</h4><h1 id="page-title" class="page-header__title">Printer</h1></div>
-            
-            <div class="bx--row">
-                <div class="bx--col bx--col--auto bx--data-table-container " data-table>
-                    <div class="bx--data-table-header">
-                        <h4 class="bx--data-table-header__title">Printers to monitor</h4>
-                        <p class="bx--data-table-header__description">Configuration</p>
-                    </div>
-
-                    <section class="bx--table-toolbar ">  
-                        <div class="bx--toolbar-content">
-                            <button class="bx--btn bx--btn--sm bx--btn--primary" onclick="openModal('modal-pyu0ribosn')">
-                                Add new
-                                <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--btn__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M17 15L17 7 15 7 15 15 7 15 7 17 15 17 15 25 17 25 17 17 25 17 25 15 17 15z"></path></svg>
-                            </button>
-                        </div>
-                    </section>
-
-                    <table class="bx--data-table bx--data-table--visible-overflow-menu" >
-                        <thead>
-                            <tr>
-                                <th  class="bx--table-expand"></th>
-                                <th><span class="bx--table-header-label">Name</span></th>
-                                <th><span class="bx--table-header-label">Type</span></th>
-                                <th><span class="bx--table-header-label">State</span></th>
-                                <th class="bx--table-column-menu" style="width: 3.25rem"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="bx--table-expand" data-event="expand">
-                                    <button class="bx--table-expand__button">
-                                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--table-expand__svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"></path></svg>
-                                    </button>
-                                </td>
-                                <td>I3 Mega</td>
-                                <td>Klipper</td>
-                                <!--<td>anycubici3.local</td>
-                                <td>192.168.0.241:7125</td> -->
-                                <td>
-                                    <div class="bx--tag bx--tag--magenta">
-                                        Offline
-                                    </div>
-                                </td>
-                                <!--<td>
-                                    <div class="bx--tag bx--tag--cool-gray">
-                                        <span class="bx--tag__label">User</span>
-                                        <svg width="6px" height="5px" viewBox="0 0 6 5">
-                                            <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
-                                        </svg>
-                                    </div>
-                                    <div class="bx--tag bx--tag--cool-gray">
-                                        <span class="bx--tag__label">Password</span>
-                                        <svg width="6px" height="5px" viewBox="0 0 6 5">
-                                            <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
-                                        </svg>
-                                    </div>
-                                </td> -->
-                                <td class="bx--table-column-menu" style="width: 3.25rem">
-                                    <div data-overflow-menu role="menu" tabindex="0" class="bx--overflow-menu">
-                                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--overflow-menu__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3" r="1"></circle><circle cx="8" cy="8" r="1"></circle><circle cx="8" cy="13" r="1"></circle></svg>
-                                        <ul class="bx--overflow-menu-options bx--overflow-menu--flip" data-floating-menu-direction="bottom">
-                                            <li class="bx--overflow-menu-options__option bx--table-row--menu-option">
-                                              <button class="bx--overflow-menu-options__btn" onclick="openModal('modal-ed454ftfa4q')">
-                                                <div class="bx--overflow-menu-options__option-content">
-                                                 <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 13H15V14H1zM12.7 4.5c.4-.4.4-1 0-1.4 0 0 0 0 0 0l-1.8-1.8c-.4-.4-1-.4-1.4 0 0 0 0 0 0 0L2 8.8V12h3.2L12.7 4.5zM10.2 2L12 3.8l-1.5 1.5L8.7 3.5 10.2 2zM3 11V9.2l5-5L9.8 6l-5 5H3z"></path></svg> Edit
-                                                </div>
-                                              </button>
-                                            </li>
-                                            <li class="bx--overflow-menu-options__option bx--table-row--menu-option">
-                                              <button class="bx--overflow-menu-options__btn" onclick="openModal('modal-ed454ftfa4q')">
-                                                <div class="bx--overflow-menu-options__option-content">
-                                                  <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 6H7V12H6zM9 6H10V12H9z"></path><path d="M2 3v1h1v10c0 .6.4 1 1 1h8c.6 0 1-.4 1-1V4h1V3H2zM4 14V4h8v10H4zM6 1H10V2H6z"></path></svg> Delete
-                                                </div>
-                                              </button>
-                                            </li>
-                    
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                            
-
-
-
-
-                            <tr>
-                                <td class="bx--table-expand" data-event="expand">
-                                    <button class="bx--table-expand__button">
-                                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--table-expand__svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M11 8L6 13 5.3 12.3 9.6 8 5.3 3.7 6 3z"></path></svg>
-                                    </button>
-                                </td>
-                                <td>Anderer</td>
-                                <td>Repetier</td>
-                                <!--<td>--</td>
-                                <td>192.168.0.243:7125</td>-->
-                                <td>
-                                    <div class="bx--tag bx--tag--green">
-                                        Online
-                                    </div>
-                                </td>
-                                <!--<td>
-                                    <div class="bx--tag bx--tag--cool-gray">
-                                        <span class="bx--tag__label">Key</span>
-                                        <svg width="6px" height="5px" viewBox="0 0 6 5">
-                                            <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
-                                        </svg>
-                                    </div>
-                                </td> -->
-                                <td class="bx--table-column-menu" style="width: 3.25rem">
-                                    <div data-overflow-menu role="menu" tabindex="0" class="bx--overflow-menu">
-                                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--overflow-menu__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3" r="1"></circle><circle cx="8" cy="8" r="1"></circle><circle cx="8" cy="13" r="1"></circle></svg>
-                                        <ul class="bx--overflow-menu-options bx--overflow-menu--flip" data-floating-menu-direction="bottom">
-                                            <li class="bx--overflow-menu-options__option bx--table-row--menu-option">
-                                              <button class="bx--overflow-menu-options__btn" onclick="console.log('keyboard action')">
-                                                <div class="bx--overflow-menu-options__option-content">
-                                                 <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M1 13H15V14H1zM12.7 4.5c.4-.4.4-1 0-1.4 0 0 0 0 0 0l-1.8-1.8c-.4-.4-1-.4-1.4 0 0 0 0 0 0 0L2 8.8V12h3.2L12.7 4.5zM10.2 2L12 3.8l-1.5 1.5L8.7 3.5 10.2 2zM3 11V9.2l5-5L9.8 6l-5 5H3z"></path></svg> Edit
-                                                </div>
-                                              </button>
-                                            </li>
-                                            <li class="bx--overflow-menu-options__option bx--table-row--menu-option">
-                                              <button class="bx--overflow-menu-options__btn" onclick="console.log('keyboard action')">
-                                                <div class="bx--overflow-menu-options__option-content">
-                                                  <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 6H7V12H6zM9 6H10V12H9z"></path><path d="M2 3v1h1v10c0 .6.4 1 1 1h8c.6 0 1-.4 1-1V4h1V3H2zM4 14V4h8v10H4zM6 1H10V2H6z"></path></svg> Delete
-                                                </div>
-                                              </button>
-                                            </li>
-                    
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-
-
-                        </tbody>
-                    </table>
+        </div>
+    </header>
+    <script>function openSidebar() { document.getElementById('sidebar').classList.toggle('bx--header-panel--expanded'); document.getElementById('chipinfo').classList.add('hidden'); }; function openChipInfo() { document.getElementById('sidebar').classList.remove('bx--header-panel--expanded'); document.getElementById('chipinfo').classList.toggle('hidden'); }</script>
+    <br>
+    <div class='bx--grid bx--grid--full-width' style='margin-top:60px'>
+        <div class='page-header' style='margin-bottom:20px'>
+            <h4 class='page-header__label'>Configure</h4>
+            <h1 id='page-title' class='page-header__title'>Printers</h1>
+        </div>
+        <div class='bx--row'>
+            <div class='bx--col bx--col--auto bx--data-table-container' data-table>
+                <div class='bx--data-table-header'>
+                    <h4 class='bx--data-table-header__title'>Printers to monitor</h4>
+                    <p class='bx--data-table-header__description'>Configurationdata</p>
                 </div>
-            </div>
-
-
-
-            <script>
-                function openModal(refelementId) {
-                    document.body.classList.add("bx--body--with-modal-open");
-                    document.getElementById(refelementId).classList.add('is-visible');                    
-                }
-                function closeModal(refelementId) {
-                    document.getElementById(refelementId).classList.remove('is-visible');
-                    document.body.classList.remove("bx--body--with-modal-open");
-                }
-            </script>
-
-            <div data-modal id="modal-pyu0ribosn" class="bx--modal" role="dialog" aria-modal="true" aria-labelledby="modal-pyu0ribosn-label" aria-describedby="modal-pyu0ribosn-heading" tabindex="-1">
-                <div class="bx--modal-container">
-                    <div class="bx--modal-header">
-                        <p class="bx--modal-header__label bx--type-delta" id="modal-pyu0ribosn-label">Printer Configuration</p>
-                        <p class="bx--modal-header__heading bx--type-beta" id="modal-pyu0ribosn-heading">Create new entry</p>
-                        <button class="bx--modal-close" type="button" onclick="closeModal('modal-pyu0ribosn')">
-                            <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--modal-close__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z"></path></svg>
-                        </button>
-                    </div>
-
-                    <!-- Note: Modals with content that scrolls, at any viewport, requires `tabindex="0"` on the `bx--modal-content` element -->
-                    <div class="bx--modal-content bx--modal-content--with-form" >
-                        <div class="bx--form-item">
-                            <label for="e-tname" class="bx--label">Printer Name</label>
-                            <input id="e-tname" type="text" class="bx--text-input" placeholder="Custom name" data-modal-primary-focus maxlength="20">
+                <section class='bx--table-toolbar'>
+                    <div class='bx--toolbar-content'><button class='bx--btn bx--btn--sm bx--btn--primary'
+                            onclick='openModal("mae-0")'>Add new<svg focusable='false'
+                                preserveAspectRatio='xMidYMid meet' style='will-change: transform;'
+                                xmlns='http://www.w3.org/2000/svg' class='bx--btn__icon' width='20' height='20'
+                                viewBox='0 0 32 32'>
+                                <path d='M17 15L17 7 15 7 15 15 7 15 7 17 15 17 15 25 17 25 17 17 25 17 25 15 17 15z'>
+                                </path>
+                            </svg></button></div>
+                </section>
+                <table class='bx--data-table bx--data-table--visible-overflow-menu'>
+                    <thead>
+                        <tr>
+                            <th><span class='bx--table-header-label'>Name</span></th>
+                            <th><span class='bx--table-header-label'>Type</span></th>
+                            <th><span class='bx--table-header-label'>State</span></th>
+                            <th class='bx--table-column-menu' style='width: 3.25rem'></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>AnycubicI3</td>
+                            <td>Klipper</td>
+                            <td>
+                                <div class='bx--tag bx--tag--magenta'>Offline</div>
+                            </td>
+                            <td class='bx--table-column-menu' style='width: 3.25rem'>
+                                <div data-overflow-menu role='menu' tabindex='0' class='bx--overflow-menu'><svg
+                                        focusable='false' preserveAspectRatio='xMidYMid meet'
+                                        style='will-change: transform;' xmlns='http://www.w3.org/2000/svg'
+                                        class='bx--overflow-menu__icon' width='16' height='16' viewBox='0 0 16 16'
+                                        aria-hidden='true'>
+                                        <circle cx='8' cy='3' r='1'></circle>
+                                        <circle cx='8' cy='8' r='1'></circle>
+                                        <circle cx='8' cy='13' r='1'></circle>
+                                    </svg>
+                                    <ul class='bx--overflow-menu-options bx--overflow-menu--flip'
+                                        data-floating-menu-direction='bottom'>
+                                        <li class='bx--overflow-menu-options__option bx--table-row--menu-option'><button
+                                                class='bx--overflow-menu-options__btn' onclick='openModal("mae-1")'>
+                                                <div class='bx--overflow-menu-options__option-content'><svg
+                                                        focusable='false' preserveAspectRatio='xMidYMid meet'
+                                                        style='will-change: transform;'
+                                                        xmlns='http://www.w3.org/2000/svg' width='16' height='16'
+                                                        viewBox='0 0 16 16' aria-hidden='true'>
+                                                        <path
+                                                            d='M1 13H15V14H1zM12.7 4.5c.4-.4.4-1 0-1.4 0 0 0 0 0 0l-1.8-1.8c-.4-.4-1-.4-1.4 0 0 0 0 0 0 0L2 8.8V12h3.2L12.7 4.5zM10.2 2L12 3.8l-1.5 1.5L8.7 3.5 10.2 2zM3 11V9.2l5-5L9.8 6l-5 5H3z'>
+                                                        </path>
+                                                    </svg> Edit</div>
+                                            </button></li>
+                                        <li class='bx--overflow-menu-options__option bx--table-row--menu-option'><button
+                                                class='bx--overflow-menu-options__btn' onclick='openModal("modal-ed454ftfa4q")'>
+                                                <div class='bx--overflow-menu-options__option-content'><svg
+                                                        focusable='false' preserveAspectRatio='xMidYMid meet'
+                                                        style='will-change: transform;'
+                                                        xmlns='http://www.w3.org/2000/svg' width='16' height='16'
+                                                        viewBox='0 0 16 16' aria-hidden='true'>
+                                                        <path d='M6 6H7V12H6zM9 6H10V12H9z'></path>
+                                                        <path
+                                                            d='M2 3v1h1v10c0 .6.4 1 1 1h8c.6 0 1-.4 1-1V4h1V3H2zM4 14V4h8v10H4zM6 1H10V2H6z'>
+                                                        </path>
+                                                    </svg> Delete</div>
+                                            </button></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        <div data-modal id='mae-1' class='bx--modal' role='dialog' aria-modal='true'
+                            aria-labelledby='mae-1-label' aria-describedby='mae-1-heading' tabindex='-1'>
+                            <div class='bx--modal-container'>
+                                <form method='GET' action='/configureprinter/edit'><input type='hidden' name='id'
+                                        value='1'>
+                                    <div class='bx--modal-header'>
+                                        <p class='bx--modal-header__label bx--type-delta' id='mae-1-label'>Printer
+                                            Configuration</p>
+                                        <p class='bx--modal-header__heading bx--type-beta' id='mae-1-heading'>Edit data
+                                            for printer</p><button class='bx--modal-close' type='button'
+                                            onclick='closeModal("mae-1")'><svg focusable='false'
+                                                preserveAspectRatio='xMidYMid meet' style='will-change: transform;'
+                                                xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon'
+                                                width='16' height='16' viewBox='0 0 16 16' aria-hidden='true'>
+                                                <path
+                                                    d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                                                </path>
+                                            </svg></button>
+                                    </div>
+                                    <div class='bx--modal-content bx--modal-content--with-form'>
+                                        <div class=' bx--form-item' data-sh='apac-0'><label for='e-tname-1'
+                                                class='bx--label'>Printer Name</label><input id='e-tname-1' type='text'
+                                                class='bx--text-input' name='e-tname' value='AnycubicI3' maxlength='20'>
+                                        </div>
+                                        <div class='bx--form-item bx--select ' data-sh='apac-0'><label for='e-tapi-1'
+                                                class='bx--label'>API Type</label>
+                                            <div class='bx--select-input__wrapper'><select id='e-tapi-1'
+                                                    class='bx--select-input' name='e-tapi'>
+                                                    <option class='bx--select-option' value='0'>Duet</option>
+                                                    <option class='bx--select-option' value='1' selected='selected'>
+                                                        Klipper</option>
+                                                    <option class='bx--select-option' value='2' data-need-api='true'>
+                                                        OctoPrint</option>
+                                                    <option class='bx--select-option' value='3' data-need-api='true'>
+                                                        Repetier</option>
+                                                </select><svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                                                    style='will-change: transform;' xmlns='http://www.w3.org/2000/svg'
+                                                    class='bx--select__arrow' width='10' height='6' viewBox='0 0 10 6'
+                                                    aria-hidden='true'>
+                                                    <path d='M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z'></path>
+                                                </svg></div>
+                                        </div>
+                                        <div class=' bx--form-item' data-sh='apac-0'><label for='e-tapikey-1'
+                                                class='bx--label'>API Key</label><input id='e-tapikey-1' type='text'
+                                                class='bx--text-input' name='e-tapikey' value='' maxlength='60'></div>
+                                        <div class=' bx--form-item' data-sh='apac-0'><label for='e-taddr-1'
+                                                class='bx--label'>Hostname or IP Address (do not include
+                                                http://)</label><input id='e-taddr-1' type='text' class='bx--text-input'
+                                                name='e-taddr' value='192.168.0.241' maxlength='60'></div>
+                                        <div class=' bx--form-item' data-sh='apac-0'><label for='e-tport-1'
+                                                class='bx--label'>Port</label><input id='e-tport-1' type='text'
+                                                class='bx--text-input' name='e-tport' value='7125' maxlength='5'
+                                                onkeypress='return isNumberKey(event)'></div>
+                                        <div class=' bx--form-item' data-sh='apac-0'><input
+                                                class='bx--toggle-input bx--toggle-input--small' id='e-tapipw-1'
+                                                type='checkbox' name='e-tapipw'
+                                                onchange="showhide('e-tapipw-1', 'apac-1')"><label
+                                                class='bx--toggle-input__label' for='e-tapipw-1'><span
+                                                    class='bx--toggle__switch'><svg class='bx--toggle__check'
+                                                        width='6px' height='5px' viewBox='0 0 6 5'>
+                                                        <path d='M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z' />
+                                                    </svg><span class='bx--toggle__text--off' aria-hidden='true'>Haproxy
+                                                        or basic auth deactivated</span><span
+                                                        class='bx--toggle__text--on' aria-hidden='true'>Haproxy or basic
+                                                        auth activated</span></span></label></div>
+                                        <div class=' bx--form-item' data-sh='apac-1'><label for='isBasicAuth-1'
+                                                class='bx--label'>Use Security Credentials for Configuration
+                                                Changes</label><input id='isBasicAuth-1' type='text'
+                                                class='bx--text-input' name='isBasicAuth' value='' maxlength='30'></div>
+                                        <div class=' bx--form-item' data-sh='apac-1'><label for='userid-1'
+                                                class='bx--label'>User ID (for this interface)</label><input
+                                                id='userid-1' type='password' class='bx--text-input' name='userid'
+                                                value='' maxlength='120'></div><br><br>
+                                    </div>
+                                    <div class='bx--modal-content--overflow-indicator'></div>
+                                    <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary'
+                                            type='reset' onclick='closeModal("mae-1")'>Abort</button><button
+                                            class='bx--btn bx--btn--primary' type='submit'
+                                            onclick='closeModal("mae-1")'>Save</button></div>
+                                </form>
+                            </div><span tabindex='0'></span>
                         </div>
-                        <div class="bx--form-item bx--select">
-                            <label for="e-tapi" class="bx--label">API Type</label>
-                            <div class="bx--select-input__wrapper">
-                                <select id="e-tapi" class="bx--select-input" name="e-tapi">
-                                    <option class="bx--select-option">Duet</option>
-                                    <option class="bx--select-option">Klipper</option>
-                                    <option class="bx--select-option" selected>Octoprint</option>
-                                    <option class="bx--select-option">Repetier</option>
-                                </select>
-                                <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--select__arrow" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z"></path></svg>
+            </div>
+            <div data-modal id='mae-0' class='bx--modal' role='dialog' aria-modal='true' aria-labelledby='mae-0-label'
+                aria-describedby='mae-0-heading' tabindex='-1'>
+                <div class='bx--modal-container'>
+                    <form method='GET' action='/configureprinter/edit'><input type='hidden' name='id' value='0'>
+                        <div class='bx--modal-header'>
+                            <p class='bx--modal-header__label bx--type-delta' id='mae-0-label'>Printer Configuration</p>
+                            <p class='bx--modal-header__heading bx--type-beta' id='mae-0-heading'>Create new printer</p>
+                            <button class='bx--modal-close' type='button' onclick='closeModal("mae-0")'><svg
+                                    focusable='false' preserveAspectRatio='xMidYMid meet'
+                                    style='will-change: transform;' xmlns='http://www.w3.org/2000/svg'
+                                    class='bx--modal-close__icon' width='16' height='16' viewBox='0 0 16 16'
+                                    aria-hidden='true'>
+                                    <path
+                                        d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                                    </path>
+                                </svg></button>
+                        </div>
+                        <div class='bx--modal-content bx--modal-content--with-form'>
+                            <div class=' bx--form-item' data-sh='apac-2'><label for='e-tname-0'
+                                    class='bx--label'>Printer Name</label><input id='e-tname-0' type='text'
+                                    class='bx--text-input' name='e-tname' value='' maxlength='20'></div>
+                            <div class='bx--form-item bx--select ' data-sh='apac-2'><label for='e-tapi-0'
+                                    class='bx--label'>API Type</label>
+                                <div class='bx--select-input__wrapper'><select id='e-tapi-0' class='bx--select-input'
+                                        name='e-tapi' onchange='apiTypeSelect("e-tapi-0", "apac-22")'>
+                                        <option class='bx--select-option' value='0'>Duet</option>
+                                        <option class='bx--select-option' value='1'>Klipper</option>
+                                        <option class='bx--select-option' value='2' data-need-api='true'>OctoPrint
+                                        </option>
+                                        <option class='bx--select-option' value='3' data-need-api='true'>Repetier
+                                        </option>
+                                    </select><svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                                        style='will-change: transform;' xmlns='http://www.w3.org/2000/svg'
+                                        class='bx--select__arrow' width='10' height='6' viewBox='0 0 10 6'
+                                        aria-hidden='true'>
+                                        <path d='M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z'></path>
+                                    </svg></div>
                             </div>
+                            <div class=' bx--form-item' data-sh='apac-22'><label for='e-tapikey-0' class='bx--label'>API
+                                    Key</label><input id='e-tapikey-0' type='text' class='bx--text-input'
+                                    name='e-tapikey' value='' maxlength='60'></div>
+                            <div class=' bx--form-item' data-sh='apac-2'><label for='e-taddr-0'
+                                    class='bx--label'>Hostname or IP Address (do not include http://)</label><input
+                                    id='e-taddr-0' type='text' class='bx--text-input' name='e-taddr' value=''
+                                    maxlength='60'></div>
+                            <div class=' bx--form-item' data-sh='apac-2'><label for='e-tport-0'
+                                    class='bx--label'>Port</label><input id='e-tport-0' type='text'
+                                    class='bx--text-input' name='e-tport' value='80' maxlength='5'
+                                    onkeypress='return isNumberKey(event)'></div>
+                            <div class=' bx--form-item' data-sh='apac-2'><input
+                                    class='bx--toggle-input bx--toggle-input--small' id='e-tapipw-0' type='checkbox'
+                                    name='e-tapipw' checked='checked' onchange="showhide('e-tapipw-0', 'apac-0')"><label
+                                    class='bx--toggle-input__label' for='e-tapipw-0'><span
+                                        class='bx--toggle__switch'><svg class='bx--toggle__check' width='6px'
+                                            height='5px' viewBox='0 0 6 5'>
+                                            <path d='M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z' />
+                                        </svg><span class='bx--toggle__text--off' aria-hidden='true'>Haproxy or basic
+                                            auth deactivated</span><span class='bx--toggle__text--on'
+                                            aria-hidden='true'>Haproxy or basic auth activated</span></span></label>
+                            </div>
+                            <div class=' bx--form-item' data-sh='apac-0'><label for='isBasicAuth-0'
+                                    class='bx--label'>Use Security Credentials for Configuration Changes</label><input
+                                    id='isBasicAuth-0' type='text' class='bx--text-input' name='isBasicAuth' value=''
+                                    maxlength='30'></div>
+                            <div class=' bx--form-item' data-sh='apac-0'><label for='userid-0' class='bx--label'>User ID
+                                    (for this interface)</label><input id='userid-0' type='password'
+                                    class='bx--text-input' name='userid' value='' maxlength='120'></div><br><br>
                         </div>
-                        <div class="bx--form-item">
-                            <label for="e-taddr" class="bx--label">Hostname or IP Address (do not include http://)</label>
-                            <input id="e-taddr" name="e-taddr" type="text" class="bx--text-input" placeholder="Target Address" maxlength="60">
-                        </div>
-                        <div class="bx--form-item">
-                            <label for="e-tport" class="bx--label">Port</label>
-                            <input id="e-tport" name="e-tport" type="text" class="bx--text-input" placeholder="Target port" maxlength="5" value="80">
-                        </div>
-                        <div class="bx--form-item">
-                            <input class="bx--toggle-input bx--toggle-input--small" id="e-tpsu" type="checkbox" name="e-tpsu">
-                            <label class="bx--toggle-input__label" for="e-tpsu">
-                            <span class="bx--toggle__switch">
-                                <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
-                                    <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
-                                </svg>
-                                <span class="bx--toggle__text--off" aria-hidden="true">PSU control deactivated</span>
-                                <span class="bx--toggle__text--on" aria-hidden="true">PSU control activated</span>
-                            </span>
-                            </label>
-                        </div>
-                        <div class="bx--form-item">
-                            <input class="bx--toggle-input bx--toggle-input--small" id="e-tapipw" type="checkbox" name="e-tapipw" onchange="showhide('e-tapipw', 'apac')" checked="checked">
-                            <label class="bx--toggle-input__label" for="e-tapipw">
-                            <span class="bx--toggle__switch">
-                                <svg class="bx--toggle__check" width="6px" height="5px" viewBox="0 0 6 5">
-                                    <path d="M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z" />
-                                </svg>
-                                <span class="bx--toggle__text--off" aria-hidden="true">Haproxy or basic auth deactivated</span>
-                                <span class="bx--toggle__text--on" aria-hidden="true">Haproxy or basic auth activated</span>
-                            </span>
-                            </label>
-                        </div>
-                        <div class="bx--form-item" data-sh="apac">
-                            <label for="e-tapiuser" class="bx--label">User ID (for this interface)</label>
-                            <input id="e-tapiuser" type="text"
-                                class="bx--text-input"
-                                name="e-tapiuser"
-                                value="admin"
-                                maxlength="30">
-                        </div>
-                        <div class="bx--form-item" data-sh="apac">
-                            <label for="e-tapipass" class="bx--label">Password (for this interface)</label>
-                            <input id="e-tapipass" type="password"
-                                class="bx--text-input"
-                                name="e-tapipass"
-                                value="admin">
-                        </div><br><br>
-                    </div>
-                    <div class="bx--modal-content--overflow-indicator"></div>
-
-                    <div class="bx--modal-footer">
-                        <button class="bx--btn bx--btn--secondary" type="button" onclick="closeModal('modal-pyu0ribosn')">Abort</button>
-                        <button class="bx--btn bx--btn--primary" type="button">Save</button>
-                    </div>
-                </div>
-                <!-- Note: focusable span allows for focus wrap feature within Modals -->
-                <span tabindex="0"></span>
+                        <div class='bx--modal-content--overflow-indicator'></div>
+                        <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='reset'
+                                onclick='closeModal("mae-0")'>Abort</button><button class='bx--btn bx--btn--primary'
+                                type='submit' onclick='closeModal("mae-0")'>Save</button></div>
+                    </form>
+                </div><span tabindex='0'></span>
             </div>
         </div>
-
-
-   
-          <div data-modal id="modal-ed454ftfa4q" class="bx--modal bx--modal--danger" role="dialog"
-            aria-modal="true" aria-labelledby="modal-ed454ftfa4q-label" aria-describedby="modal-ed454ftfa4q-heading" tabindex="-1">
-            <div class="bx--modal-container">
-                <form method="GET" >
-                    
-              <div class="bx--modal-header">
-                <p class="bx--modal-header__label bx--type-delta" id="modal-ed454ftfa4q-label">Warning!</p>
-                <p class="bx--modal-header__heading bx--type-beta" id="modal-ed454ftfa4q-heading">Delete configuration for I3 Mega</p>
-                <button class="bx--modal-close" type="button" data-modal-close aria-label="close modal" onclick="closeModal('modal-ed454ftfa4q')" >
-                  <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--modal-close__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z"></path></svg>
-                </button>
-              </div>
-          
-              <!-- Note: Modals with content that scrolls, at any viewport, requires `tabindex="0"` on the `bx--modal-content` element -->
-          
-              <div class="bx--modal-content" >
-                <p> you really want to delete the configured printer?</p><br><br>
-                </div>
-              <div class="bx--modal-content--overflow-indicator"></div>
-          
-              <div class="bx--modal-footer">
-                <button class="bx--btn bx--btn--secondary" type="reset" onclick="closeModal('modal-ed454ftfa4q')">Abort</button>
-                <button class="bx--btn bx--btn--danger" type="submit"  aria-label="Danger"
-                    data-modal-primary-focus>Delete</button>
-              </div>
-                </form>
+        </tbody>
+        </table>
+    </div>
+    </div>
+    <div data-modal id='resetSettingsModal' class='bx--modal bx--modal--danger' role='dialog' aria-modal='true'
+        aria-labelledby='resetSettingsModal-label' aria-describedby='resetSettingsModal-heading' tabindex='-1'>
+        <div class='bx--modal-container'>
+            <div class='bx--modal-header'>
+                <p class='bx--modal-header__label bx--type-delta' id='resetSettingsModal-label'>WARNING</p>
+                <p class='bx--modal-header__heading bx--type-beta' id='resetSettingsModal-heading'>Reset settings</p>
+                <button class='bx--modal-close' type='button' aria-label='close modal'
+                    onclick='closeModal("resetSettingsModal")'><svg focusable='false'
+                        preserveAspectRatio='xMidYMid meet' style='will-change: transform;'
+                        xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon' width='16' height='16'
+                        viewBox='0 0 16 16' aria-hidden='true'>
+                        <path d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                        </path>
+                    </svg></button>
             </div>
-            
-            <!-- Note: focusable span allows for focus wrap feature within Modals -->
-            <span tabindex="0"></span>
-          </div>
-
-
-          <div class='bx--loading-overlay hidden' id='pageloading'>
-            <div data-loading class='bx--loading'>
-                <svg class='bx--loading__svg' viewBox='-75 -75 150 150'>
-                    <title>Loading</title>
-                    <circle class='bx--loading__stroke' cx='0' cy='0' r='37.5' />
-                </svg>
+            <div class='bx--modal-content'>
+                <p>Do you want to reset to default settings?</p><br><br><br>
             </div>
-        </div>
-            
+            <div class='bx--modal-content--overflow-indicator'></div>
+            <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='button'
+                    onclick='closeModal("resetSettingsModal")'>Abort</button><button class='bx--btn bx--btn--danger'
+                    type='button' aria-label='Danger' data-modal-primary-focus
+                    onclick='openUrl("/systemreset")'>Reset</button></div>
+        </div><span tabindex='0'></span>
+    </div>
+    <div data-modal id='resetWifiModal' class='bx--modal bx--modal--danger' role='dialog' aria-modal='true'
+        aria-labelledby='resetWifiModal-label' aria-describedby='resetWifiModal-heading' tabindex='-1'>
+        <div class='bx--modal-container'>
+            <div class='bx--modal-header'>
+                <p class='bx--modal-header__label bx--type-delta' id='resetWifiModal-label'>WARNING</p>
+                <p class='bx--modal-header__heading bx--type-beta' id='resetWifiModal-heading'>Reset wifi</p><button
+                    class='bx--modal-close' type='button' aria-label='close modal'
+                    onclick='closeModal("resetWifiModal")'><svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                        style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon'
+                        width='16' height='16' viewBox='0 0 16 16' aria-hidden='true'>
+                        <path d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                        </path>
+                    </svg></button>
+            </div>
+            <div class='bx--modal-content'>
+                <p>Do you want to reset wifi to default settings?</p><br><br><br>
+            </div>
+            <div class='bx--modal-content--overflow-indicator'></div>
+            <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='button'
+                    onclick='closeModal("resetWifiModal")'>Abort</button><button class='bx--btn bx--btn--danger'
+                    type='button' aria-label='Danger' data-modal-primary-focus
+                    onclick='openUrl("/forgetwifi")'>Reset</button></div>
+        </div><span tabindex='0'></span>
+    </div><br><br><br></div>
+    <div class='bx--loading-overlay hidden' id='pageloading'>
+        <div data-loading class='bx--loading'><svg class='bx--loading__svg' viewBox='-75 -75 150 150'>
+                <title>Loading</title>
+                <circle class='bx--loading__stroke' cx='0' cy='0' r='37.5' />
+            </svg></div>
+    </div>
 
-        <form>
-            <button type="submit">Test</button>
-        </form>
-          
-        
+    <script>
+        $("select[id^='e-tapi']").trigger('change');
+        console.log($("input[type='checkbox']"));
+        $("input[type='checkbox']").trigger('change');
+    </script>
 
-        <script src="https://unpkg.com/carbon-components/scripts/carbon-components.min.js"></script>
-        
-        <script>
-            function openSidebar() {
-                document.getElementById('sidebar').classList.toggle('bx--header-panel--expanded');
-                document.getElementById('wifiinfo').classList.add('hidden');
-            }
-            function openWifiInfo() {
-                document.getElementById('sidebar').classList.remove('bx--header-panel--expanded');
-                document.getElementById('wifiinfo').classList.toggle('hidden');
-            }
+    <script src='https://unpkg.com/carbon-components/scripts/carbon-components.min.js'></script>
+    <script>$(function () { $('form').on('submit', function (e) { $('#pageloading').removeClass('hidden') }) })</script>
+</body>
 
-            function showhide(a,b) {
-                var e = $("[data-sh='"+b+"']");
-                var f = $("#" + a);
-
-                if (f.checked||f.prop('checked')) {
-                    e.removeClass('hidden');
-                } else {
-                    e.addClass('hidden');
-                }
-            }
-
-            function xtest(){
-                $('#pageloading').removeClass('hidden');
-            }
-            
-            $(function() {
-                $('form').on("submit", function(e){$('#pageloading').removeClass('hidden'); e.preventDefault(); return false;})
-            });
-            showhide('e-tapipw', 'apac');
-        </script>
-        
-    </body>
 </html>

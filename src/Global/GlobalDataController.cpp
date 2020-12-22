@@ -396,6 +396,37 @@ PrinterDataStruct *GlobalDataController::addPrinterSetting() {
 }
 
 /**
+ * @brief Creates an new entry in printer setting table
+ * @return PrinterDataStruct*   The new struct for the entry
+ */
+bool GlobalDataController::removePrinterSettingByIdx(int idx) {
+    if (this->printersCnt <= idx) {
+        return false;
+    }
+    int tSize = this->printersCnt - 1;
+    int mallocSize = this->printersCnt - 1;
+    if (mallocSize <= 0) {
+        mallocSize = 1;
+    }
+    PrinterDataStruct *newStruct = (PrinterDataStruct *)malloc(mallocSize * sizeof(PrinterDataStruct));
+    memset(newStruct, 0, mallocSize * sizeof(PrinterDataStruct));
+    if (tSize > 0) {
+        int eCnt = 0;
+        for(int i=0; i<this->printersCnt; i++) {
+            if (i == idx) {
+                continue;
+            }
+            memcpy(&newStruct[eCnt], &this->printers[i], sizeof(PrinterDataStruct));
+            eCnt++;
+        }
+        this->printersCnt = eCnt;
+        free(this->printers);
+        this->printers = newStruct;
+    }
+    return true;
+}
+
+/**
  * @brief Return a printer state as readable text
  * @param printerHandle     Handle to printer data
  * @return String 

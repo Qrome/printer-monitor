@@ -15,10 +15,12 @@
 #include "EspController.h"
 
 static const char ERROR_MESSAGES_ERR1[] PROGMEM = "[ERR1] Printer for update not found!";
+static const char ERROR_MESSAGES_ERR2[] PROGMEM = "[ERR1] Printer for deletion not found!";
 
 static const char OK_MESSAGES_SAVE1[] PROGMEM = "[OK] Printer successfully saved";
 static const char OK_MESSAGES_SAVE2[] PROGMEM = "[OK] Weather api data successfully saved";
 static const char OK_MESSAGES_SAVE3[] PROGMEM = "[OK] Station data successfully saved";
+static const char OK_MESSAGES_DELETEPRINTER[] PROGMEM = "[OK] Printer successfully removed";
 
 /**
  * @brief Handles all needed data for all instances
@@ -67,6 +69,7 @@ public:
     int getRegisteredPrinterClientsNum();
     PrinterDataStruct *getPrinterSettings();
     PrinterDataStruct *addPrinterSetting();
+    bool removePrinterSettingByIdx(int idx);
     int getNumPrinters();
     String getPrinterStateAsText(PrinterDataStruct *printerHandle);
     String getPrinterClientType(PrinterDataStruct *printerHandle);

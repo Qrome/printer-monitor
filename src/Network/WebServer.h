@@ -32,6 +32,7 @@ public:
     
     void handleConfigurePrinter();
     void handleUpdatePrinter();
+    void handleDeletePrinter();
     void handleConfigureStation();
     void handleUpdateStation();
     void handleConfigureWeather();

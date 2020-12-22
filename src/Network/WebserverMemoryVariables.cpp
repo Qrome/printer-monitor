@@ -79,8 +79,6 @@ void WebserverMemoryVariables::sendHeader(
  * @param globalDataController      Access to global data
  */
 void WebserverMemoryVariables::sendFooter(ESP8266WebServer *server, GlobalDataController *globalDataController) {
-
-
     WebserverMemoryVariables::sendModalDanger(
         server,
         "resetSettingsModal",
@@ -145,6 +143,7 @@ void WebserverMemoryVariables::sendWeatherConfigForm(ESP8266WebServer *server, G
         FPSTR(WEATHER_FORM3_ID),
         FPSTR(WEATHER_FORM3_LABEL),
         globalDataController->getWeatherSettings()->apiKey,
+        "",
         60,
         "",
         false,
@@ -156,6 +155,7 @@ void WebserverMemoryVariables::sendWeatherConfigForm(ESP8266WebServer *server, G
         FPSTR(WEATHER_FORM4_ID),
         globalDataController->getWeatherClient()->getCity(0) + FPSTR(WEATHER_FORM4_LABEL),
         String(globalDataController->getWeatherSettings()->cityId),
+        "",
         120,
         "onkeypress='return isNumberKey(event)'",
         false,
@@ -230,6 +230,7 @@ void WebserverMemoryVariables::sendStationConfigForm(ESP8266WebServer *server, G
         FPSTR(STATION_CONFIG_FORM6_ID),
         FPSTR(STATION_CONFIG_FORM6_LABEL),
         String(globalDataController->getClockSettings()->utcOffset),
+        "",
         120,
         "onkeypress='return isNumberKey(event)'",
         false,
@@ -251,6 +252,7 @@ void WebserverMemoryVariables::sendStationConfigForm(ESP8266WebServer *server, G
         FPSTR(STATION_CONFIG_FORM8_ID),
         FPSTR(STATION_CONFIG_FORM8_LABEL),
         globalDataController->getSystemSettings()->webserverUsername,
+        "",
         20,
         "",
         false,
@@ -263,6 +265,7 @@ void WebserverMemoryVariables::sendStationConfigForm(ESP8266WebServer *server, G
         FPSTR(STATION_CONFIG_FORM9_ID),
         FPSTR(STATION_CONFIG_FORM9_LABEL),
         globalDataController->getSystemSettings()->webserverPassword,
+        "",
         120,
         "",
         true,
@@ -278,11 +281,21 @@ void WebserverMemoryVariables::sendStationConfigForm(ESP8266WebServer *server, G
  * @param server                    Send out instancce
  * @param globalDataController      Access to global data
  */
-void WebserverMemoryVariables::sendPrinterConfigForm(ESP8266WebServer *server, GlobalDataController *globalDataController) {
-    server->sendContent(FPSTR(CONFPRINTER_FORM_START));
-
+void WebserverMemoryVariables::sendPrinterConfigForm(ESP8266WebServer *server, GlobalDataController *globalDataController) {   
     int totalPrinters = globalDataController->getNumPrinters();
     PrinterDataStruct *printerConfigs = globalDataController->getPrinterSettings();
+
+    // Show all errors if printers have one
+    for(int i=0; i<totalPrinters; i++) {
+        if (printerConfigs[i].state == PRINTER_STATE_ERROR) {
+            String errorBlock = FPSTR(HEADER_BLOCK_ERROR);
+            errorBlock.replace("%ERRORMSG%", "[" + String(printerConfigs[i].customName) + "] " + String(printerConfigs[i].error));
+            server->sendContent(errorBlock);
+        }
+    }
+
+    // Show printers
+    server->sendContent(FPSTR(CONFPRINTER_FORM_START));
     for(int i=0; i<totalPrinters; i++) {
         String printerEntryRow = FPSTR(CONFPRINTER_FORM_ROW);
         printerEntryRow.replace("%ID%", String(i+1));
@@ -301,6 +314,18 @@ void WebserverMemoryVariables::sendPrinterConfigForm(ESP8266WebServer *server, G
     // Generate all modals
     for(int i=0; i<totalPrinters; i++) {
         WebserverMemoryVariables::sendPrinterConfigFormAEModal(server, i + 1, &printerConfigs[i], globalDataController);
+        String textForDelete = FPSTR(GLOBAL_TEXT_CDPRINTER);
+        textForDelete.replace("%PRINTERNAME%", String(printerConfigs[i].customName));
+        WebserverMemoryVariables::sendModalDanger(
+            server,
+            "deletePrinterModal-" + String(i + 1),
+            FPSTR(GLOBAL_TEXT_WARNING),
+            FPSTR(GLOBAL_TEXT_TDPRINTER),
+            textForDelete,
+            FPSTR(GLOBAL_TEXT_ABORT),
+            FPSTR(GLOBAL_TEXT_DELETE),
+            "onclick='openUrl(\"/configureprinter/delete?id=" + String(i + 1) + "\")'"
+        );
     }
     WebserverMemoryVariables::sendPrinterConfigFormAEModal(server, 0, NULL, globalDataController);
     server->sendContent(FPSTR(CONFPRINTER_FORM_END));
@@ -347,6 +372,7 @@ void WebserverMemoryVariables::sendPrinterConfigFormAEModal(ESP8266WebServer *se
         FPSTR(CONFPRINTER_FORM_ADDEDIT1_ID),
         FPSTR(CONFPRINTER_FORM_ADDEDIT1_LABEL),
         id > 0 ? String(forPrinter->customName) : "",
+        FPSTR(CONFPRINTER_FORM_ADDEDIT1_PH),
         20,
         "",
         false,
@@ -358,16 +384,18 @@ void WebserverMemoryVariables::sendPrinterConfigFormAEModal(ESP8266WebServer *se
         FPSTR(CONFPRINTER_FORM_ADDEDIT2_ID),
         FPSTR(CONFPRINTER_FORM_ADDEDIT2_LABEL),
         "",
-        "",
+        "onchange='apiTypeSelect(\"" + String(FPSTR(CONFPRINTER_FORM_ADDEDIT2_ID)) + "\", \"apacapi-" + String(id) + "\")'",
         optionData,
         false,
         String(id)
     );
+    WebserverMemoryVariables::rowExtraClass = "data-sh='apacapi-" + String(id) + "'";
     WebserverMemoryVariables::sendFormInput(
         server,
         FPSTR(CONFPRINTER_FORM_ADDEDIT3_ID),
         FPSTR(CONFPRINTER_FORM_ADDEDIT3_LABEL),
         id > 0 ? String(forPrinter->apiKey) : "",
+        FPSTR(CONFPRINTER_FORM_ADDEDIT3_PH),
         60,
         "",
         false,
@@ -379,6 +407,7 @@ void WebserverMemoryVariables::sendPrinterConfigFormAEModal(ESP8266WebServer *se
         FPSTR(CONFPRINTER_FORM_ADDEDIT4_ID),
         FPSTR(CONFPRINTER_FORM_ADDEDIT4_LABEL),
         id > 0 ? String(forPrinter->remoteAddress) : "",
+        FPSTR(CONFPRINTER_FORM_ADDEDIT4_PH),
         60,
         "",
         false,
@@ -390,6 +419,7 @@ void WebserverMemoryVariables::sendPrinterConfigFormAEModal(ESP8266WebServer *se
         FPSTR(CONFPRINTER_FORM_ADDEDIT5_ID),
         FPSTR(CONFPRINTER_FORM_ADDEDIT5_LABEL),
         id > 0 ? String(forPrinter->remotePort) : "80",
+        "",
         5,
         "onkeypress='return isNumberKey(event)'",
         false,
@@ -411,6 +441,7 @@ void WebserverMemoryVariables::sendPrinterConfigFormAEModal(ESP8266WebServer *se
         FPSTR(STATION_CONFIG_FORM7_ID),
         FPSTR(STATION_CONFIG_FORM7_LABEL),
         id > 0 ? String(forPrinter->basicAuthUsername) : "",
+        FPSTR(CONFPRINTER_FORM_ADDEDIT7_PH),
         30,
         "",
         false,
@@ -423,6 +454,7 @@ void WebserverMemoryVariables::sendPrinterConfigFormAEModal(ESP8266WebServer *se
         FPSTR(STATION_CONFIG_FORM8_ID),
         FPSTR(STATION_CONFIG_FORM8_LABEL),
         id > 0 ? String(forPrinter->basicAuthPassword) : "",
+        FPSTR(CONFPRINTER_FORM_ADDEDIT8_PH),
         120,
         "",
         true,
@@ -548,6 +580,7 @@ void WebserverMemoryVariables::sendFormCheckboxEvent(
  * @param formId                    Form id/name
  * @param label                     Text for label head
  * @param value                     Value in field
+ * @param placeholder               Placeholder text for input field
  * @param maxLen                    Max text len in input field
  * @param events                    Extra events for input field
  * @param isPassword                True if password field
@@ -559,6 +592,7 @@ void WebserverMemoryVariables::sendFormInput(
     String formId,
     String label,
     String value,
+    String placeholder,
     int maxLen,
     String events,
     bool isPassword,
@@ -571,7 +605,7 @@ void WebserverMemoryVariables::sendFormInput(
     form.replace("%VALUE%", value);
     form.replace("%MAXLEN%", String(maxLen));
     form.replace("%EVENTS%", events);
-    
+    form.replace("%PLACEHOLDER%", placeholder);
     if (isPassword) {
         form.replace("%FIELDTYPE%", "password");
     }
@@ -661,11 +695,11 @@ void WebserverMemoryVariables::sendForm(
     if (uniqueId.length() > 0) {
         formElement.replace("id='" + formId + "'", "id='" + formId + "-" + uniqueId + "'");
         formElement.replace("for='" + formId + "'", "for='" + formId + "-"  + uniqueId + "'");
+        formElement.replace("\"" + formId + "\"", "\"" + formId + "-"  + uniqueId + "\"");
     }
     if (inRow) {
         String rowStartData = FPSTR(FORM_ITEM_ROW_START);
         rowStartData.replace("%ROWEXTRACLASS%", WebserverMemoryVariables::rowExtraClass);
-        WebserverMemoryVariables::rowExtraClass = "";
         server->sendContent(rowStartData);
         formElement.replace("%ROWEXT%", FPSTR(FORM_ITEM_ROW_EXT));
         formElement.replace("%DIVEXTRACLASS%", "");
@@ -673,6 +707,7 @@ void WebserverMemoryVariables::sendForm(
         formElement.replace("%ROWEXT%", "");
         formElement.replace("%DIVEXTRACLASS%", WebserverMemoryVariables::rowExtraClass);
     }
+    WebserverMemoryVariables::rowExtraClass = "";
     server->sendContent(formElement);
     if (inRow) {
         server->sendContent(FPSTR(FORM_ITEM_ROW_END));

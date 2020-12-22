@@ -29,7 +29,7 @@ static const char FORM_ITEM_CHECKBOX_OFF[] PROGMEM = " deactivated";
 
 static const char FORM_ITEM_INPUT[] PROGMEM = "<div class='%ROWEXT% bx--form-item' %DIVEXTRACLASS%>"
                             "<label for='%FORMID%' class='bx--label'>%LABEL%</label>"
-                            "<input id='%FORMID%' type='%FIELDTYPE%' class='bx--text-input' name='%FORMID%' value='%VALUE%' maxlength='%MAXLEN%' %EVENTS%>"
+                            "<input id='%FORMID%' type='%FIELDTYPE%' class='bx--text-input' placeholder='%PLACEHOLDER%' name='%FORMID%' value='%VALUE%' maxlength='%MAXLEN%' %EVENTS%>"
                         "</div>";
 
 static const char FORM_ITEM_SELECT_START[] PROGMEM = "<div class='bx--form-item bx--select %ROWEXT%' %DIVEXTRACLASS%>"
@@ -103,7 +103,7 @@ static const char HEADER_BLOCK2[] PROGMEM = "<link rel='stylesheet' href='https:
         "<script>function openModal(refelementId){document.body.classList.add(\"bx--body--with-modal-open\");document.getElementById(refelementId).classList.add(\"is-visible\")} function closeModal(refelementId){document.getElementById(refelementId).classList.remove(\"is-visible\");document.body.classList.remove(\"bx--body--with-modal-open\")}</script>"
         "<script>function isNumberKey(e){var h=e.which?e.which:event.keyCode;return!(h>31&&(h<48||h>57))}</script>"
         "<script>function openUrl(e){window.location.assign(e)}</script>"
-        
+        "<script>function apiTypeSelect(r,t){if($(\"#\"+r).find(\":selected\").data('need-api')){$(\"[data-sh='\"+t+\"']\").removeClass('hidden')}else{$(\"[data-sh='\"+t+\"']\").addClass('hidden')}}</script>"
         "</head><body>"
         "<header class='cv-header bx--header'>"
         "<a href='/' class='cv-header-name bx--header__name'>";
@@ -148,9 +148,6 @@ static const char HEADER_BLOCK_ERROR[] PROGMEM = "<div class='bx--inline-notific
                     "<p class='bx--inline-notification__title'>%ERRORMSG%</p>"
                 "</div>"
             "</div>"
-            "<button data-notification-btn class='bx--inline-notification__close-button' type='button' aria-label='close'>"
-                "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--inline-notification__close-icon' width='20' height='20' viewBox='0 0 32 32' aria-hidden='true'><path d='M24 9.4L22.6 8 16 14.6 9.4 8 8 9.4 14.6 16 8 22.6 9.4 24 16 17.4 22.6 24 24 22.6 17.4 16 24 9.4z'></path></svg>"
-            "</button>"
         "</div>";
 
 static const char HEADER_BLOCK_OK[] PROGMEM = "<div class='bx--inline-notification bx--inline-notification--success' role='alert' style='max-width:100%'>"
@@ -172,7 +169,7 @@ static const char FOOTER_BLOCK[] PROGMEM = "<br><br><br></div>"
             "</div>"
         "</div>"
         "<script src='https://unpkg.com/carbon-components/scripts/carbon-components.min.js'></script>"
-        "<script>$(function(){$('form').on('submit',function(e){$('#pageloading').removeClass('hidden')})})</script>"
+        "<script>$(function(){$('form').on('submit',function(e){$('#pageloading').removeClass('hidden')});$(\"input[type='checkbox']\").trigger('change')})</script>"
     "</body>"
 "</html>";
 
@@ -183,10 +180,13 @@ static const char FOOTER_BLOCK[] PROGMEM = "<br><br><br></div>"
 static const char GLOBAL_TEXT_WARNING[] PROGMEM = "WARNING";
 static const char GLOBAL_TEXT_ABORT[] PROGMEM = "Abort";
 static const char GLOBAL_TEXT_RESET[] PROGMEM = "Reset";
+static const char GLOBAL_TEXT_DELETE[] PROGMEM = "Delete";
 static const char GLOBAL_TEXT_TRESET[] PROGMEM = "Reset settings";
 static const char GLOBAL_TEXT_CRESET[] PROGMEM = "Do you want to reset to default settings?";
 static const char GLOBAL_TEXT_TFWIFI[] PROGMEM = "Reset wifi";
 static const char GLOBAL_TEXT_CFWIFI[] PROGMEM = "Do you want to reset wifi to default settings?";
+static const char GLOBAL_TEXT_TDPRINTER[] PROGMEM = "Delete printer";
+static const char GLOBAL_TEXT_CDPRINTER[] PROGMEM = "Do you want to delete the printer configuration &quot;%PRINTERNAME%&quot;?";
 
 /**
  * Controls for update firmware/filesystem
@@ -377,7 +377,7 @@ static const char CONFPRINTER_FORM_ROW[] PROGMEM = "<tr>"
                                                 "</button>"
                                             "</li>"
                                             "<li class='bx--overflow-menu-options__option bx--table-row--menu-option'>"
-                                                "<button class='bx--overflow-menu-options__btn' onclick='openModal('modal-ed454ftfa4q')'>"
+                                                "<button class='bx--overflow-menu-options__btn' onclick='openModal(\"deletePrinterModal-%ID%\")'>"
                                                     "<div class='bx--overflow-menu-options__option-content'>"
                                                         "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' aria-hidden='true'><path d='M6 6H7V12H6zM9 6H10V12H9z'></path><path d='M2 3v1h1v10c0 .6.4 1 1 1h8c.6 0 1-.4 1-1V4h1V3H2zM4 14V4h8v10H4zM6 1H10V2H6z'></path></svg> "
                                                         "Delete"
@@ -392,7 +392,8 @@ static const char CONFPRINTER_FORM_ROW[] PROGMEM = "<tr>"
 static const char CONFPRINTER_FORM_END[] PROGMEM = "</tbody>"
                     "</table>"
                 "</div>"
-            "</div>";
+            "</div>"
+            "<script>$(\"select[id^='e-tapi']\").trigger('change')</script>";
 
 
 static const char CONFPRINTER_FORM_ADDEDIT_TA[] PROGMEM = "Create new printer";
@@ -413,15 +414,18 @@ static const char CONFPRINTER_FORM_ADDEDIT_START[] PROGMEM = "<div data-modal id
 
 static const char CONFPRINTER_FORM_ADDEDIT1_ID[] PROGMEM = "e-tname";
 static const char CONFPRINTER_FORM_ADDEDIT1_LABEL[] PROGMEM = "Printer Name";
+static const char CONFPRINTER_FORM_ADDEDIT1_PH[] PROGMEM = "Your custom name";
 
 static const char CONFPRINTER_FORM_ADDEDIT2_ID[] PROGMEM = "e-tapi";
 static const char CONFPRINTER_FORM_ADDEDIT2_LABEL[] PROGMEM = "API Type";
 
 static const char CONFPRINTER_FORM_ADDEDIT3_ID[] PROGMEM = "e-tapikey";
 static const char CONFPRINTER_FORM_ADDEDIT3_LABEL[] PROGMEM = "API Key";
+static const char CONFPRINTER_FORM_ADDEDIT3_PH[] PROGMEM = "Remote api key to use";
 
 static const char CONFPRINTER_FORM_ADDEDIT4_ID[] PROGMEM = "e-taddr";
 static const char CONFPRINTER_FORM_ADDEDIT4_LABEL[] PROGMEM = "Hostname or IP Address (do not include http://)";
+static const char CONFPRINTER_FORM_ADDEDIT4_PH[] PROGMEM = "Remote address for printer";
 
 static const char CONFPRINTER_FORM_ADDEDIT5_ID[] PROGMEM = "e-tport";
 static const char CONFPRINTER_FORM_ADDEDIT5_LABEL[] PROGMEM = "Port";
@@ -431,9 +435,11 @@ static const char CONFPRINTER_FORM_ADDEDIT6_LABEL[] PROGMEM = "Haproxy or basic 
 
 static const char CONFPRINTER_FORM_ADDEDIT7_ID[] PROGMEM = "e-tapiuser";
 static const char CONFPRINTER_FORM_ADDEDIT7_LABEL[] PROGMEM = "User ID";
+static const char CONFPRINTER_FORM_ADDEDIT7_PH[] PROGMEM = "Username for basic auth";
 
 static const char CONFPRINTER_FORM_ADDEDIT8_ID[] PROGMEM = "e-tapipass";
 static const char CONFPRINTER_FORM_ADDEDIT8_LABEL[] PROGMEM = "Password";
+static const char CONFPRINTER_FORM_ADDEDIT8_PH[] PROGMEM = "Password for basic auth";
 
 static const char CONFPRINTER_FORM_ADDEDIT_END[] PROGMEM = "<br><br></div>"
                         "<div class='bx--modal-content--overflow-indicator'></div>"
@@ -498,7 +504,7 @@ private:
     static void sendFormCheckbox(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff, bool inRow, String uniqueId);
     static void sendFormCheckboxEvent(ESP8266WebServer *server, String formId, bool isChecked, String label, String onChange, bool inRow, String uniqueId);
     static void sendFormCheckboxEvent(ESP8266WebServer *server, String formId, bool isChecked, String labelOn, String labelOff, String onChange, bool inRow, String uniqueId);
-    static void sendFormInput(ESP8266WebServer *server, String formId, String label, String value, int maxLen, String events, bool isPassword, bool inRow, String uniqueId);
+    static void sendFormInput(ESP8266WebServer *server, String formId, String label, String value, String placeholder, int maxLen, String events, bool isPassword, bool inRow, String uniqueId);
     static void sendFormSelect(ESP8266WebServer *server, String formId, String label, String value, String events, String options, bool inRow, String uniqueId);
     static void sendFormSubmitButton(ESP8266WebServer *server, bool inRow);
     static void sendForm(ESP8266WebServer *server, String formId, String formElement, bool inRow, String uniqueId);

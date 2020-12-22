@@ -21,7 +21,7 @@ void WebServer::setup() {
     this->server->on("/configurestation/update", []() { obj->handleUpdateStation(); });
     this->server->on("/configureprinter/show", []() { obj->handleConfigurePrinter(); });
     this->server->on("/configureprinter/edit", []() { obj->handleUpdatePrinter(); });
-    this->server->on("/configureprinter/delete", []() { obj->handleConfigurePrinter(); });
+    this->server->on("/configureprinter/delete", []() { obj->handleDeletePrinter(); });
     this->server->on("/configureweather/show", []() { obj->handleConfigureWeather(); });
     this->server->on("/configureweather/update", []() { obj->handleUpdateWeather(); });
     this->server->on("/configuresensor/show", []() { obj->handleConfigureSensor(); });
@@ -452,23 +452,36 @@ void WebServer::handleUpdatePrinter() {
         this->redirectTarget("/configureprinter/show");
         return;
     }
+    this->globalDataController->getSystemSettings()->lastError = "";
 
     // Set data
     MemoryHelper::stringToChar(this->server->arg("e-tname"), targetPrinter->customName, 20);
     targetPrinter->apiType = this->server->arg("e-tapi").toInt();
-    MemoryHelper::stringToChar("", targetPrinter->apiKey, 60);
+    MemoryHelper::stringToChar(this->server->arg("e-tapikey"), targetPrinter->apiKey, 60);
     MemoryHelper::stringToChar(this->server->arg("e-taddr"), targetPrinter->remoteAddress, 60);
     targetPrinter->remotePort = this->server->arg("e-tport").toInt();
     targetPrinter->hasPsuControl = this->server->hasArg("e-tpsu");
     targetPrinter->basicAuthNeeded = this->server->hasArg("e-tapipw");
     MemoryHelper::stringToChar(this->server->arg("e-tapiuser"), targetPrinter->basicAuthUsername, 30);
     MemoryHelper::stringToChar(this->server->arg("e-tapipass"), targetPrinter->basicAuthPassword, 60);
+
     this->globalDataController->getSystemSettings()->lastOk = FPSTR(OK_MESSAGES_SAVE1);
-
-    //http://192.168.0.239/configureprinter/show?id=0&e-tname=asdasd&e-tapi=Klipper&e-taddr=123.213.123.121&e-tport=80&e-tapipw=on&e-tapiuser=admin&e-tapipass=admin
-    
-
     this->globalDataController->writeSettings();
+    this->redirectTarget("/configureprinter/show");
+}
+
+/**
+ * @brief Delete single configuration for Printer
+ */
+void WebServer::handleDeletePrinter() {
+    int targetPrinterId = this->server->arg("id").toInt() - 1;
+    if (this->globalDataController->removePrinterSettingByIdx(targetPrinterId)) {
+        this->globalDataController->getSystemSettings()->lastOk = FPSTR(OK_MESSAGES_DELETEPRINTER);
+        this->globalDataController->getSystemSettings()->lastError = "";
+        this->globalDataController->writeSettings();
+    } else {
+        this->globalDataController->getSystemSettings()->lastError = FPSTR(ERROR_MESSAGES_ERR2);
+    }    
     this->redirectTarget("/configureprinter/show");
 }
 
