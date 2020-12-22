@@ -1,105 +1,244 @@
+<!DOCTYPE HTML>
 <html>
-    <head>
-        <link rel="stylesheet" href="https://unpkg.com/carbon-components/css/carbon-components.min.css" ></style>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
-        <style>.hidden{display:none}</style>
-    </head>
-    <body>
-        <header class="cv-header bx--header">
-            <a href="index.html" class="cv-header-name bx--header__name">
-                <span class="bx--header__name--prefix">Printer Buddy&nbsp;</span>
-                V4.0
-            </a>
-            <nav class="cv-header-nav bx--header__nav"></nav>
-            <div class="bx--header__global">
-                <button type="button" class="cv-header-global-action bx--header__action" onclick="openWifiInfo()">
-                    <i class="fas fa-wifi" style="color: white; font-size: 20px;"></i>
-                </button>
-                <button type="button" class="cv-header-global-action bx--header__action" onclick="openSidebar()">
-                    <svg focusable="false" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true">       
-                        <path d="M14 4H18V8H14zM4 4H8V8H4zM24 4H28V8H24zM14 14H18V18H14zM4 14H8V18H4zM24 14H28V18H24zM14 24H18V28H14zM4 24H8V28H4zM24 24H28V28H24z"></path>
-                    </svg>
-                </button>
-            </div>
-            <div aria-hidden="false" id="sidebar" class="cv-header-panel bx--header-panel">
-                <ul class="cv-switcher bx--switcher__item">
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/"><i class="fa fa-home"></i> Home</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/configure"><i class="fa fa-cog"></i> Configure</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/configureweather"><i class="fa fa-cloud"></i> Weather</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/systemreset" onclick="return confirm(&quot;Do you want to reset to default settings?&quot;)"><i class="fa fa-undo"></i> Reset Settings</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/forgetwifi" onclick="return confirm(&quot;Do you want to forget to WiFi connection?&quot;)"><i class="fa fa-wifi"></i> Forget WiFi</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="/update"><i class="fa fa-wrench"></i> Firmware Update</a></li>
-                    <li class="cv-switcher-item bx--switcher__item"><a class="cv-switcher-item-link bx--switcher__item-link" href="https://github.com/Qrome" target="_blank"><i class="fa fa-question-circle"></i> About</a></li>
-                </ul>
-            </div>
-            <div class="bx--toast-notification bx--toast-notification--info hidden" style="position: absolute; right: -16px; top: 40px;" id="wifiinfo">
-                <div class="bx--toast-notification__details">
-                    <h3 class="bx--toast-notification__title">WiFi Signal Strength</h3>
-                    <div class="bx--toast-notification__subtitle">
-                        <div>88%</div>
-                        <span>88%</span>
-                        <span>88%</span>
-                    </div>
-                </div>
-            </div>
-        </header>
-        
-        <div class="bx--grid bx--grid--full-width" style='margin-top:88px'>
-            <div class='bx--row'>
-                <div class='bx--col-md-4'>
-                    <form method='POST' action='' enctype='multipart/form-data'>
-                        <div class='cv-file-uploader cv-form-item bx--form-item'>
-                            <strong class='bx--file--label'>Update Firmware</strong>
-                            <p class='bx--label-description'>Select the firmware you want to upload</p>
-                            <div data-file='' class='bx--file'>
-                                <label for='firmware' role='button' tabindex='0' class='bx--file-browse-btn'>
-                                    <div data-file-drop-container='' class='bx--file__drop-container'>
-                                        Drag and drop file here or upload
-                                        <input type='file' id='firmware' accept='.bin,.bin.gz' class='bx--file-input' name='firmware' onchange='document.getElementById("ffile").innerHTML = ""'>
-                                    </div>
-                                </label>
-                                <div data-file-container='' class='bx--file-container' id='ffile'></div>
-                            </div>
-                        </div>
-                        <input type='submit' value='Update Firmware' class='bx--btn bx--btn--danger'>
-                    </form>
-                </div>
 
+<head>
+    <title>PrintBuddy</title>
+    <link rel='icon' href='data:;base64,='>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css'>
+    <link rel='stylesheet' href='https://unpkg.com/carbon-components/css/carbon-components.min.css'>
+    </style>
+    <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.15.1/css/all.css'>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+    <style>
+        .hidden {
+            display: none
+        }
 
-                <div class='bx--col-md-4'>
-                    <form method='POST' action='' enctype='multipart/form-data'>
-                        <div class='cv-file-uploader cv-form-item bx--form-item'>
-                            <strong class='bx--file--label'>Update FileSystem</strong>
-                            <p class='bx--label-description'>Select the filesystem you want to upload</p>
-                            <div data-file='' class='bx--file'>
-                                <label for='filesystem' role='button' tabindex='0' class='bx--file-browse-btn'>
-                                    <div data-file-drop-container='' class='bx--file__drop-container'>
-                                        Drag and drop file here or upload
-                                        <input type='file' id='filesystem' accept='.bin,.bin.gz' class='bx--file-input' name='filesystem' onchange="document.getElementById('fsys').innerHTML = ''">
-                                    </div>
-                                </label>
-                                <div data-file-container='' class='bx--file-container' id='fsys'></div>
-                            </div>
-                        </div>
-                        <input type='submit' value='Update FileSystem' class='bx--btn bx--btn--danger'>
-                    </form>
-                </div>
-            </div>
-            
+        .bx--form-item {
+            margin-bottom: 20px
+        }
+
+        .bx--table-column-menu {
+            width: 3.25rem
+        }
+
+        .menitem {
+            padding: 6px 1rem;
+            font-size: .875rem;
+            font-weight: 600;
+            line-height: 1.29;
+            letter-spacing: .16px;
+            display: flex;
+            justify-content: space-between;
+            text-decoration: none;
+            color: #c6c6c6
+        }
+    </style>
+    <script>function showhide(a, b) { var e = $("[data-sh='" + b + "']"); var f = $("#" + a); if (f.checked || f.prop('checked')) { e.removeClass('hidden'); } else { e.addClass('hidden'); } }</script>
+    <script>function openModal(refelementId) { document.body.classList.add("bx--body--with-modal-open"); document.getElementById(refelementId).classList.add("is-visible") } function closeModal(refelementId) { document.getElementById(refelementId).classList.remove("is-visible"); document.body.classList.remove("bx--body--with-modal-open") }</script>
+    <script>function isNumberKey(e) { var h = e.which ? e.which : event.keyCode; return !(h > 31 && (h < 48 || h > 57)) }</script>
+    <script>function openUrl(e) { window.location.assign(e) }</script>
+    <script>function apiTypeSelect(r, t) { if ($("#" + r).find(":selected").data('need-api')) { $("[data-sh='" + t + "']").removeClass('hidden') } else { $("[data-sh='" + t + "']").addClass('hidden') } }</script>
+</head>
+
+<body>
+    <header class='cv-header bx--header'><a href='/' class='cv-header-name bx--header__name'><span
+                class='bx--header__name--prefix'>PrintBuddy&nbsp;</span>V1.0</a>
+        <nav class='cv-header-nav bx--header__nav'></nav>
+        <div class='bx--header__global'><button type='button' class='cv-header-global-action bx--header__action'
+                onclick='openChipInfo()'><svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                    xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='20' height='20' viewBox='0 0 32 32'
+                    aria-hidden='true'>
+                    <path d='M11,11V21H21V11Zm8,8H13V13h6Z'></path>
+                    <path
+                        d='M30,13V11H26V8a2,2,0,0,0-2-2H21V2H19V6H13V2H11V6H8A2,2,0,0,0,6,8v3H2v2H6v6H2v2H6v3a2,2,0,0,0,2,2h3v4h2V26h6v4h2V26h3a2,2,0,0,0,2-2V21h4V19H26V13ZM24,24H8V8H24Z'>
+                    </path>
+                </svg></button><button type='button' class='cv-header-global-action bx--header__action'
+                onclick='openSidebar()'><svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                    xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='20' height='20' viewBox='0 0 32 32'
+                    aria-hidden='true'>
+                    <path
+                        d='M14 4H18V8H14zM4 4H8V8H4zM24 4H28V8H24zM14 14H18V18H14zM4 14H8V18H4zM24 14H28V18H24zM14 24H18V28H14zM4 24H8V28H4zM24 24H28V28H24z'>
+                    </path>
+                </svg></button></div>
+        <div id='sidebar' class='cv-header-panel bx--header-panel'>
+            <ul class='cv-switcher bx--switcher__item'>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem' href='/'>Home<svg
+                            focusable='false' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'
+                            fill='currentColor' width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M16.6123,2.2138a1.01,1.01,0,0,0-1.2427,0L1,13.4194l1.2427,1.5717L4,13.6209V26a2.0041,2.0041,0,0,0,2,2H26a2.0037,2.0037,0,0,0,2-2V13.63L29.7573,15,31,13.4282ZM18,26H14V18h4Zm2,0V18a2.0023,2.0023,0,0,0-2-2H14a2.002,2.002,0,0,0-2,2v8H6V12.0615l10-7.79,10,7.8005V26Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        href='/configureprinter/show'>Configure Printers<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M28,9H25V3H7V9H4a2,2,0,0,0-2,2V21a2,2,0,0,0,2,2H7v6H25V23h3a2,2,0,0,0,2-2V11A2,2,0,0,0,28,9ZM9,5H23V9H9ZM23,27H9V17H23Zm5-6H25V15H7v6H4V11H28Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        href='/configurestation/show'>Configure Station<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M27,16.76c0-.25,0-.5,0-.76s0-.51,0-.77l1.92-1.68A2,2,0,0,0,29.3,11L26.94,7a2,2,0,0,0-1.73-1,2,2,0,0,0-.64.1l-2.43.82a11.35,11.35,0,0,0-1.31-.75l-.51-2.52a2,2,0,0,0-2-1.61H13.64a2,2,0,0,0-2,1.61l-.51,2.52a11.48,11.48,0,0,0-1.32.75L7.43,6.06A2,2,0,0,0,6.79,6,2,2,0,0,0,5.06,7L2.7,11a2,2,0,0,0,.41,2.51L5,15.24c0,.25,0,.5,0,.76s0,.51,0,.77L3.11,18.45A2,2,0,0,0,2.7,21L5.06,25a2,2,0,0,0,1.73,1,2,2,0,0,0,.64-.1l2.43-.82a11.35,11.35,0,0,0,1.31.75l.51,2.52a2,2,0,0,0,2,1.61h4.72a2,2,0,0,0,2-1.61l.51-2.52a11.48,11.48,0,0,0,1.32-.75l2.42.82a2,2,0,0,0,.64.1,2,2,0,0,0,1.73-1L29.3,21a2,2,0,0,0-.41-2.51ZM25.21,24l-3.43-1.16a8.86,8.86,0,0,1-2.71,1.57L18.36,28H13.64l-.71-3.55a9.36,9.36,0,0,1-2.7-1.57L6.79,24,4.43,20l2.72-2.4a8.9,8.9,0,0,1,0-3.13L4.43,12,6.79,8l3.43,1.16a8.86,8.86,0,0,1,2.71-1.57L13.64,4h4.72l.71,3.55a9.36,9.36,0,0,1,2.7,1.57L25.21,8,27.57,12l-2.72,2.4a8.9,8.9,0,0,1,0,3.13L27.57,20Z'>
+                            </path>
+                            <path
+                                d='M16,22a6,6,0,1,1,6-6A5.94,5.94,0,0,1,16,22Zm0-10a3.91,3.91,0,0,0-4,4,3.91,3.91,0,0,0,4,4,3.91,3.91,0,0,0,4-4A3.91,3.91,0,0,0,16,12Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        href='/configureweather/show'>Configure Weather<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M24.8008,11.1382a8.9938,8.9938,0,0,0-17.6006,0A6.533,6.533,0,0,0,2,17.5H2V19a1,1,0,0,0,1,1H15a1,1,0,0,0,0-2H4v-.4966H4a4.5176,4.5176,0,0,1,4.144-4.4819l.8155-.064.0991-.812a6.9936,6.9936,0,0,1,13.8838,0l.0986.812.8154.064A4.4962,4.4962,0,0,1,23.5,22H7a1,1,0,0,0,0,2H23.5a6.4963,6.4963,0,0,0,1.3008-12.8618Z'>
+                            </path>
+                            <rect width='18' height='2' x='2' y='26' rx='1'></rect>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        href='/configuresensor/show'>Configure Sensor<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M30,19H26V15H24v9H8V8l9-.0009V6H13V2H11V6H8A2.002,2.002,0,0,0,6,8v3H2v2H6v6H2v2H6v3a2.0023,2.0023,0,0,0,2,2h3v4h2V26h6v4h2V26h3a2.0027,2.0027,0,0,0,2-2V21h4Z'>
+                            </path>
+                            <path
+                                d='M26,2a4.0042,4.0042,0,0,0-4,4,3.9556,3.9556,0,0,0,.5668,2.0192L19.5859,11H11V21H21V12.4141l2.9808-2.9808A3.9553,3.9553,0,0,0,26,10a4,4,0,0,0,0-8ZM19,19H13V13h6ZM26,8a2,2,0,1,1,2-2A2.0023,2.0023,0,0,1,26,8Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        onclick='openModal("resetSettingsModal")'>Reset Settings<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M18,28A12,12,0,1,0,6,16v6.2L2.4,18.6,1,20l6,6,6-6-1.4-1.4L8,22.2V16H8A10,10,0,1,1,18,26Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem'
+                        onclick='openModal("resetWifiModal")'>Forget WiFi<svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
+                            width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <circle cx='16' cy='25' r='2'></circle>
+                            <path
+                                d='M30 3.4141L28.5859 2 2 28.5859 3.4141 30 14.0962 19.3179a5.9359 5.9359 0 016.01 1.3193L21.52 19.2236a7.9669 7.9669 0 00-5.125-2.2041l3.3875-3.3877a11.9908 11.9908 0 014.5647 2.7647L25.76 14.9829A13.975 13.975 0 0021.334 12.08L24.3308 9.083a17.9364 17.9364 0 014.2546 3.0747L30 10.7432v-.002a20.02 20.02 0 00-4.1895-3.1377zM14.68 13.0776l2.0415-2.0415C16.481 11.0234 16.2437 11 16 11a13.9447 13.9447 0 00-9.771 3.9927l1.4136 1.4136A11.97 11.97 0 0114.68 13.0776zM16 7a17.87 17.87 0 014.2324.5254L21.875 5.8828A19.9537 19.9537 0 002 10.7412v.0225L3.4043 12.168A17.9193 17.9193 0 0116 7z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem' href='/update'>Firmware Update<svg
+                            focusable='false' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'
+                            fill='currentColor' width='16' height='16' viewBox='0 0 32 32' aria-hidden='true'>
+                            <path d='M28,12H20V4h8Zm-6-2h4V6H22Z'></path>
+                            <path d='M17,15V9H9V23H23V15Zm-6-4h4v4H11Zm4,10H11V17h4Zm6,0H17V17h4Z'></path>
+                            <path
+                                d='M26,28H6a2.0023,2.0023,0,0,1-2-2V6A2.0023,2.0023,0,0,1,6,4H16V6H6V26H26V16h2V26A2.0023,2.0023,0,0,1,26,28Z'>
+                            </path>
+                        </svg></a></li>
+                <li class='cv-switcher-item bx--switcher__item'><a
+                        class='cv-switcher-item-link bx--switcher__item-link menitem' href='https://github.com/Qrome'
+                        target='_blank'>About<svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                            xmlns='http://www.w3.org/2000/svg' fill='currentColor' width='16' height='16'
+                            viewBox='0 0 32 32' aria-hidden='true'>
+                            <path
+                                d='M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,26A12,12,0,1,1,28,16,12,12,0,0,1,16,28Z'>
+                            </path>
+                            <circle cx='16' cy='23.5' r='1.5'></circle>
+                            <path
+                                d='M17,8H15.5A4.49,4.49,0,0,0,11,12.5V13h2v-.5A2.5,2.5,0,0,1,15.5,10H17a2.5,2.5,0,0,1,0,5H15v4.5h2V17a4.5,4.5,0,0,0,0-9Z'>
+                            </path>
+                        </svg></a></li>
+            </ul>
         </div>
+        <div class='bx--toast-notification bx--toast-notification--info hidden'
+            style='position: absolute; right: -16px; top: 40px;' id='chipinfo'>
+            <div class='bx--toast-notification__details'>
+                <h3 class='bx--toast-notification__title'>ESP Details</h3>
+                <div class='bx--toast-notification__subtitle'>
+                    <div>WiFi Signal Strength: 100%</div>
+                    <div>ESP ChipID: 1152840</div>
+                    <div>ESP CoreVersion: 2_7_4</div>
+                    <div>Heap (frag/free/max): 3% |26624 b|25976 b</div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <script>function openSidebar() { document.getElementById('sidebar').classList.toggle('bx--header-panel--expanded'); document.getElementById('chipinfo').classList.add('hidden'); }; function openChipInfo() { document.getElementById('sidebar').classList.remove('bx--header-panel--expanded'); document.getElementById('chipinfo').classList.toggle('hidden'); }</script>
+    <br>
+    <div class='bx--grid bx--grid--full-width' style='margin-top:60px'>
+        <div class='page-header' style='margin-bottom:20px'>
+            <h4 class='page-header__label'>Status</h4>
+            <h1 id='page-title' class='page-header__title'>Monitor</h1>
+        </div>
+        <div data-modal id='resetSettingsModal' class='bx--modal bx--modal--danger' role='dialog' aria-modal='true'
+            aria-labelledby='resetSettingsModal-label' aria-describedby='resetSettingsModal-heading' tabindex='-1'>
+            <div class='bx--modal-container'>
+                <div class='bx--modal-header'>
+                    <p class='bx--modal-header__label bx--type-delta' id='resetSettingsModal-label'>WARNING</p>
+                    <p class='bx--modal-header__heading bx--type-beta' id='resetSettingsModal-heading'>Reset settings
+                    </p><button class='bx--modal-close' type='button' aria-label='close modal'
+                        onclick='closeModal("resetSettingsModal")'><svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' style='will-change: transform;'
+                            xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon' width='16' height='16'
+                            viewBox='0 0 16 16' aria-hidden='true'>
+                            <path d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                            </path>
+                        </svg></button>
+                </div>
+                <div class='bx--modal-content'>
+                    <p>Do you want to reset to default settings?</p><br><br><br>
+                </div>
+                <div class='bx--modal-content--overflow-indicator'></div>
+                <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='button'
+                        onclick='closeModal("resetSettingsModal")'>Abort</button><button class='bx--btn bx--btn--danger'
+                        type='button' aria-label='Danger' data-modal-primary-focus
+                        onclick='openUrl("/systemreset")'>Reset</button></div>
+            </div><span tabindex='0'></span>
+        </div>
+        <div data-modal id='resetWifiModal' class='bx--modal bx--modal--danger' role='dialog' aria-modal='true'
+            aria-labelledby='resetWifiModal-label' aria-describedby='resetWifiModal-heading' tabindex='-1'>
+            <div class='bx--modal-container'>
+                <div class='bx--modal-header'>
+                    <p class='bx--modal-header__label bx--type-delta' id='resetWifiModal-label'>WARNING</p>
+                    <p class='bx--modal-header__heading bx--type-beta' id='resetWifiModal-heading'>Reset wifi</p><button
+                        class='bx--modal-close' type='button' aria-label='close modal'
+                        onclick='closeModal("resetWifiModal")'><svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' style='will-change: transform;'
+                            xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon' width='16' height='16'
+                            viewBox='0 0 16 16' aria-hidden='true'>
+                            <path d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                            </path>
+                        </svg></button>
+                </div>
+                <div class='bx--modal-content'>
+                    <p>Do you want to reset wifi to default settings?</p><br><br><br>
+                </div>
+                <div class='bx--modal-content--overflow-indicator'></div>
+                <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='button'
+                        onclick='closeModal("resetWifiModal")'>Abort</button><button class='bx--btn bx--btn--danger'
+                        type='button' aria-label='Danger' data-modal-primary-focus
+                        onclick='openUrl("/forgetwifi")'>Reset</button></div>
+            </div><span tabindex='0'></span>
+        </div><br><br><br>
+    </div>
+    <div class='bx--loading-overlay hidden' id='pageloading'>
+        <div data-loading class='bx--loading'><svg class='bx--loading__svg' viewBox='-75 -75 150 150'>
+                <title>Loading</title>
+                <circle class='bx--loading__stroke' cx='0' cy='0' r='37.5' />
+            </svg></div>
+    </div>
+    <script src='https://unpkg.com/carbon-components/scripts/carbon-components.min.js'></script>
+    <script>$(function () { $('form').on('submit', function (e) { $('#pageloading').removeClass('hidden') }); $("input[type='checkbox']").trigger('change') })</script>
+</body>
 
-        <script src="https://unpkg.com/carbon-components/scripts/carbon-components.min.js"></script>
-        
-        <script>
-            function openSidebar() {
-                document.getElementById('sidebar').classList.toggle('bx--header-panel--expanded');
-                document.getElementById('wifiinfo').classList.add('hidden');
-            }
-            function openWifiInfo() {
-                document.getElementById('sidebar').classList.remove('bx--header-panel--expanded');
-                document.getElementById('wifiinfo').classList.toggle('hidden');
-            }
-        </script>
-        
-    </body>
 </html>

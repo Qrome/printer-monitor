@@ -424,7 +424,6 @@ void WebServer::handleConfigurePrinter() {
     WebserverMemoryVariables::sendFooter(this->server, this->globalDataController);
 }
 
-
 /**
  * @brief Update configuration for Printer
  */
@@ -465,6 +464,11 @@ void WebServer::handleUpdatePrinter() {
     MemoryHelper::stringToChar(this->server->arg("e-tapiuser"), targetPrinter->basicAuthUsername, 30);
     MemoryHelper::stringToChar(this->server->arg("e-tapipass"), targetPrinter->basicAuthPassword, 60);
 
+    // Reset error data
+    MemoryHelper::stringToChar("", targetPrinter->error, 120);
+    targetPrinter->state = PRINTER_STATE_OFFLINE;
+
+    // Save
     this->globalDataController->getSystemSettings()->lastOk = FPSTR(OK_MESSAGES_SAVE1);
     this->globalDataController->writeSettings();
     this->redirectTarget("/configureprinter/show");

@@ -1,5 +1,6 @@
-<!doctype html>
+<!DOCTYPE HTML>
 <html>
+
 <head>
     <title>PrintBuddy</title>
     <link rel='icon' href='data:;base64,='>
@@ -39,9 +40,7 @@
     <script>function openModal(refelementId) { document.body.classList.add("bx--body--with-modal-open"); document.getElementById(refelementId).classList.add("is-visible") } function closeModal(refelementId) { document.getElementById(refelementId).classList.remove("is-visible"); document.body.classList.remove("bx--body--with-modal-open") }</script>
     <script>function isNumberKey(e) { var h = e.which ? e.which : event.keyCode; return !(h > 31 && (h < 48 || h > 57)) }</script>
     <script>function openUrl(e) { window.location.assign(e) }</script>
-    <script>function apiTypeSelect(r,t){if($("#" + r).find(":selected").data('need-api')){$("[data-sh='" + t + "']").removeClass('hidden')}else{$("[data-sh='" + t + "']").addClass('hidden')}}</script>
-
-    
+    <script>function apiTypeSelect(r, t) { if ($("#" + r).find(":selected").data('need-api')) { $("[data-sh='" + t + "']").removeClass('hidden') } else { $("[data-sh='" + t + "']").addClass('hidden') } }</script>
 </head>
 
 <body>
@@ -169,7 +168,7 @@
                     <div>WiFi Signal Strength: 100%</div>
                     <div>ESP ChipID: 1152840</div>
                     <div>ESP CoreVersion: 2_7_4</div>
-                    <div>Heap (frag/free/max): 3% |28536 b|27696 b</div>
+                    <div>Heap (frag/free/max): 3% |26360 b|25784 b</div>
                 </div>
             </div>
         </div>
@@ -180,6 +179,18 @@
         <div class='page-header' style='margin-bottom:20px'>
             <h4 class='page-header__label'>Configure</h4>
             <h1 id='page-title' class='page-header__title'>Printers</h1>
+        </div>
+        <div class='bx--inline-notification bx--inline-notification--error' role='alert' style='max-width:100%'>
+            <div class='bx--inline-notification__details'><svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                    style='will-change: transform;' xmlns='http://www.w3.org/2000/svg'
+                    class='bx--inline-notification__icon' width='20' height='20' viewBox='0 0 20 20' aria-hidden='true'>
+                    <path d='M10,1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S15,1,10,1z M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z'></path>
+                    <path d='M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z' data-icon-path='inner-path' opacity='0'></path>
+                </svg>
+                <div class='bx--inline-notification__text-wrapper'>
+                    <p class='bx--inline-notification__title'>[Other Duet] Server address or host name is required</p>
+                </div>
+            </div>
         </div>
         <div class='bx--row'>
             <div class='bx--col bx--col--auto bx--data-table-container' data-table>
@@ -238,7 +249,104 @@
                                                     </svg> Edit</div>
                                             </button></li>
                                         <li class='bx--overflow-menu-options__option bx--table-row--menu-option'><button
-                                                class='bx--overflow-menu-options__btn' onclick='openModal("modal-ed454ftfa4q")'>
+                                                class='bx--overflow-menu-options__btn'
+                                                onclick='openModal("deletePrinterModal-1")'>
+                                                <div class='bx--overflow-menu-options__option-content'><svg
+                                                        focusable='false' preserveAspectRatio='xMidYMid meet'
+                                                        style='will-change: transform;'
+                                                        xmlns='http://www.w3.org/2000/svg' width='16' height='16'
+                                                        viewBox='0 0 16 16' aria-hidden='true'>
+                                                        <path d='M6 6H7V12H6zM9 6H10V12H9z'></path>
+                                                        <path
+                                                            d='M2 3v1h1v10c0 .6.4 1 1 1h8c.6 0 1-.4 1-1V4h1V3H2zM4 14V4h8v10H4zM6 1H10V2H6z'>
+                                                        </path>
+                                                    </svg> Delete</div>
+                                            </button></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Other Duet</td>
+                            <td>Duet</td>
+                            <td>
+                                <div class='bx--tag bx--tag--magenta'>Error</div>
+                            </td>
+                            <td class='bx--table-column-menu' style='width: 3.25rem'>
+                                <div data-overflow-menu role='menu' tabindex='0' class='bx--overflow-menu'><svg
+                                        focusable='false' preserveAspectRatio='xMidYMid meet'
+                                        style='will-change: transform;' xmlns='http://www.w3.org/2000/svg'
+                                        class='bx--overflow-menu__icon' width='16' height='16' viewBox='0 0 16 16'
+                                        aria-hidden='true'>
+                                        <circle cx='8' cy='3' r='1'></circle>
+                                        <circle cx='8' cy='8' r='1'></circle>
+                                        <circle cx='8' cy='13' r='1'></circle>
+                                    </svg>
+                                    <ul class='bx--overflow-menu-options bx--overflow-menu--flip'
+                                        data-floating-menu-direction='bottom'>
+                                        <li class='bx--overflow-menu-options__option bx--table-row--menu-option'><button
+                                                class='bx--overflow-menu-options__btn' onclick='openModal("mae-2")'>
+                                                <div class='bx--overflow-menu-options__option-content'><svg
+                                                        focusable='false' preserveAspectRatio='xMidYMid meet'
+                                                        style='will-change: transform;'
+                                                        xmlns='http://www.w3.org/2000/svg' width='16' height='16'
+                                                        viewBox='0 0 16 16' aria-hidden='true'>
+                                                        <path
+                                                            d='M1 13H15V14H1zM12.7 4.5c.4-.4.4-1 0-1.4 0 0 0 0 0 0l-1.8-1.8c-.4-.4-1-.4-1.4 0 0 0 0 0 0 0L2 8.8V12h3.2L12.7 4.5zM10.2 2L12 3.8l-1.5 1.5L8.7 3.5 10.2 2zM3 11V9.2l5-5L9.8 6l-5 5H3z'>
+                                                        </path>
+                                                    </svg> Edit</div>
+                                            </button></li>
+                                        <li class='bx--overflow-menu-options__option bx--table-row--menu-option'><button
+                                                class='bx--overflow-menu-options__btn'
+                                                onclick='openModal("deletePrinterModal-2")'>
+                                                <div class='bx--overflow-menu-options__option-content'><svg
+                                                        focusable='false' preserveAspectRatio='xMidYMid meet'
+                                                        style='will-change: transform;'
+                                                        xmlns='http://www.w3.org/2000/svg' width='16' height='16'
+                                                        viewBox='0 0 16 16' aria-hidden='true'>
+                                                        <path d='M6 6H7V12H6zM9 6H10V12H9z'></path>
+                                                        <path
+                                                            d='M2 3v1h1v10c0 .6.4 1 1 1h8c.6 0 1-.4 1-1V4h1V3H2zM4 14V4h8v10H4zM6 1H10V2H6z'>
+                                                        </path>
+                                                    </svg> Delete</div>
+                                            </button></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Other Octo</td>
+                            <td>OctoPrint</td>
+                            <td>
+                                <div class='bx--tag bx--tag--magenta'>Offline</div>
+                            </td>
+                            <td class='bx--table-column-menu' style='width: 3.25rem'>
+                                <div data-overflow-menu role='menu' tabindex='0' class='bx--overflow-menu'><svg
+                                        focusable='false' preserveAspectRatio='xMidYMid meet'
+                                        style='will-change: transform;' xmlns='http://www.w3.org/2000/svg'
+                                        class='bx--overflow-menu__icon' width='16' height='16' viewBox='0 0 16 16'
+                                        aria-hidden='true'>
+                                        <circle cx='8' cy='3' r='1'></circle>
+                                        <circle cx='8' cy='8' r='1'></circle>
+                                        <circle cx='8' cy='13' r='1'></circle>
+                                    </svg>
+                                    <ul class='bx--overflow-menu-options bx--overflow-menu--flip'
+                                        data-floating-menu-direction='bottom'>
+                                        <li class='bx--overflow-menu-options__option bx--table-row--menu-option'><button
+                                                class='bx--overflow-menu-options__btn' onclick='openModal("mae-3")'>
+                                                <div class='bx--overflow-menu-options__option-content'><svg
+                                                        focusable='false' preserveAspectRatio='xMidYMid meet'
+                                                        style='will-change: transform;'
+                                                        xmlns='http://www.w3.org/2000/svg' width='16' height='16'
+                                                        viewBox='0 0 16 16' aria-hidden='true'>
+                                                        <path
+                                                            d='M1 13H15V14H1zM12.7 4.5c.4-.4.4-1 0-1.4 0 0 0 0 0 0l-1.8-1.8c-.4-.4-1-.4-1.4 0 0 0 0 0 0 0L2 8.8V12h3.2L12.7 4.5zM10.2 2L12 3.8l-1.5 1.5L8.7 3.5 10.2 2zM3 11V9.2l5-5L9.8 6l-5 5H3z'>
+                                                        </path>
+                                                    </svg> Edit</div>
+                                            </button></li>
+                                        <li class='bx--overflow-menu-options__option bx--table-row--menu-option'><button
+                                                class='bx--overflow-menu-options__btn'
+                                                onclick='openModal("deletePrinterModal-3")'>
                                                 <div class='bx--overflow-menu-options__option-content'><svg
                                                         focusable='false' preserveAspectRatio='xMidYMid meet'
                                                         style='will-change: transform;'
@@ -274,14 +382,15 @@
                                             </svg></button>
                                     </div>
                                     <div class='bx--modal-content bx--modal-content--with-form'>
-                                        <div class=' bx--form-item' data-sh='apac-0'><label for='e-tname-1'
-                                                class='bx--label'>Printer Name</label><input id='e-tname-1' type='text'
-                                                class='bx--text-input' name='e-tname' value='AnycubicI3' maxlength='20'>
-                                        </div>
-                                        <div class='bx--form-item bx--select ' data-sh='apac-0'><label for='e-tapi-1'
+                                        <div class=' bx--form-item'><label for='e-tname-1' class='bx--label'>Printer
+                                                Name</label><input id='e-tname-1' type='text' class='bx--text-input'
+                                                placeholder='Your custom name' name='e-tname' value='AnycubicI3'
+                                                maxlength='20'></div>
+                                        <div class='bx--form-item bx--select '><label for='e-tapi-1'
                                                 class='bx--label'>API Type</label>
                                             <div class='bx--select-input__wrapper'><select id='e-tapi-1'
-                                                    class='bx--select-input' name='e-tapi'>
+                                                    class='bx--select-input' name='e-tapi'
+                                                    onchange='apiTypeSelect("e-tapi-1", "apacapi-1")'>
                                                     <option class='bx--select-option' value='0'>Duet</option>
                                                     <option class='bx--select-option' value='1' selected='selected'>
                                                         Klipper</option>
@@ -296,18 +405,20 @@
                                                     <path d='M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z'></path>
                                                 </svg></div>
                                         </div>
-                                        <div class=' bx--form-item' data-sh='apac-0'><label for='e-tapikey-1'
+                                        <div class=' bx--form-item' data-sh='apacapi-1'><label for='e-tapikey-1'
                                                 class='bx--label'>API Key</label><input id='e-tapikey-1' type='text'
-                                                class='bx--text-input' name='e-tapikey' value='' maxlength='60'></div>
-                                        <div class=' bx--form-item' data-sh='apac-0'><label for='e-taddr-1'
-                                                class='bx--label'>Hostname or IP Address (do not include
-                                                http://)</label><input id='e-taddr-1' type='text' class='bx--text-input'
-                                                name='e-taddr' value='192.168.0.241' maxlength='60'></div>
-                                        <div class=' bx--form-item' data-sh='apac-0'><label for='e-tport-1'
+                                                class='bx--text-input' placeholder='Remote api key to use'
+                                                name='e-tapikey' value='' maxlength='60'></div>
+                                        <div class=' bx--form-item'><label for='e-taddr-1' class='bx--label'>Hostname or
+                                                IP Address (do not include http://)</label><input id='e-taddr-1'
+                                                type='text' class='bx--text-input'
+                                                placeholder='Remote address for printer' name='e-taddr'
+                                                value='192.168.0.241' maxlength='60'></div>
+                                        <div class=' bx--form-item'><label for='e-tport-1'
                                                 class='bx--label'>Port</label><input id='e-tport-1' type='text'
-                                                class='bx--text-input' name='e-tport' value='7125' maxlength='5'
-                                                onkeypress='return isNumberKey(event)'></div>
-                                        <div class=' bx--form-item' data-sh='apac-0'><input
+                                                class='bx--text-input' placeholder='' name='e-tport' value='7125'
+                                                maxlength='5' onkeypress='return isNumberKey(event)'></div>
+                                        <div class=' bx--form-item'><input
                                                 class='bx--toggle-input bx--toggle-input--small' id='e-tapipw-1'
                                                 type='checkbox' name='e-tapipw'
                                                 onchange="showhide('e-tapipw-1', 'apac-1')"><label
@@ -322,11 +433,13 @@
                                         <div class=' bx--form-item' data-sh='apac-1'><label for='isBasicAuth-1'
                                                 class='bx--label'>Use Security Credentials for Configuration
                                                 Changes</label><input id='isBasicAuth-1' type='text'
-                                                class='bx--text-input' name='isBasicAuth' value='' maxlength='30'></div>
+                                                class='bx--text-input' placeholder='Username for basic auth'
+                                                name='isBasicAuth' value='' maxlength='30'></div>
                                         <div class=' bx--form-item' data-sh='apac-1'><label for='userid-1'
                                                 class='bx--label'>User ID (for this interface)</label><input
-                                                id='userid-1' type='password' class='bx--text-input' name='userid'
-                                                value='' maxlength='120'></div><br><br>
+                                                id='userid-1' type='password' class='bx--text-input'
+                                                placeholder='Password for basic auth' name='userid' value=''
+                                                maxlength='120'></div><br><br>
                                     </div>
                                     <div class='bx--modal-content--overflow-indicator'></div>
                                     <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary'
@@ -337,14 +450,41 @@
                             </div><span tabindex='0'></span>
                         </div>
             </div>
-            <div data-modal id='mae-0' class='bx--modal' role='dialog' aria-modal='true' aria-labelledby='mae-0-label'
-                aria-describedby='mae-0-heading' tabindex='-1'>
+            <div data-modal id='deletePrinterModal-1' class='bx--modal bx--modal--danger' role='dialog'
+                aria-modal='true' aria-labelledby='deletePrinterModal-1-label'
+                aria-describedby='deletePrinterModal-1-heading' tabindex='-1'>
                 <div class='bx--modal-container'>
-                    <form method='GET' action='/configureprinter/edit'><input type='hidden' name='id' value='0'>
+                    <div class='bx--modal-header'>
+                        <p class='bx--modal-header__label bx--type-delta' id='deletePrinterModal-1-label'>WARNING</p>
+                        <p class='bx--modal-header__heading bx--type-beta' id='deletePrinterModal-1-heading'>Delete
+                            printer</p><button class='bx--modal-close' type='button' aria-label='close modal'
+                            onclick='closeModal("deletePrinterModal-1")'><svg focusable='false'
+                                preserveAspectRatio='xMidYMid meet' style='will-change: transform;'
+                                xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon' width='16' height='16'
+                                viewBox='0 0 16 16' aria-hidden='true'>
+                                <path
+                                    d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                                </path>
+                            </svg></button>
+                    </div>
+                    <div class='bx--modal-content'>
+                        <p>Do you want to delete the printer configuration &quot;AnycubicI3&quot;?</p><br><br><br>
+                    </div>
+                    <div class='bx--modal-content--overflow-indicator'></div>
+                    <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='button'
+                            onclick='closeModal("deletePrinterModal-1")'>Abort</button><button
+                            class='bx--btn bx--btn--danger' type='button' aria-label='Danger' data-modal-primary-focus
+                            onclick='openUrl("/configureprinter/delete?id=1")'>Delete</button></div>
+                </div><span tabindex='0'></span>
+            </div>
+            <div data-modal id='mae-2' class='bx--modal' role='dialog' aria-modal='true' aria-labelledby='mae-2-label'
+                aria-describedby='mae-2-heading' tabindex='-1'>
+                <div class='bx--modal-container'>
+                    <form method='GET' action='/configureprinter/edit'><input type='hidden' name='id' value='2'>
                         <div class='bx--modal-header'>
-                            <p class='bx--modal-header__label bx--type-delta' id='mae-0-label'>Printer Configuration</p>
-                            <p class='bx--modal-header__heading bx--type-beta' id='mae-0-heading'>Create new printer</p>
-                            <button class='bx--modal-close' type='button' onclick='closeModal("mae-0")'><svg
+                            <p class='bx--modal-header__label bx--type-delta' id='mae-2-label'>Printer Configuration</p>
+                            <p class='bx--modal-header__heading bx--type-beta' id='mae-2-heading'>Edit data for printer
+                            </p><button class='bx--modal-close' type='button' onclick='closeModal("mae-2")'><svg
                                     focusable='false' preserveAspectRatio='xMidYMid meet'
                                     style='will-change: transform;' xmlns='http://www.w3.org/2000/svg'
                                     class='bx--modal-close__icon' width='16' height='16' viewBox='0 0 16 16'
@@ -355,14 +495,15 @@
                                 </svg></button>
                         </div>
                         <div class='bx--modal-content bx--modal-content--with-form'>
-                            <div class=' bx--form-item' data-sh='apac-2'><label for='e-tname-0'
-                                    class='bx--label'>Printer Name</label><input id='e-tname-0' type='text'
-                                    class='bx--text-input' name='e-tname' value='' maxlength='20'></div>
-                            <div class='bx--form-item bx--select ' data-sh='apac-2'><label for='e-tapi-0'
-                                    class='bx--label'>API Type</label>
-                                <div class='bx--select-input__wrapper'><select id='e-tapi-0' class='bx--select-input'
-                                        name='e-tapi' onchange='apiTypeSelect("e-tapi-0", "apac-22")'>
-                                        <option class='bx--select-option' value='0'>Duet</option>
+                            <div class=' bx--form-item'><label for='e-tname-2' class='bx--label'>Printer
+                                    Name</label><input id='e-tname-2' type='text' class='bx--text-input'
+                                    placeholder='Your custom name' name='e-tname' value='Other Duet' maxlength='20'>
+                            </div>
+                            <div class='bx--form-item bx--select '><label for='e-tapi-2' class='bx--label'>API
+                                    Type</label>
+                                <div class='bx--select-input__wrapper'><select id='e-tapi-2' class='bx--select-input'
+                                        name='e-tapi' onchange='apiTypeSelect("e-tapi-2", "apacapi-2")'>
+                                        <option class='bx--select-option' value='0' selected='selected'>Duet</option>
                                         <option class='bx--select-option' value='1'>Klipper</option>
                                         <option class='bx--select-option' value='2' data-need-api='true'>OctoPrint
                                         </option>
@@ -375,48 +516,238 @@
                                         <path d='M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z'></path>
                                     </svg></div>
                             </div>
-                            <div class=' bx--form-item' data-sh='apac-22'><label for='e-tapikey-0' class='bx--label'>API
-                                    Key</label><input id='e-tapikey-0' type='text' class='bx--text-input'
-                                    name='e-tapikey' value='' maxlength='60'></div>
-                            <div class=' bx--form-item' data-sh='apac-2'><label for='e-taddr-0'
-                                    class='bx--label'>Hostname or IP Address (do not include http://)</label><input
-                                    id='e-taddr-0' type='text' class='bx--text-input' name='e-taddr' value=''
+                            <div class=' bx--form-item' data-sh='apacapi-2'><label for='e-tapikey-2'
+                                    class='bx--label'>API Key</label><input id='e-tapikey-2' type='text'
+                                    class='bx--text-input' placeholder='Remote api key to use' name='e-tapikey' value=''
                                     maxlength='60'></div>
-                            <div class=' bx--form-item' data-sh='apac-2'><label for='e-tport-0'
-                                    class='bx--label'>Port</label><input id='e-tport-0' type='text'
-                                    class='bx--text-input' name='e-tport' value='80' maxlength='5'
-                                    onkeypress='return isNumberKey(event)'></div>
-                            <div class=' bx--form-item' data-sh='apac-2'><input
-                                    class='bx--toggle-input bx--toggle-input--small' id='e-tapipw-0' type='checkbox'
-                                    name='e-tapipw' checked='checked' onchange="showhide('e-tapipw-0', 'apac-0')"><label
-                                    class='bx--toggle-input__label' for='e-tapipw-0'><span
-                                        class='bx--toggle__switch'><svg class='bx--toggle__check' width='6px'
-                                            height='5px' viewBox='0 0 6 5'>
+                            <div class=' bx--form-item'><label for='e-taddr-2' class='bx--label'>Hostname or IP Address
+                                    (do not include http://)</label><input id='e-taddr-2' type='text'
+                                    class='bx--text-input' placeholder='Remote address for printer' name='e-taddr'
+                                    value='' maxlength='60'></div>
+                            <div class=' bx--form-item'><label for='e-tport-2' class='bx--label'>Port</label><input
+                                    id='e-tport-2' type='text' class='bx--text-input' placeholder='' name='e-tport'
+                                    value='80' maxlength='5' onkeypress='return isNumberKey(event)'></div>
+                            <div class=' bx--form-item'><input class='bx--toggle-input bx--toggle-input--small'
+                                    id='e-tapipw-2' type='checkbox' name='e-tapipw'
+                                    onchange="showhide('e-tapipw-2', 'apac-2')"><label class='bx--toggle-input__label'
+                                    for='e-tapipw-2'><span class='bx--toggle__switch'><svg class='bx--toggle__check'
+                                            width='6px' height='5px' viewBox='0 0 6 5'>
                                             <path d='M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z' />
                                         </svg><span class='bx--toggle__text--off' aria-hidden='true'>Haproxy or basic
                                             auth deactivated</span><span class='bx--toggle__text--on'
                                             aria-hidden='true'>Haproxy or basic auth activated</span></span></label>
                             </div>
-                            <div class=' bx--form-item' data-sh='apac-0'><label for='isBasicAuth-0'
+                            <div class=' bx--form-item' data-sh='apac-2'><label for='isBasicAuth-2'
                                     class='bx--label'>Use Security Credentials for Configuration Changes</label><input
-                                    id='isBasicAuth-0' type='text' class='bx--text-input' name='isBasicAuth' value=''
-                                    maxlength='30'></div>
-                            <div class=' bx--form-item' data-sh='apac-0'><label for='userid-0' class='bx--label'>User ID
-                                    (for this interface)</label><input id='userid-0' type='password'
-                                    class='bx--text-input' name='userid' value='' maxlength='120'></div><br><br>
+                                    id='isBasicAuth-2' type='text' class='bx--text-input'
+                                    placeholder='Username for basic auth' name='isBasicAuth' value='' maxlength='30'>
+                            </div>
+                            <div class=' bx--form-item' data-sh='apac-2'><label for='userid-2' class='bx--label'>User ID
+                                    (for this interface)</label><input id='userid-2' type='password'
+                                    class='bx--text-input' placeholder='Password for basic auth' name='userid' value=''
+                                    maxlength='120'></div><br><br>
                         </div>
                         <div class='bx--modal-content--overflow-indicator'></div>
                         <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='reset'
-                                onclick='closeModal("mae-0")'>Abort</button><button class='bx--btn bx--btn--primary'
-                                type='submit' onclick='closeModal("mae-0")'>Save</button></div>
+                                onclick='closeModal("mae-2")'>Abort</button><button class='bx--btn bx--btn--primary'
+                                type='submit' onclick='closeModal("mae-2")'>Save</button></div>
                     </form>
                 </div><span tabindex='0'></span>
             </div>
         </div>
-        </tbody>
-        </table>
+        <div data-modal id='deletePrinterModal-2' class='bx--modal bx--modal--danger' role='dialog' aria-modal='true'
+            aria-labelledby='deletePrinterModal-2-label' aria-describedby='deletePrinterModal-2-heading' tabindex='-1'>
+            <div class='bx--modal-container'>
+                <div class='bx--modal-header'>
+                    <p class='bx--modal-header__label bx--type-delta' id='deletePrinterModal-2-label'>WARNING</p>
+                    <p class='bx--modal-header__heading bx--type-beta' id='deletePrinterModal-2-heading'>Delete printer
+                    </p><button class='bx--modal-close' type='button' aria-label='close modal'
+                        onclick='closeModal("deletePrinterModal-2")'><svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' style='will-change: transform;'
+                            xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon' width='16' height='16'
+                            viewBox='0 0 16 16' aria-hidden='true'>
+                            <path d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                            </path>
+                        </svg></button>
+                </div>
+                <div class='bx--modal-content'>
+                    <p>Do you want to delete the printer configuration &quot;Other Duet&quot;?</p><br><br><br>
+                </div>
+                <div class='bx--modal-content--overflow-indicator'></div>
+                <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='button'
+                        onclick='closeModal("deletePrinterModal-2")'>Abort</button><button
+                        class='bx--btn bx--btn--danger' type='button' aria-label='Danger' data-modal-primary-focus
+                        onclick='openUrl("/configureprinter/delete?id=2")'>Delete</button></div>
+            </div><span tabindex='0'></span>
+        </div>
+        <div data-modal id='mae-3' class='bx--modal' role='dialog' aria-modal='true' aria-labelledby='mae-3-label'
+            aria-describedby='mae-3-heading' tabindex='-1'>
+            <div class='bx--modal-container'>
+                <form method='GET' action='/configureprinter/edit'><input type='hidden' name='id' value='3'>
+                    <div class='bx--modal-header'>
+                        <p class='bx--modal-header__label bx--type-delta' id='mae-3-label'>Printer Configuration</p>
+                        <p class='bx--modal-header__heading bx--type-beta' id='mae-3-heading'>Edit data for printer</p>
+                        <button class='bx--modal-close' type='button' onclick='closeModal("mae-3")'><svg
+                                focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;'
+                                xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon' width='16' height='16'
+                                viewBox='0 0 16 16' aria-hidden='true'>
+                                <path
+                                    d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                                </path>
+                            </svg></button>
+                    </div>
+                    <div class='bx--modal-content bx--modal-content--with-form'>
+                        <div class=' bx--form-item'><label for='e-tname-3' class='bx--label'>Printer Name</label><input
+                                id='e-tname-3' type='text' class='bx--text-input' placeholder='Your custom name'
+                                name='e-tname' value='Other Octo' maxlength='20'></div>
+                        <div class='bx--form-item bx--select '><label for='e-tapi-3' class='bx--label'>API Type</label>
+                            <div class='bx--select-input__wrapper'><select id='e-tapi-3' class='bx--select-input'
+                                    name='e-tapi' onchange='apiTypeSelect("e-tapi-3", "apacapi-3")'>
+                                    <option class='bx--select-option' value='0'>Duet</option>
+                                    <option class='bx--select-option' value='1'>Klipper</option>
+                                    <option class='bx--select-option' value='2' data-need-api='true'
+                                        selected='selected'>OctoPrint</option>
+                                    <option class='bx--select-option' value='3' data-need-api='true'>Repetier</option>
+                                </select><svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                                    style='will-change: transform;' xmlns='http://www.w3.org/2000/svg'
+                                    class='bx--select__arrow' width='10' height='6' viewBox='0 0 10 6'
+                                    aria-hidden='true'>
+                                    <path d='M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z'></path>
+                                </svg></div>
+                        </div>
+                        <div class=' bx--form-item' data-sh='apacapi-3'><label for='e-tapikey-3' class='bx--label'>API
+                                Key</label><input id='e-tapikey-3' type='text' class='bx--text-input'
+                                placeholder='Remote api key to use' name='e-tapikey' value='MYQPIKEXY' maxlength='60'>
+                        </div>
+                        <div class=' bx--form-item'><label for='e-taddr-3' class='bx--label'>Hostname or IP Address (do
+                                not include http://)</label><input id='e-taddr-3' type='text' class='bx--text-input'
+                                placeholder='Remote address for printer' name='e-taddr' value='test.local'
+                                maxlength='60'></div>
+                        <div class=' bx--form-item'><label for='e-tport-3' class='bx--label'>Port</label><input
+                                id='e-tport-3' type='text' class='bx--text-input' placeholder='' name='e-tport'
+                                value='80' maxlength='5' onkeypress='return isNumberKey(event)'></div>
+                        <div class=' bx--form-item'><input class='bx--toggle-input bx--toggle-input--small'
+                                id='e-tapipw-3' type='checkbox' name='e-tapipw'
+                                onchange="showhide('e-tapipw-3', 'apac-3')"><label class='bx--toggle-input__label'
+                                for='e-tapipw-3'><span class='bx--toggle__switch'><svg class='bx--toggle__check'
+                                        width='6px' height='5px' viewBox='0 0 6 5'>
+                                        <path d='M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z' />
+                                    </svg><span class='bx--toggle__text--off' aria-hidden='true'>Haproxy or basic auth
+                                        deactivated</span><span class='bx--toggle__text--on' aria-hidden='true'>Haproxy
+                                        or basic auth activated</span></span></label></div>
+                        <div class=' bx--form-item' data-sh='apac-3'><label for='isBasicAuth-3' class='bx--label'>Use
+                                Security Credentials for Configuration Changes</label><input id='isBasicAuth-3'
+                                type='text' class='bx--text-input' placeholder='Username for basic auth'
+                                name='isBasicAuth' value='' maxlength='30'></div>
+                        <div class=' bx--form-item' data-sh='apac-3'><label for='userid-3' class='bx--label'>User ID
+                                (for this interface)</label><input id='userid-3' type='password' class='bx--text-input'
+                                placeholder='Password for basic auth' name='userid' value='' maxlength='120'></div>
+                        <br><br>
+                    </div>
+                    <div class='bx--modal-content--overflow-indicator'></div>
+                    <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='reset'
+                            onclick='closeModal("mae-3")'>Abort</button><button class='bx--btn bx--btn--primary'
+                            type='submit' onclick='closeModal("mae-3")'>Save</button></div>
+                </form>
+            </div><span tabindex='0'></span>
+        </div>
+    </div>
+    <div data-modal id='deletePrinterModal-3' class='bx--modal bx--modal--danger' role='dialog' aria-modal='true'
+        aria-labelledby='deletePrinterModal-3-label' aria-describedby='deletePrinterModal-3-heading' tabindex='-1'>
+        <div class='bx--modal-container'>
+            <div class='bx--modal-header'>
+                <p class='bx--modal-header__label bx--type-delta' id='deletePrinterModal-3-label'>WARNING</p>
+                <p class='bx--modal-header__heading bx--type-beta' id='deletePrinterModal-3-heading'>Delete printer</p>
+                <button class='bx--modal-close' type='button' aria-label='close modal'
+                    onclick='closeModal("deletePrinterModal-3")'><svg focusable='false'
+                        preserveAspectRatio='xMidYMid meet' style='will-change: transform;'
+                        xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon' width='16' height='16'
+                        viewBox='0 0 16 16' aria-hidden='true'>
+                        <path d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                        </path>
+                    </svg></button>
+            </div>
+            <div class='bx--modal-content'>
+                <p>Do you want to delete the printer configuration &quot;Other Octo&quot;?</p><br><br><br>
+            </div>
+            <div class='bx--modal-content--overflow-indicator'></div>
+            <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='button'
+                    onclick='closeModal("deletePrinterModal-3")'>Abort</button><button class='bx--btn bx--btn--danger'
+                    type='button' aria-label='Danger' data-modal-primary-focus
+                    onclick='openUrl("/configureprinter/delete?id=3")'>Delete</button></div>
+        </div><span tabindex='0'></span>
+    </div>
+    <div data-modal id='mae-0' class='bx--modal' role='dialog' aria-modal='true' aria-labelledby='mae-0-label'
+        aria-describedby='mae-0-heading' tabindex='-1'>
+        <div class='bx--modal-container'>
+            <form method='GET' action='/configureprinter/edit'><input type='hidden' name='id' value='0'>
+                <div class='bx--modal-header'>
+                    <p class='bx--modal-header__label bx--type-delta' id='mae-0-label'>Printer Configuration</p>
+                    <p class='bx--modal-header__heading bx--type-beta' id='mae-0-heading'>Create new printer</p><button
+                        class='bx--modal-close' type='button' onclick='closeModal("mae-0")'><svg focusable='false'
+                            preserveAspectRatio='xMidYMid meet' style='will-change: transform;'
+                            xmlns='http://www.w3.org/2000/svg' class='bx--modal-close__icon' width='16' height='16'
+                            viewBox='0 0 16 16' aria-hidden='true'>
+                            <path d='M12 4.7L11.3 4 8 7.3 4.7 4 4 4.7 7.3 8 4 11.3 4.7 12 8 8.7 11.3 12 12 11.3 8.7 8z'>
+                            </path>
+                        </svg></button>
+                </div>
+                <div class='bx--modal-content bx--modal-content--with-form'>
+                    <div class=' bx--form-item'><label for='e-tname-0' class='bx--label'>Printer Name</label><input
+                            id='e-tname-0' type='text' class='bx--text-input' placeholder='Your custom name'
+                            name='e-tname' value='' maxlength='20'></div>
+                    <div class='bx--form-item bx--select '><label for='e-tapi-0' class='bx--label'>API Type</label>
+                        <div class='bx--select-input__wrapper'><select id='e-tapi-0' class='bx--select-input'
+                                name='e-tapi' onchange='apiTypeSelect("e-tapi-0", "apacapi-0")'>
+                                <option class='bx--select-option' value='0'>Duet</option>
+                                <option class='bx--select-option' value='1'>Klipper</option>
+                                <option class='bx--select-option' value='2' data-need-api='true'>OctoPrint</option>
+                                <option class='bx--select-option' value='3' data-need-api='true'>Repetier</option>
+                            </select><svg focusable='false' preserveAspectRatio='xMidYMid meet'
+                                style='will-change: transform;' xmlns='http://www.w3.org/2000/svg'
+                                class='bx--select__arrow' width='10' height='6' viewBox='0 0 10 6' aria-hidden='true'>
+                                <path d='M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z'></path>
+                            </svg></div>
+                    </div>
+                    <div class=' bx--form-item' data-sh='apacapi-0'><label for='e-tapikey-0' class='bx--label'>API
+                            Key</label><input id='e-tapikey-0' type='text' class='bx--text-input'
+                            placeholder='Remote api key to use' name='e-tapikey' value='' maxlength='60'></div>
+                    <div class=' bx--form-item'><label for='e-taddr-0' class='bx--label'>Hostname or IP Address (do not
+                            include http://)</label><input id='e-taddr-0' type='text' class='bx--text-input'
+                            placeholder='Remote address for printer' name='e-taddr' value='' maxlength='60'></div>
+                    <div class=' bx--form-item'><label for='e-tport-0' class='bx--label'>Port</label><input
+                            id='e-tport-0' type='text' class='bx--text-input' placeholder='' name='e-tport' value='80'
+                            maxlength='5' onkeypress='return isNumberKey(event)'></div>
+                    <div class=' bx--form-item'><input class='bx--toggle-input bx--toggle-input--small' id='e-tapipw-0'
+                            type='checkbox' name='e-tapipw' checked='checked'
+                            onchange="showhide('e-tapipw-0', 'apac-0')"><label class='bx--toggle-input__label'
+                            for='e-tapipw-0'><span class='bx--toggle__switch'><svg class='bx--toggle__check' width='6px'
+                                    height='5px' viewBox='0 0 6 5'>
+                                    <path d='M2.2 2.7L5 0 6 1 2.2 5 0 2.7 1 1.5z' />
+                                </svg><span class='bx--toggle__text--off' aria-hidden='true'>Haproxy or basic auth
+                                    deactivated</span><span class='bx--toggle__text--on' aria-hidden='true'>Haproxy or
+                                    basic auth activated</span></span></label></div>
+                    <div class=' bx--form-item' data-sh='apac-0'><label for='isBasicAuth-0' class='bx--label'>Use
+                            Security Credentials for Configuration Changes</label><input id='isBasicAuth-0' type='text'
+                            class='bx--text-input' placeholder='Username for basic auth' name='isBasicAuth' value=''
+                            maxlength='30'></div>
+                    <div class=' bx--form-item' data-sh='apac-0'><label for='userid-0' class='bx--label'>User ID (for
+                            this interface)</label><input id='userid-0' type='password' class='bx--text-input'
+                            placeholder='Password for basic auth' name='userid' value='' maxlength='120'></div><br><br>
+                </div>
+                <div class='bx--modal-content--overflow-indicator'></div>
+                <div class='bx--modal-footer'><button class='bx--btn bx--btn--secondary' type='reset'
+                        onclick='closeModal("mae-0")'>Abort</button><button class='bx--btn bx--btn--primary'
+                        type='submit' onclick='closeModal("mae-0")'>Save</button></div>
+            </form>
+        </div><span tabindex='0'></span>
     </div>
     </div>
+    </tbody>
+    </table>
+    </div>
+    </div>
+    <script>$("select[id^='e-tapi']").trigger('change')</script>
     <div data-modal id='resetSettingsModal' class='bx--modal bx--modal--danger' role='dialog' aria-modal='true'
         aria-labelledby='resetSettingsModal-label' aria-describedby='resetSettingsModal-heading' tabindex='-1'>
         <div class='bx--modal-container'>
@@ -472,15 +803,8 @@
                 <circle class='bx--loading__stroke' cx='0' cy='0' r='37.5' />
             </svg></div>
     </div>
-
-    <script>
-        $("select[id^='e-tapi']").trigger('change');
-        console.log($("input[type='checkbox']"));
-        $("input[type='checkbox']").trigger('change');
-    </script>
-
     <script src='https://unpkg.com/carbon-components/scripts/carbon-components.min.js'></script>
-    <script>$(function () { $('form').on('submit', function (e) { $('#pageloading').removeClass('hidden') }) })</script>
+    <script>$(function () { $('form').on('submit', function (e) { $('#pageloading').removeClass('hidden') }); $("input[type='checkbox']").trigger('change') })</script>
 </body>
 
 </html>
