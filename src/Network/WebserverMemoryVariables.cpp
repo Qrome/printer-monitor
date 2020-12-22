@@ -58,7 +58,14 @@ void WebserverMemoryVariables::sendHeader(
     server->sendContent(pageLabel);
     server->sendContent("</h4><h1 id='page-title' class='page-header__title'>");
     server->sendContent(pageTitle);
-    server->sendContent("</h1></div>");
+    server->sendContent("</h1>");
+
+    TimeClient *timeCli = globalDataController->getTimeClient();
+    String displayTime = timeCli->getAmPmHours() + ":" + timeCli->getMinutes() + ":" + timeCli->getSeconds() + " " + timeCli->getAmPm();
+    if (globalDataController->getClockSettings()->is24h) {
+        displayTime = timeCli->getHours() + ":" + timeCli->getMinutes() + ":" + timeCli->getSeconds();
+    }
+    server->sendContent("<div style='position:absolute;right:0;top:0;text-align:right'>Current time<br>" + displayTime + "</div></div>");
 
     if (globalDataController->getSystemSettings()->lastError.length() > 0) {
         String errorBlock = FPSTR(HEADER_BLOCK_ERROR);
@@ -103,6 +110,191 @@ void WebserverMemoryVariables::sendFooter(ESP8266WebServer *server, GlobalDataCo
     server->sendContent("");
     server->client().stop();
     globalDataController->ledOnOff(false);
+}
+
+/**
+ * @brief Send out main page
+ * @param server                    Send out instancce
+ * @param globalDataController      Access to global data
+ */
+void WebserverMemoryVariables::sendMainPage(ESP8266WebServer *server, GlobalDataController *globalDataController) {
+    String rowStart = FPSTR(FORM_ITEM_ROW_START);
+    rowStart.replace("%ROWEXTRACLASS%", "");
+
+    // Show weather and sensordata
+    OpenWeatherMapClient *weatherClient = globalDataController->getWeatherClient();
+    server->sendContent(rowStart);
+    String startBlock = FPSTR(MAINPAGE_ROW_WEATHER_AND_SENSOR_START);
+    String displayBlock = FPSTR(MAINPAGE_ROW_WEATHER_AND_SENSOR_BLOCK);
+    if (!globalDataController->getWeatherSettings()->show || weatherClient->getCity(0) == "") {
+        startBlock.replace("%ICON%", "");
+        server->sendContent(startBlock);
+        if (globalDataController->getWeatherSettings()->show) {
+            displayBlock = FPSTR(MAINPAGE_ROW_WEATHER_ERROR_BLOCK);
+            if (weatherClient->getError() != "") {
+                displayBlock.replace("%ERRORMSG%", "Weather Error: " + weatherClient->getError());
+            } else {
+                displayBlock.replace("%ERRORMSG%", "");
+            }
+        } else {
+            displayBlock = "";
+        }
+    } else {
+        startBlock.replace("%ICON%", weatherClient->getIcon(0));
+        server->sendContent(startBlock);
+        displayBlock.replace("%BTITLE%", weatherClient->getCity(0) + ", " + weatherClient->getCountry(0));
+        displayBlock.replace("%BLABEL%", "Lat: " + weatherClient->getLat(0) + ", Lon: " + weatherClient->getLon(0));
+        displayBlock.replace("%TEMPICON%", FPSTR(ICON32_TEMP));
+        displayBlock.replace("%TEMPERATURE%", weatherClient->getTempRounded(0) + weatherClient->getTempSymbol(true));
+        displayBlock.replace("%ICONA%", FPSTR(ICON16_WIND));
+        displayBlock.replace("%ICONB%", FPSTR(ICON16_HUMIDITY));
+        displayBlock.replace("%TEXTA%", weatherClient->getWind(0) + " " + weatherClient->getSpeedSymbol() + " Winds");
+        displayBlock.replace("%TEXTB%", weatherClient->getHumidity(0) + "% Humidity");
+        displayBlock.replace("%EXTRABLOCK%", "Condition: " + weatherClient->getDescription(0));
+    }
+    server->sendContent(displayBlock);
+    
+    // TODO: SensorData
+    /*displayBlock = FPSTR(MAINPAGE_ROW_WEATHER_AND_SENSOR_BLOCK);
+    displayBlock.replace("%TEMPICON%", FPSTR(ICON32_TEMP));
+    displayBlock.replace("%BTITLE%", "Sensor");
+    displayBlock.replace("%BLABEL%", "BME280");
+    displayBlock.replace("%TEMPERATURE%", "24&#176;C");
+    displayBlock.replace("%ICONA%", FPSTR(ICON16_HUMIDITY));
+    displayBlock.replace("%ICONB%", FPSTR(ICON16_PRESSURE));
+    displayBlock.replace("%TEXTA%", "30% Humidity");
+    displayBlock.replace("%TEXTB%", "1000 hPa");
+    displayBlock.replace("%EXTRABLOCK%", "");
+    server->sendContent(displayBlock);*/
+
+    server->sendContent(FPSTR(MAINPAGE_ROW_WEATHER_AND_SENSOR_END));
+    server->sendContent(FPSTR(FORM_ITEM_ROW_END));
+
+    // Show all printer states
+    int totalPrinters = globalDataController->getNumPrinters();
+    PrinterDataStruct *printerConfigs = globalDataController->getPrinterSettings();
+    String lineData = "";
+    int colCnt = 0;
+    server->sendContent(rowStart);
+
+    // Show all errors if printers have one
+    for(int i=0; i<totalPrinters; i++) {
+        if (colCnt >= 3) {
+            server->sendContent(FPSTR(FORM_ITEM_ROW_END));
+            server->sendContent(rowStart);
+            colCnt = 0;
+        }
+
+        if ((printerConfigs[i].state == PRINTER_STATE_ERROR) || (printerConfigs[i].state == PRINTER_STATE_OFFLINE)) {
+            server->sendContent(FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_S_ERROROFFLINE));
+        }
+        else if (printerConfigs[i].state == PRINTER_STATE_STANDBY) {
+            server->sendContent(FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_S_STANDBY));
+        }
+        else {
+            server->sendContent(FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_S_PRINTING));
+        }
+
+        lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_TITLE);
+        lineData.replace("%NAME%", String(printerConfigs[i].customName));
+        lineData.replace("%API%", globalDataController->getPrinterClientType(&printerConfigs[i]));
+        server->sendContent(lineData);
+
+        lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+        lineData.replace("%T%", "Host");
+        lineData.replace("%V%", String(printerConfigs[i].remoteAddress) + ":" + String(printerConfigs[i].remotePort));
+        server->sendContent(lineData);
+
+        lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+        lineData.replace("%T%", "State");
+        lineData.replace("%V%", globalDataController->getPrinterStateAsText(&printerConfigs[i]));
+        server->sendContent(lineData);
+
+        if (printerConfigs[i].state != PRINTER_STATE_STANDBY) {
+            if (printerConfigs[i].state == PRINTER_STATE_ERROR) {
+                lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+                lineData.replace("%T%", "Reason");
+                lineData.replace("%V%", String(printerConfigs[i].error));
+                server->sendContent(lineData);
+            }
+            else if (printerConfigs[i].state == PRINTER_STATE_OFFLINE) {
+                lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+                lineData.replace("%T%", "Reason");
+                lineData.replace("%V%", "Not reachable");
+                server->sendContent(lineData);
+            } else {
+                if ((printerConfigs[i].state == PRINTER_STATE_PRINTING) || (printerConfigs[i].state == PRINTER_STATE_PAUSED)) {
+                    lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_PROG);
+                    lineData.replace("%P%",  String(printerConfigs[i].progressCompletion) + "%");
+                    server->sendContent(lineData);
+                    server->sendContent(FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_HR));
+
+                    int val = printerConfigs[i].progressPrintTime;
+                    int hours = globalDataController->numberOfHours(val);
+                    int minutes = globalDataController->numberOfMinutes(val);
+                    int seconds = globalDataController->numberOfSeconds(val);
+                    lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+                    lineData.replace("%T%", "Printing Time");
+                    lineData.replace("%V%", globalDataController->zeroPad(hours) + ":" + globalDataController->zeroPad(minutes) + ":" + globalDataController->zeroPad(seconds));
+                    server->sendContent(lineData);
+
+                    val = printerConfigs[i].progressPrintTimeLeft;
+                    hours = globalDataController->numberOfHours(val);
+                    minutes = globalDataController->numberOfMinutes(val);
+                    seconds = globalDataController->numberOfSeconds(val);
+                    lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+                    lineData.replace("%T%", "Est. Print Time Left");
+                    lineData.replace("%V%", globalDataController->zeroPad(hours) + ":" + globalDataController->zeroPad(minutes) + ":" + globalDataController->zeroPad(seconds));
+                    server->sendContent(lineData);
+
+                    server->sendContent(FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_HR));
+
+                    lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+                    lineData.replace("%T%", "File");
+                    lineData.replace("%V%", String(printerConfigs[i].fileName));
+                    server->sendContent(lineData);
+
+                    float fileSize = printerConfigs[i].fileSize;
+                    if (fileSize > 0) {
+                        lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+                        lineData.replace("%T%", "Filesize");
+                        lineData.replace("%V%", String(fileSize) + " KB");
+                        server->sendContent(lineData);
+                    }
+
+                    int filamentLength = printerConfigs[i].filamentLength;
+                    if (filamentLength > 0) {
+                        float fLength = float(filamentLength) / 1000;
+                        lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+                        lineData.replace("%T%", "Filament");
+                        lineData.replace("%V%", String(fLength) + " m");
+                        server->sendContent(lineData);
+                    }
+                }
+                server->sendContent(FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_HR));
+
+                lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+                lineData.replace("%T%", "Tool Temperature");
+                lineData.replace("%V%", String(printerConfigs[i].toolTemp) + "&#176; C [" + String(printerConfigs[i].toolTargetTemp) + "]");
+                server->sendContent(lineData);
+
+                if (printerConfigs[i].bedTemp > 0 ) {
+                    lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
+                    lineData.replace("%T%", "Bed Temperature");
+                    lineData.replace("%V%", String(printerConfigs[i].bedTemp) + "&#176; C [" + String(printerConfigs[i].bedTargetTemp) + "]");
+                    server->sendContent(lineData);
+                }
+            }
+        }
+
+        server->sendContent(FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_E));
+        colCnt++;
+    }
+    while(colCnt < 3) {
+        server->sendContent("<div class='bx--col bx--col--auto'></div>");
+        colCnt++;
+    }
+    server->sendContent(FPSTR(FORM_ITEM_ROW_END));    
 }
 
 /**

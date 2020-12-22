@@ -11,7 +11,6 @@ static const char FORM_ITEM_ROW_START[] PROGMEM = "<div class='bx--row' %ROWEXTR
 static const char FORM_ITEM_ROW_EXT[] PROGMEM = "bx--col bx--col--auto";
 static const char FORM_ITEM_ROW_END[] PROGMEM = "</div>";
 
-
 static const char FORM_ITEM_CHECKBOX[] PROGMEM = "<div class='%ROWEXT% bx--form-item' %DIVEXTRACLASS%>"
                         "<input class='bx--toggle-input bx--toggle-input--small' id='%FORMID%' type='checkbox' name='%FORMID%' %CHECKED% %ONCHANGE%>"
                         "<label class='bx--toggle-input__label' for='%FORMID%'>"
@@ -44,6 +43,25 @@ static const char FORM_ITEM_SELECT_END[] PROGMEM = "</select>"
 static const char FORM_ITEM_SUBMIT[] PROGMEM = "<div class='bx--form-item %ROWEXT%' %DIVEXTRACLASS%>"
                         "<button class='bx--btn bx--btn--primary' type='submit'>Save</button>"
                     "</div>";
+
+
+
+
+static const char ICON32_TEMP[] PROGMEM = "<svg id='icon' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='currentColor'>"
+                                            "<path d='M13,17.26V6A4,4,0,0,0,5,6V17.26a7,7,0,1,0,8,0ZM9,4a2,2,0,0,1,2,2v7H7V6A2,2,0,0,1,9,4ZM9,28a5,5,0,0,1-2.5-9.33l.5-.28V15h4v3.39l.5.28A5,5,0,0,1,9,28Z' transform='translate(0 0)'/><rect x='20' y='4' width='10' height='2'/><rect x='20' y='10' width='7' height='2'/><rect x='20' y='16' width='10' height='2'/><rect x='20' y='22' width='7' height='2'/>"
+                                        "</svg>";
+
+static const char ICON16_WIND[] PROGMEM = "<svg id='icon' xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 32 32' fill='currentColor'>"
+                                            "<path d='M21,15H8V13H21a3,3,0,1,0-3-3H16a5,5,0,1,1,5,5Z'/><path d='M23,28a5.0057,5.0057,0,0,1-5-5h2a3,3,0,1,0,3-3H4V18H23a5,5,0,0,1,0,10Z'/>"
+                                        "</svg>";
+                                                    
+static const char ICON16_HUMIDITY[] PROGMEM = "<svg id='icon' xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 32 32' fill='currentColor'>"
+                                            "<path d='M23.4761,13.9932,16.8472,3.4365a1.04,1.04,0,0,0-1.6944,0L8.4941,14.0444A9.9861,9.9861,0,0,0,7,19a9,9,0,0,0,18,0A10.0632,10.0632,0,0,0,23.4761,13.9932ZM16,26.0005a7.0089,7.0089,0,0,1-7-7,7.978,7.978,0,0,1,1.2183-3.9438l.935-1.4888L21.2271,23.6411A6.9772,6.9772,0,0,1,16,26.0005Z'/>"
+                                        "</svg>";
+
+static const char ICON16_PRESSURE[] PROGMEM = "<svg id='icon' xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 32 32' fill='currentColor'>"
+                                            "<path d='M17.5053,16l8.1591-7.2529A1,1,0,0,0,25,7H22V2H20V9h2.37L16,14.6621,9.63,9H12V2H10V7H7a1,1,0,0,0-.6646,1.7471L14.4945,16,6.3353,23.2529A1,1,0,0,0,7,25h3v5h2V23H9.63L16,17.3379,22.37,23H20v7h2V25h3a1,1,0,0,0,.6645-1.7471Z'/>"
+                                        "</svg>";
 
 /**
  * Webpage side menu right for main items
@@ -97,6 +115,7 @@ static const char HEADER_BLOCK1[] PROGMEM = "<!DOCTYPE HTML>"
 static const char HEADER_BLOCK2[] PROGMEM = "<link rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css'>"
         "<link rel='stylesheet' href='https://unpkg.com/carbon-components/css/carbon-components.min.css'></style>"
         "<link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.15.1/css/all.css'>"
+        "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/open-weather-icons@0.0.8/dist/css/open-weather-icons.css'>"
         "<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>"
         "<style>.hidden{display:none} .bx--form-item{margin-bottom:20px} .bx--table-column-menu{width: 3.25rem} .menitem{padding:6px 1rem;font-size:.875rem;font-weight:600;line-height:1.29;letter-spacing:.16px;display:flex;justify-content:space-between;text-decoration:none;color:#c6c6c6}</style>"
         "<script>function showhide(a,b) {var e=$(\"[data-sh='\"+b+\"']\");var f=$(\"#\" + a);if (f.checked||f.prop('checked')){e.removeClass('hidden');}else{e.addClass('hidden');}}</script>"
@@ -139,7 +158,7 @@ static const char HEADER_BLOCK5[] PROGMEM = "</div>"
         "</header>"
         "<script>function openSidebar(){document.getElementById('sidebar').classList.toggle('bx--header-panel--expanded');document.getElementById('chipinfo').classList.add('hidden');};function openChipInfo(){document.getElementById('sidebar').classList.remove('bx--header-panel--expanded');document.getElementById('chipinfo').classList.toggle('hidden');}</script>"
         "<br><div class='bx--grid bx--grid--full-width' style='margin-top:60px'>"
-            "<div class='page-header' style='margin-bottom:20px'><h4 class='page-header__label'>";
+            "<div class='page-header' style='margin-bottom:20px;position:relative'><h4 class='page-header__label'>";
 
 static const char HEADER_BLOCK_ERROR[] PROGMEM = "<div class='bx--inline-notification bx--inline-notification--error' role='alert' style='max-width:100%'>"
             "<div class='bx--inline-notification__details'>"
@@ -453,14 +472,9 @@ static const char CONFPRINTER_FORM_ADDEDIT_END[] PROGMEM = "<br><br></div>"
             "</div>"
         "</div>";
 
-
-
-
-
-
-
-
-
+/**
+ * Danger modal
+ */
 static const char MODAL_DANGER[] PROGMEM = "<div data-modal id='%ID%' class='bx--modal bx--modal--danger' role='dialog' aria-modal='true' aria-labelledby='%ID%-label' aria-describedby='%ID%-heading' tabindex='-1'>"
     "<div class='bx--modal-container'>"
         "<div class='bx--modal-header'>"
@@ -483,6 +497,92 @@ static const char MODAL_DANGER[] PROGMEM = "<div data-modal id='%ID%' class='bx-
 "</div>";
 
 /**
+ * Controls for main page
+ */
+static const char MAINPAGE_ROW_WEATHER_AND_SENSOR_START[] PROGMEM = "<div class='bx--col bx--col--auto'>"
+                "<div class='bx--inline-notification bx--inline-notification--info' style='max-width:100%'>"
+                    "<div class='bx--inline-notification__details'>"
+                        "<i class='bx--inline-notification__icon owi owi-%ICON%' style='font-size: 90px; margin: 3rem 1rem;'></i>"
+                        "<div class='bx--inline-notification__text-wrapper' style='width:100%'>"
+                            "<div class='bx--grid bx--grid--full-width' style='width:100%'>"
+                                "<div class='bx--row'>";
+
+static const char MAINPAGE_ROW_WEATHER_ERROR_BLOCK[] PROGMEM = "<div class='bx--col bx--col--auto' style='margin: 2rem 0;'>"
+                                        "<div class='bx--grid bx--grid--full-width'>"
+                                            "<div class='bx--inline-notification bx--inline-notification--error'>"
+                                                "<div class='bx--inline-notification__details'>"
+                                                    "<div>"
+                                                        "<p class='bx--inline-notification__title'>Please <a href='/configureweather/show'>Configure Weather</a></p>"
+                                                        "<p class='bx--inline-notification__subtitle'>%ERRORMSG%</p>"
+                                                    "</div>"
+                                                "</div>"
+                                            "</div>"
+                                        "</div>"
+                                    "</div>";
+
+static const char MAINPAGE_ROW_WEATHER_AND_SENSOR_BLOCK[] PROGMEM = "<div class='bx--col bx--col--auto' style='margin: 2rem 0;'>"
+                                        "<div class='bx--grid bx--grid--full-width'>"
+                                            "<div class='bx--row'>"
+                                                "<div class='bx--col bx--col--auto'>"
+                                                    "<h2>%BTITLE% <div class='bx--tag bx--tag--cool-gray'><span class='bx--tag__label'>%BLABEL%</span></div></h2>"
+                                                "</div>"
+                                            "</div>"
+                                            "<div class='bx--row'>"
+                                                "<div class='bx--col bx--col--auto'>"
+                                                    "<h1>%TEMPICON% %TEMPERATURE%</h1>"
+                                                "</div>"
+                                            "</div>"
+                                            "<div class='bx--row'>"
+                                                "<div class='bx--col bx--col--auto'>"
+                                                    "%EXTRABLOCK%"
+                                                "</div>"
+                                            "</div>"
+                                            "<div class='bx--row'>"
+                                                "<div class='bx--col bx--col--auto'>"
+                                                    "%ICONA% %TEXTA%"
+                                                    "%ICONB% %TEXTB%"
+                                                "</div>"
+                                            "</div>"
+                                        "</div>"
+                                    "</div>";
+
+static const char MAINPAGE_ROW_WEATHER_AND_SENSOR_END[] PROGMEM = "</div>"
+                            "</div>"
+                        "</div>"
+                    "</div>"
+                "</div>"
+            "</div>";
+
+static const char MAINPAGE_ROW_PRINTER_BLOCK_S_PRINTING[] PROGMEM = "<div class='bx--col bx--col--auto'>"
+            "<div class='bx--inline-notification bx--inline-notification--info bx--inline-notification--low-contrast'>"
+                "<div class='bx--inline-notification__details'>"
+                    "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--inline-notification__icon' width='20' height='20' viewBox='0 0 32 32' aria-hidden='true'><path d='M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z'></path></svg>"
+                    "<div style='margin: .5rem 0;width: 100%;'>";
+
+static const char MAINPAGE_ROW_PRINTER_BLOCK_S_ERROROFFLINE[] PROGMEM = "<div class='bx--col bx--col--auto'>"
+            "<div class='bx--inline-notification bx--inline-notification--error bx--inline-notification--low-contrast'>"
+                "<div class='bx--inline-notification__details'>"
+                    "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--inline-notification__icon' width='20' height='20' viewBox='0 0 20 20' aria-hidden='true'><path d='M10,1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S15,1,10,1z M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z'></path><path d='M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z' data-icon-path='inner-path' opacity='0'></path></svg>"
+                    "<div style='margin: .5rem 0;width: 100%;'>";
+
+static const char MAINPAGE_ROW_PRINTER_BLOCK_S_STANDBY[] PROGMEM = "<div class='bx--col bx--col--auto'>"
+            "<div class='bx--inline-notification bx--inline-notification--success bx--inline-notification--low-contrast'>"
+                "<div class='bx--inline-notification__details'>"
+                    "<svg focusable='false' preserveAspectRatio='xMidYMid meet' style='will-change: transform;' xmlns='http://www.w3.org/2000/svg' class='bx--inline-notification__icon' width='20' height='20' viewBox='0 0 20 20' aria-hidden='true'><path d='M10,1c-4.9,0-9,4.1-9,9s4.1,9,9,9s9-4,9-9S15,1,10,1z M8.7,13.5l-3.2-3.2l1-1l2.2,2.2l4.8-4.8l1,1L8.7,13.5z'></path><path fill='none' d='M8.7,13.5l-3.2-3.2l1-1l2.2,2.2l4.8-4.8l1,1L8.7,13.5z' data-icon-path='inner-path' opacity='0'></path></svg>"
+                    "<div style='margin: .5rem 0;width: 100%;'>";
+
+static const char MAINPAGE_ROW_PRINTER_BLOCK_TITLE[] PROGMEM = "<p class='bx--inline-notification__title'>%NAME% <span class='bx--tag bx--tag--gray bx--tag__label'>%API%</span></p>"
+                    "<p class='bx--inline-notification__subtitle'>";
+
+
+static const char MAINPAGE_ROW_PRINTER_BLOCK_LINE[] PROGMEM = "<div><strong>%T%:</strong> %V%</div>";
+static const char MAINPAGE_ROW_PRINTER_BLOCK_PROG[] PROGMEM = "<div class='pStateBar'><div class='pStateBarD' style='width: %P%'>%P%</div></div>";
+static const char MAINPAGE_ROW_PRINTER_BLOCK_HR[] PROGMEM = "<hr class='pStateHr'>";
+
+static const char MAINPAGE_ROW_PRINTER_BLOCK_E[] PROGMEM = "</p></div></div></div></div>";
+
+
+/**
  * @brief Class to generate HTML content from Memory
  */
 class WebserverMemoryVariables {
@@ -494,6 +594,7 @@ public:
     static void sendHeader(ESP8266WebServer *server, GlobalDataController *globalDataController, String pageLabel, String pageTitle, boolean refresh);
     static void sendFooter(ESP8266WebServer *server, GlobalDataController *globalDataController);
 
+    static void sendMainPage(ESP8266WebServer *server, GlobalDataController *globalDataController);
     static void sendUpdateForm(ESP8266WebServer *server, GlobalDataController *globalDataController);
     static void sendWeatherConfigForm(ESP8266WebServer *server, GlobalDataController *globalDataController);
     static void sendStationConfigForm(ESP8266WebServer *server, GlobalDataController *globalDataController);

@@ -8,6 +8,7 @@
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css'>
     <link rel='stylesheet' href='https://unpkg.com/carbon-components/css/carbon-components.min.css'>
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/open-weather-icons@0.0.8/dist/css/open-weather-icons.css'>
     </style>
     <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.15.1/css/all.css'>
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
@@ -176,10 +177,224 @@
     <script>function openSidebar() { document.getElementById('sidebar').classList.toggle('bx--header-panel--expanded'); document.getElementById('chipinfo').classList.add('hidden'); }; function openChipInfo() { document.getElementById('sidebar').classList.remove('bx--header-panel--expanded'); document.getElementById('chipinfo').classList.toggle('hidden'); }</script>
     <br>
     <div class='bx--grid bx--grid--full-width' style='margin-top:60px'>
-        <div class='page-header' style='margin-bottom:20px'>
+        <div class='page-header' style='margin-bottom:20px;position:relative'>
             <h4 class='page-header__label'>Status</h4>
             <h1 id='page-title' class='page-header__title'>Monitor</h1>
+
+            <div style="position:absolute;right:0;top:0;text-align:right">Current time<br>21:04:46</div>
         </div>
+
+        <div class="bx--row">
+            <div class="bx--col bx--col--auto">
+                <div data-notification class="bx--inline-notification bx--inline-notification--info" role="alert" style="max-width:100%">
+                    <div class="bx--inline-notification__details">
+                        <i class="bx--inline-notification__icon owi owi-02n" style="font-size: 90px; margin: 3rem 1rem;"></i>
+                        <div class="bx--inline-notification__text-wrapper" style="width:100%">
+                            <div class='bx--grid bx--grid--full-width' style="width:100%">
+                                <div class="bx--row">
+                                    <div class="bx--col bx--col--auto" style="margin: 2rem 0;">
+                                        <div class='bx--grid bx--grid--full-width'>
+                                            <div class="bx--row">
+                                                <div class="bx--col bx--col--auto">
+                                                    <h2>MyCity, XX <div class="bx--tag bx--tag--cool-gray"><span class="bx--tag__label">lat: 00.00, lon: 00.00</span></div></h2>
+                                                </div>
+                                            </div>
+                                            <div class="bx--row">
+                                                <div class="bx--col bx--col--auto">                                                    
+                                                    <h1>
+                                                        <svg id="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="currentColor">
+                                                            <path d="M13,17.26V6A4,4,0,0,0,5,6V17.26a7,7,0,1,0,8,0ZM9,4a2,2,0,0,1,2,2v7H7V6A2,2,0,0,1,9,4ZM9,28a5,5,0,0,1-2.5-9.33l.5-.28V15h4v3.39l.5.28A5,5,0,0,1,9,28Z" transform="translate(0 0)"/><rect x="20" y="4" width="10" height="2"/><rect x="20" y="10" width="7" height="2"/><rect x="20" y="16" width="10" height="2"/><rect x="20" y="22" width="7" height="2"/>
+                                                        </svg>
+                                                        12°C
+                                                    </h1>
+                                                </div>
+                                            </div>
+                                            <div class="bx--row">
+                                                <div class="bx--col bx--col--auto">
+                                                    Condition: Mäßig bewölkt
+                                                </div>
+                                            </div>
+                                            <div class="bx--row">
+                                                <div class="bx--col bx--col--auto">
+                                                    <svg id="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+                                                        <path d="M21,15H8V13H21a3,3,0,1,0-3-3H16a5,5,0,1,1,5,5Z"/><path d="M23,28a5.0057,5.0057,0,0,1-5-5h2a3,3,0,1,0,3-3H4V18H23a5,5,0,0,1,0,10Z"/>
+                                                    </svg>
+                                                    8.70 km/h Winds
+
+                                                    <svg id="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+                                                        <path d="M23.4761,13.9932,16.8472,3.4365a1.04,1.04,0,0,0-1.6944,0L8.4941,14.0444A9.9861,9.9861,0,0,0,7,19a9,9,0,0,0,18,0A10.0632,10.0632,0,0,0,23.4761,13.9932ZM16,26.0005a7.0089,7.0089,0,0,1-7-7,7.978,7.978,0,0,1,1.2183-3.9438l.935-1.4888L21.2271,23.6411A6.9772,6.9772,0,0,1,16,26.0005Z"/>
+                                                      </svg>
+                                                      87% Humidity
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                    <div class="bx--col bx--col--auto" style="margin: 2rem 0;">
+                                        <div class='bx--grid bx--grid--full-width'>
+                                            <div class="bx--row">
+                                                <div class="bx--col bx--col--auto">
+                                                    <h2>Sensor</h2>
+                                                </div>
+                                            </div>
+                                            <div class="bx--row">
+                                                <div class="bx--col bx--col--auto">                                                    
+                                                    <h1>
+                                                        <svg id="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="currentColor">
+                                                            <path d="M13,17.26V6A4,4,0,0,0,5,6V17.26a7,7,0,1,0,8,0ZM9,4a2,2,0,0,1,2,2v7H7V6A2,2,0,0,1,9,4ZM9,28a5,5,0,0,1-2.5-9.33l.5-.28V15h4v3.39l.5.28A5,5,0,0,1,9,28Z" transform="translate(0 0)"/><rect x="20" y="4" width="10" height="2"/><rect x="20" y="10" width="7" height="2"/><rect x="20" y="16" width="10" height="2"/><rect x="20" y="22" width="7" height="2"/>
+                                                        </svg>
+                                                        24.9°C
+                                                    </h1>
+                                                </div>
+                                            </div>
+                                            <div class="bx--row">
+                                                <div class="bx--col bx--col--auto">
+                                                    <svg id="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+                                                        <path d="M17.5053,16l8.1591-7.2529A1,1,0,0,0,25,7H22V2H20V9h2.37L16,14.6621,9.63,9H12V2H10V7H7a1,1,0,0,0-.6646,1.7471L14.4945,16,6.3353,23.2529A1,1,0,0,0,7,25h3v5h2V23H9.63L16,17.3379,22.37,23H20v7h2V25h3a1,1,0,0,0,.6645-1.7471Z"/>
+                                                    </svg>
+                                                    1002 hPa
+
+                                                    <svg id="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+                                                        <path d="M23.4761,13.9932,16.8472,3.4365a1.04,1.04,0,0,0-1.6944,0L8.4941,14.0444A9.9861,9.9861,0,0,0,7,19a9,9,0,0,0,18,0A10.0632,10.0632,0,0,0,23.4761,13.9932ZM16,26.0005a7.0089,7.0089,0,0,1-7-7,7.978,7.978,0,0,1,1.2183-3.9438l.935-1.4888L21.2271,23.6411A6.9772,6.9772,0,0,1,16,26.0005Z"/>
+                                                    </svg>
+                                                    38% Humidity
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <div class="bx--row">
+            <div class="bx--col bx--col--auto">
+                <div data-notification class="bx--inline-notification bx--inline-notification--info" role="alert" style="max-width:100%">
+                    <div class="bx--inline-notification__details">
+                        <i class="bx--inline-notification__icon owi owi-" style="font-size: 90px; margin: 3rem 1rem;"></i>
+                        <div class="bx--inline-notification__text-wrapper" style="width:100%">
+                            <div class='bx--grid bx--grid--full-width' style="width:100%">
+                                <div class="bx--row">
+                                    
+                                    <div class="bx--col bx--col--auto" style="margin: 2rem 0;">
+                                        <div class='bx--grid bx--grid--full-width'>
+                                            <div data-notification class="bx--inline-notification bx--inline-notification--error" role="alert">
+                                                <div class="bx--inline-notification__details">
+                                                    <div>
+                                                        <p class="bx--inline-notification__title">Please <a href='/configureweather/show'>Configure Weather</a></p>
+                                                        <p class="bx--inline-notification__subtitle">Weather Error:</p>
+                                                    </div>
+                                                </div>
+                                          </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .pStateBar {
+                width: 100%;
+                background-color: #ddd;
+                margin: 5px 0;
+            }
+            .pStateBarD {
+                height: 20px;
+                background-color: #24a148;
+                text-align: center!important;
+                font-size: 13px!important;
+                color: #ffffff;
+                padding: 4px 0;
+            }
+            .pStateHr {
+                border-top: 1px solid #0043ce;margin: 5px 0;
+            }
+        </style>
+
+
+        <div class="bx--row">
+            <div class="bx--col bx--col--auto">
+
+                <div class="bx--inline-notification bx--inline-notification--info bx--inline-notification--low-contrast">
+                    <div class="bx--inline-notification__details">
+                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--inline-notification__icon" width="20" height="20" viewBox="0 0 32 32" aria-hidden="true"><path d="M16,2A14,14,0,1,0,30,16,14,14,0,0,0,16,2Zm0,5a1.5,1.5,0,1,1-1.5,1.5A1.5,1.5,0,0,1,16,7Zm4,17.12H12V21.88h2.88V15.12H13V12.88h4.13v9H20Z"></path></svg>
+                        <div style="margin: .5rem 0;width: 100%;">
+                            <p class="bx--inline-notification__title">AnycubicI3 <span class="bx--tag bx--tag--gray bx--tag__label">Klipper</span></p>
+                            <p class="bx--inline-notification__subtitle">
+                                <div><strong>Host:</strong> 192.168.0.241:7125</div>
+                                <div><strong>Status:</strong> Printing</div>
+
+                                
+                                <div class="pStateBar"><div class="pStateBarD" style="width: 30%;">30%</div></div>
+
+                                <hr class="pStateHr">
+                                <div><strong>Printing Time:</strong> 29:18:28</div>
+                                <div><strong>Est. Print Time Left:</strong> 00:01:00</div>
+                                <hr class="pStateHr">
+                                <div><strong>Tool Temperature:</strong> 215&#176; C [215]</div>
+                                <div><strong>Bed Temperature:</strong> 70&#176; C [72]</div>
+                                <hr class="pStateHr">
+                                <div><strong>File:</strong> blablabla.gcode</div>
+                                <div><strong>Filesize:</strong> 2089 KB</div>
+                                <div><strong>Filament:</strong> 219 m</div>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="bx--col bx--col--auto">
+
+                <div class="bx--inline-notification bx--inline-notification--error bx--inline-notification--low-contrast">
+                    <div class="bx--inline-notification__details">
+                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--inline-notification__icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10,1c-5,0-9,4-9,9s4,9,9,9s9-4,9-9S15,1,10,1z M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z"></path><path d="M13.5,14.5l-8-8l1-1l8,8L13.5,14.5z" data-icon-path="inner-path" opacity="0"></path></svg>
+                        <div style="margin: .5rem 0;">
+                            <p class="bx--inline-notification__title">AnycubicI3 <span class="bx--tag bx--tag--gray bx--tag__label">Klipper</span></p>
+                            <p class="bx--inline-notification__subtitle">
+                                <div><strong>Host:</strong> 192.168.0.241:7125</div>
+                                <div><strong>Status:</strong> Error</div>
+                                <div><strong>Reason:</strong> Server address or host name is required</div>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="bx--col bx--col--auto">
+
+                <div class="bx--inline-notification bx--inline-notification--success bx--inline-notification--low-contrast">
+                    <div class="bx--inline-notification__details">
+                        <svg focusable="false" preserveAspectRatio="xMidYMid meet" style="will-change: transform;" xmlns="http://www.w3.org/2000/svg" class="bx--inline-notification__icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10,1c-4.9,0-9,4.1-9,9s4.1,9,9,9s9-4,9-9S15,1,10,1z M8.7,13.5l-3.2-3.2l1-1l2.2,2.2l4.8-4.8l1,1L8.7,13.5z"></path><path fill="none" d="M8.7,13.5l-3.2-3.2l1-1l2.2,2.2l4.8-4.8l1,1L8.7,13.5z" data-icon-path="inner-path" opacity="0"></path></svg>
+                        <div style="margin: .5rem 0;">
+                            <p class="bx--inline-notification__title">AnycubicI3 <span class="bx--tag bx--tag--gray bx--tag__label">Klipper</span></p>
+                            <p class="bx--inline-notification__subtitle">
+                                <div><strong>Host:</strong> 192.168.0.241:7125</div>
+                                <div><strong>Status:</strong> Standby</div>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        Hallo 
+
+
+
+
+
+
         <div data-modal id='resetSettingsModal' class='bx--modal bx--modal--danger' role='dialog' aria-modal='true'
             aria-labelledby='resetSettingsModal-label' aria-describedby='resetSettingsModal-heading' tabindex='-1'>
             <div class='bx--modal-container'>

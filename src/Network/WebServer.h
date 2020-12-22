@@ -26,10 +26,9 @@ public:
     void redirectTarget(String targetUri);
     void displayPrinterStatus();
     void handleSystemReset();
-    void handleWifiReset();
-    void handleUpdateConfig();
+    void handleWifiReset(); 
     
-    
+    void handleMainPage();
     void handleConfigurePrinter();
     void handleUpdatePrinter();
     void handleDeletePrinter();
