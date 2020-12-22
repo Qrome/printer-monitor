@@ -42,63 +42,6 @@ void WebServer::setup() {
     this->debugController->printLn("Server started");
 }
 
-void WebServer::handleClient() {
-    this->server->handleClient();
-}
-
-void WebServer::redirectTarget(String targetUri) {
-    // Send them back to the Root Directory
-    this->server->sendHeader("Location", targetUri, true);
-    this->server->sendHeader("Cache-Control", "no-cache, no-store");
-    this->server->sendHeader("Pragma", "no-cache");
-    this->server->sendHeader("Expires", "-1");
-    this->server->send(302, "text/plain", "");
-    this->server->client().stop();
-}
-
-
-void WebServer::redirectHome() {
-    this->redirectTarget("/");
-}
-
-void WebServer::displayPrinterStatus() {
-    
-    /*BasePrinterClient *printerClient = this->globalDataController->getPrinterClient();
-    String html = "";
-
-    
-
-
-    
-    if (printerClient->getError() != "") {
-        html += "Status: Offline<br>";
-        html += "Reason: " + printerClient->getError() + "<br>";
-    } else {
-        html += "Status: " + printerClient->getStateAsText();
-        if (printerClient->isPSUoff() && this->globalDataController->hasPrinterPsu()) {  
-        html += ", PSU off";
-        }
-        html += "<br>";
-    }
-    
-    if (printerClient->isPrinting()) {
-        
-    
-        
-
-    html += "</p></div></div>";
-
-    html += "<div class='w3-cell-row' style='width:100%'><h2>Time: " + displayTime + "</h2></div>";
-
-    this->server->sendContent(html); // spit out what we got
-    html = "";
-    */
-
-    
-}
-
-
-
 
 void WebServer::findMDNS() {
     return; // nothing to do here
@@ -131,6 +74,36 @@ void WebServer::findMDNS() {
             this->globalDataController->writeSettings(); // update the settings
         }
     }*/
+}
+
+
+
+
+/**
+ * @brief Handle clients of webserver
+ */
+void WebServer::handleClient() {
+    this->server->handleClient();
+}
+
+/**
+ * @brief Redirect incomming transmission to other taget
+ */
+void WebServer::redirectTarget(String targetUri) {
+    // Send them back to the Root Directory
+    this->server->sendHeader("Location", targetUri, true);
+    this->server->sendHeader("Cache-Control", "no-cache, no-store");
+    this->server->sendHeader("Pragma", "no-cache");
+    this->server->sendHeader("Expires", "-1");
+    this->server->send(302, "text/plain", "");
+    this->server->client().stop();
+}
+
+/**
+ * @brief Redirect incomming transmission to dashboard
+ */
+void WebServer::redirectHome() {
+    this->redirectTarget("/");
 }
 
 /**

@@ -205,9 +205,13 @@ void WebserverMemoryVariables::sendMainPage(ESP8266WebServer *server, GlobalData
         lineData.replace("%V%", String(printerConfigs[i].remoteAddress) + ":" + String(printerConfigs[i].remotePort));
         server->sendContent(lineData);
 
+        String currentState = globalDataController->getPrinterStateAsText(&printerConfigs[i]);
+        if (printerConfigs[i].isPSUoff && printerConfigs[i].hasPsuControl) {  
+            currentState += ", PSU off";
+        }
         lineData = FPSTR(MAINPAGE_ROW_PRINTER_BLOCK_LINE);
         lineData.replace("%T%", "State");
-        lineData.replace("%V%", globalDataController->getPrinterStateAsText(&printerConfigs[i]));
+        lineData.replace("%V%", currentState);
         server->sendContent(lineData);
 
         if (printerConfigs[i].state != PRINTER_STATE_STANDBY) {

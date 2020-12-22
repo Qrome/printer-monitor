@@ -24,7 +24,6 @@ public:
     boolean authentication();
     void redirectHome();
     void redirectTarget(String targetUri);
-    void displayPrinterStatus();
     void handleSystemReset();
     void handleWifiReset(); 
     
