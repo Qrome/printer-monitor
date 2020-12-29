@@ -24,6 +24,7 @@ SOFTWARE.
 // Additional Contributions:
 /* 15 Jan 2019 : Owen Carter : Add psucontrol query via POST api call */
 /* 07 April 2019 : Jon Smith : Redesigned this class for Repetier Server */
+/* 26 December 2020 : Daniel Glock : Changed connection to Repetier Server */
 
 #include "RepetierClient.h"
 
@@ -59,59 +60,36 @@ boolean RepetierClient::validate() {
   return rtnValue;
 }
 
-WiFiClient RepetierClient::getSubmitRequest(String apiGetData) {
-  WiFiClient printClient;
-  printClient.setTimeout(5000);
+String RepetierClient::getSubmitRequest(String apiGetData) {
 
-  Serial.println("Getting Repetier Data via GET");
-  Serial.println(apiGetData);
-  result = "";
-  if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
-    printClient.println(apiGetData);
-    printClient.println("Host: " + String(myServer) + ":" + String(myPort));
-    printClient.println("X-Api-Key: " + myApiKey);
-    if (encodedAuth != "") {
-      printClient.print("Authorization: ");
-      printClient.println("Basic " + encodedAuth);
-    }
-    printClient.println("User-Agent: ArduinoWiFi/1.1");
-    printClient.println("Connection: close");
-    if (printClient.println() == 0) {
-      Serial.println("Connection to " + String(myServer) + ":" + String(myPort) + " failed.");
-      Serial.println();
-      resetPrintData();
-      printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
-      return printClient;
-    }
-  } 
+  //Your Domain name with URL path or IP address with path
+  String serverName = "http://" + String(myServer) + ":" + String(myPort) + String(apiGetData);
+  Serial.println("My Server request: " + String(serverName));
+  HTTPClient printClient;
+    
+  // Your IP address with path or Domain name with URL path 
+  printClient.begin(serverName);
+  
+  // Send HTTP POST request
+  int httpResponseCode = printClient.GET();
+  
+  String payload = "{}"; 
+  
+  if (httpResponseCode>0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+    payload = printClient.getString();
+    Serial.println("My Payload: " + String(payload));
+  }
   else {
-    Serial.println("Connection to Repetier failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
-    Serial.println();
-    resetPrintData();
-    printerData.error = "Connection to Repetier failed: " + String(myServer) + ":" + String(myPort);
-    return printClient;
+    Serial.print("Error code: ");
+    Serial.println(httpResponseCode);
+    printerData.error = "Connection to " + String(myServer) + ":" + String(myPort) + " failed.";
   }
-/*
-  // Check HTTP status
-  char status[32] = {0};
-  printClient.readBytesUntil('\r', status, sizeof(status));
-  if (strcmp(status, "HTTP/1.1 200 OK") != 0) {
-    Serial.print(F("Unexpected response: "));
-    Serial.println(status);
-    printerData.state = "";
-    printerData.error = "Response: " + String(status);
-    return printClient;
-  }
+  // Free resources
+  printClient.end();
 
-  // Skip HTTP headers
-  char endOfHeaders[] = "\r\n\r\n";
-  if (!printClient.find(endOfHeaders)) {
-    Serial.println(F("Invalid response"));
-    printerData.error = "Invalid response from " + String(myServer) + ":" + String(myPort);
-    printerData.state = "";
-  }
-*/
-  return printClient;
+  return payload;
 }
 
 
@@ -120,35 +98,41 @@ void RepetierClient::getPrinterJobResults() {
     return;
   }
   //**** get the Printer Job status
-  String apiGetData = "GET /printer/api/?a=listPrinter&apikey=" + myApiKey;
-  WiFiClient printClient = getSubmitRequest(apiGetData);
+  String apiGetData = "/printer/api/?a=listPrinter&apikey=" + myApiKey;
+  String payload = getSubmitRequest(apiGetData);
   if (printerData.error != "") {
+    Serial.println("Printer listPrinter not successful");
     return;
   }
   const size_t bufferSize = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 2*JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + 710;
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   // Parse JSON object
-  JsonArray& root = jsonBuffer.parseArray(printClient);
-    
+  
+  JsonArray& root = jsonBuffer.parseArray(payload);
+  int countNew = root.size();
+  Serial.println("Size of root new: " + String(countNew));
+  root.printTo(Serial);  
   if (!root.success()) {
-    printerData.error = "Repetier Data Parsing failed: " + String(myServer) + ":" + String(myPort);
+    printerData.error = "Repetier Data Parsing failed - Printer Job status: " + String(myServer) + ":" + String(myPort);
     Serial.println(printerData.error);
     printerData.state = "";
     return;
   }
-
+  Serial.println("Check JSON file");
   int inx = 0;
   int count = root.size();
   Serial.println("Size of root: " + String(count));
-  for (int i = 0; i < count; i++) {
+  for (int i = 0; i < count; i++) { // Search Printer choice
     Serial.println("Printer: " + String((const char*)root[i]["slug"]));
     if (String((const char*)root[i]["slug"]) == printerData.printerName) {
       inx = i;
+      Serial.println("Printer found successfull in JSON");
       break;
     }
   }
   
+  Serial.println("Write printer data to database"); // Serial.println("Printer stateList not successful");
   JsonObject& pr = root[inx];
   
   //printerData.averagePrintTime = (const char*)pr[""];
@@ -176,8 +160,10 @@ void RepetierClient::getPrinterJobResults() {
   printerData.progressPrintTimeLeft = String(timeLeft);
 
   if (printerData.fileName != "none") {
+    Serial.println("Printer prints");
     printerData.isPrinting = true;
   } else {
+    Serial.println("Printer does not print);
     printerData.isPrinting = false;
   }
 
@@ -192,8 +178,15 @@ void RepetierClient::getPrinterJobResults() {
   }
 
   //**** get the Printer Temps and Stat
-  apiGetData = "GET /printer/api/?a=stateList&apikey=" + myApiKey;
-  printClient = getSubmitRequest(apiGetData);
+  // Payload: {"Anycubic_i3_Mega_S":
+  // {"activeExtruder":0,"debugLevel":6,"doorOpen":false,"extruder":[{"error":0,"output":47,"tempRead":204.60000610351562,"tempSet":205.00000000000000}],
+  // "fans":[{"on":true,"voltage":178}],"filterFan":false,"firmware":"Marlin","firmwareURL":"","flowMultiply":100,"hasXHome":true,"hasYHome":true,"hasZHome":false,
+  // "heatedBeds":[{"error":0,"output":33,"tempRead":80.000000000000000,"tempSet":80.000000000000000}],"heatedChambers":[],"layer":35,"lights":0,"numExtruder":1,"powerOn":false,"rec":true,
+  // "sdcardMounted":true,"shutdownAfterPrint":false,"speedMultiply":100,"volumetric":false,"x":106.80000305175781,"y":142.85899353027344,"z":6.8000001907348633}}
+  // 14:23:12.801 -> E
+  apiGetData = "/printer/api/?a=stateList&apikey=" + myApiKey;
+  //printClient = getSubmitRequest(apiGetData);
+  payload = getSubmitRequest(apiGetData);
   if (printerData.error != "") {
     return;
   }
@@ -201,12 +194,12 @@ void RepetierClient::getPrinterJobResults() {
   DynamicJsonBuffer jsonBuffer2(bufferSize2);
 
   //Parse JSON object
-  JsonObject& root2 = jsonBuffer2.parseObject(printClient);
-
+  JsonObject& root2 = jsonBuffer2.parseObject(payload);
   //Select printer
   JsonObject& pr2 = root2[printerData.printerName];
 
   if (!root2.success()) {
+    Serial.println("Printer stateList not successful");
     printerData.isPrinting = false;
     printerData.toolTemp = "";
     printerData.toolTargetTemp = "";
@@ -215,6 +208,7 @@ void RepetierClient::getPrinterJobResults() {
     return;
   }
 
+  Serial.println("Printer data stored in database");
   printerData.toolTemp = (const char*) pr2["extruder"][0]["tempRead"];
   printerData.toolTargetTemp = (const char*) pr2["extruder"][0]["tempSet"];
   printerData.bedTemp = (const char*) pr2["heatedBeds"][0]["tempRead"];
