@@ -59,6 +59,8 @@ private:
     String state;
     String toolTemp;
     String toolTargetTemp;
+    String currentLayer;
+    String estimatedEndTime;
     String filamentLength;
     String bedTemp;
     String bedTargetTemp;
@@ -95,6 +97,8 @@ public:
   String getTempToolActual();
   String getTempToolTarget();
   String getFilamentLength();
+  String getEstimatedEndTime();
+  String getCurrentLayer();
   String getValueRounded(String value);
   String getError();
   String getPrinterType();

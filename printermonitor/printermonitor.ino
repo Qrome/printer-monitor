@@ -59,13 +59,15 @@ void drawOtaProgress(unsigned int, unsigned int);
 void drawScreen1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+void drawScreen4(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+void drawScreen5(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 
 // Set the number of Frames supported
-const int numberOfFrames = 3;
+const int numberOfFrames = 5;
 FrameCallback frames[numberOfFrames];
 FrameCallback clockFrame[2];
 boolean isClockOn = false;
@@ -259,6 +261,8 @@ void setup() {
   frames[0] = drawScreen1;
   frames[1] = drawScreen2;
   frames[2] = drawScreen3;
+  frames[3] = drawScreen4;
+  frames[4] = drawScreen5;
   clockFrame[0] = drawClock;
   clockFrame[1] = drawWeather;
   ui.setOverlays(overlays, numberOfOverlays);
@@ -961,6 +965,33 @@ void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
 
   String time = zeroPad(hours) + ":" + zeroPad(minutes) + ":" + zeroPad(seconds);
   display->drawString(64 + x, 14 + y, time);
+}
+
+void drawScreen4(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+  
+  String layer = printerClient.getCurrentLayer();
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->setFont(ArialMT_Plain_16);
+
+  display->drawString(64 + x, 0 + y, "Layer");
+  //display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->setFont(ArialMT_Plain_24);
+
+  display->drawString(64 + x, 14 + y, layer);
+}
+
+
+void drawScreen5(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+  
+  String EstimatedEnd = printerClient.getEstimatedEndTime();
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->setFont(ArialMT_Plain_16);
+
+  display->drawString(64 + x, 0 + y, "End Time");
+  //display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->setFont(ArialMT_Plain_24);
+
+  display->drawString(64 + x, 14 + y, EstimatedEnd);
 }
 
 void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {

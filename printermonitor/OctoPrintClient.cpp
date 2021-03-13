@@ -244,6 +244,30 @@ void OctoPrintClient::getPrinterJobResults() {
   printerData.bedTemp = (const char*)root2["temperature"]["bed"]["actual"];
   printerData.bedTargetTemp = (const char*)root2["temperature"]["bed"]["target"];
 
+  // Layer & Endtime
+  apiGetData = "GET /plugin/DisplayLayerProgress/values HTTP/1.1";
+  printClient = getSubmitRequest(apiGetData);
+  if (printerData.error != "") {
+    return;
+  }
+  const size_t bufferSize3 = JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(7) + JSON_OBJECT_SIZE(10) + 550;
+  DynamicJsonBuffer jsonBuffer3(bufferSize3);
+
+  // Parse JSON object
+  JsonObject& root3 = jsonBuffer3.parseObject(printClient);
+  if (!root3.success()) {
+    // printerData.isPrinting = false;
+    printerData.estimatedEndTime = "";
+    printerData.currentLayer = "";
+    // printerData.bedTemp = "";
+    // printerData.bedTargetTemp = (const char*)root2["temperature"]["bed"]["target"];
+    return;
+  }
+
+  printerData.estimatedEndTime = (const char*)root3["print"]["estimatedEndTime"];
+  printerData.currentLayer = (const char*)root3["layer"]["current"];
+
+
   if (isPrinting()) {
     Serial.println("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
   }
@@ -305,6 +329,16 @@ void OctoPrintClient::resetPrintData() {
   printerData.isPrinting = false;
   printerData.isPSUoff = false;
   printerData.error = "";
+  printerData.currentLayer = "";
+  printerData.estimatedEndTime = "";
+}
+
+String OctoPrintClient::getCurrentLayer(){
+  return printerData.currentLayer;
+}
+
+String OctoPrintClient::getEstimatedEndTime(){
+  return printerData.estimatedEndTime;
 }
 
 String OctoPrintClient::getAveragePrintTime(){
