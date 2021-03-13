@@ -266,7 +266,7 @@ void OctoPrintClient::getPrinterJobResults() {
 
   printerData.estimatedEndTime = (const char*)root3["print"]["estimatedEndTime"];
   printerData.currentLayer = (const char*)root3["layer"]["current"];
-
+  printerData.totalLayers = (const char*)root3["layer"]["total"];
 
   if (isPrinting()) {
     Serial.println("Status: " + printerData.state + " " + printerData.fileName + "(" + printerData.progressCompletion + "%)");
@@ -330,11 +330,16 @@ void OctoPrintClient::resetPrintData() {
   printerData.isPSUoff = false;
   printerData.error = "";
   printerData.currentLayer = "";
+  printerData.totalLayers = "";
   printerData.estimatedEndTime = "";
 }
 
 String OctoPrintClient::getCurrentLayer(){
   return printerData.currentLayer;
+}
+
+String OctoPrintClient::getTotalLayers(){
+  return printerData.totalLayers;
 }
 
 String OctoPrintClient::getEstimatedEndTime(){

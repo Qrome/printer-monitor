@@ -60,6 +60,7 @@ private:
     String toolTemp;
     String toolTargetTemp;
     String currentLayer;
+    String totalLayers;
     String estimatedEndTime;
     String filamentLength;
     String bedTemp;
@@ -99,6 +100,7 @@ public:
   String getFilamentLength();
   String getEstimatedEndTime();
   String getCurrentLayer();
+  String getTotalLayers();
   String getValueRounded(String value);
   String getError();
   String getPrinterType();
