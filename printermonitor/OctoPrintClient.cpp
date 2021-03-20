@@ -256,11 +256,8 @@ void OctoPrintClient::getPrinterJobResults() {
   // Parse JSON object
   JsonObject& root3 = jsonBuffer3.parseObject(printClient);
   if (!root3.success()) {
-    // printerData.isPrinting = false;
     printerData.estimatedEndTime = "";
     printerData.currentLayer = "";
-    // printerData.bedTemp = "";
-    // printerData.bedTargetTemp = (const char*)root2["temperature"]["bed"]["target"];
     return;
   }
 

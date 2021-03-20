@@ -979,15 +979,26 @@ void drawScreen4(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
   
   String layer = printerClient.getCurrentLayer();
   String totalLayers = printerClient.getTotalLayers();
+  if (printerClient.getTotalLayers().toInt() >= 1000) {
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->setFont(ArialMT_Plain_16);
+  
+    display->drawString(64 + x, 0 + y, "Layer");
+    //display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->setFont(ArialMT_Plain_16);
+  
+    display->drawString(64 + x, 14 + y, layer + " / " + totalLayers);
+  } else
   display->setTextAlignment(TEXT_ALIGN_CENTER);
   display->setFont(ArialMT_Plain_16);
 
   display->drawString(64 + x, 0 + y, "Layer");
   //display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->setFont(ArialMT_Plain_16);
+  display->setFont(ArialMT_Plain_24);
 
-  display->drawString(64 + x, 14 + y, layer+ " / " + totalLayers);
+  display->drawString(64 + x, 14 + y, layer + " / " + totalLayers);
 }
+
 
 
 void drawScreen5(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
