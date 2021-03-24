@@ -987,8 +987,8 @@ void drawScreen4(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
     //display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->setFont(ArialMT_Plain_16);
   
-    display->drawString(64 + x, 14 + y, layer + " / " + totalLayers);
-  } else
+    display->drawString(64 + x, 16 + y, layer + " / " + totalLayers);
+  } else {
   display->setTextAlignment(TEXT_ALIGN_CENTER);
   display->setFont(ArialMT_Plain_16);
 
@@ -997,9 +997,8 @@ void drawScreen4(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
   display->setFont(ArialMT_Plain_24);
 
   display->drawString(64 + x, 14 + y, layer + " / " + totalLayers);
+  }
 }
-
-
 
 void drawScreen5(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   
