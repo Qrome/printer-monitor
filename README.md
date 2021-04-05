@@ -76,7 +76,7 @@ ESP8266WebServer.h
 WiFiManager.h --> https://github.com/tzapu/WiFiManager  
 ESP8266mDNS.h  
 ArduinoOTA.h  --> Arduino OTA Library  
-"SSD1306Wire.h" --> https://github.com/ThingPulse/esp8266-oled-ssd1306/releases/tag/4.1.0  (version 4.1.0)
+"SSD1306Wire.h" --> https://github.com/ThingPulse/esp8266-oled-ssd1306/releases/tag/4.1.0  (version 4.1.0)  
 "OLEDDisplayUi.h"  
 
 Note Printer-Monitor version 2.5 and later include ArduinoJson (version 5.13.1).   
