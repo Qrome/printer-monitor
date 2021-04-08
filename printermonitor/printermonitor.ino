@@ -198,7 +198,7 @@ static const char COLOR_THEMES[] PROGMEM = "<option>red</option>"
 
 void setup() {  
   Serial.begin(115200);
-  SPIFFS.begin();
+  LittleFS.begin();
   delay(10);
   
   //New Line to clear from start garbage
@@ -435,7 +435,7 @@ void handleSystemReset() {
     return server.requestAuthentication();
   }
   Serial.println("Reset System Configuration");
-  if (SPIFFS.remove(CONFIG)) {
+  if (LittleFS.remove(CONFIG)) {
     redirectHome();
     ESP.restart();
   }
@@ -1114,8 +1114,8 @@ int8_t getWifiQuality() {
 
 
 void writeSettings() {
-  // Save decoded message to SPIFFS file for playback on power up.
-  File f = SPIFFS.open(CONFIG, "w");
+  // Save decoded message to LittleFS file for playback on power up.
+  File f = LittleFS.open(CONFIG, "w");
   if (!f) {
     Serial.println("File open failed!");
   } else {
@@ -1150,12 +1150,12 @@ void writeSettings() {
 }
 
 void readSettings() {
-  if (SPIFFS.exists(CONFIG) == false) {
+  if (LittleFS.exists(CONFIG) == false) {
     Serial.println("Settings File does not yet exists.");
     writeSettings();
     return;
   }
-  File fr = SPIFFS.open(CONFIG, "r");
+  File fr = LittleFS.open(CONFIG, "r");
   String line;
   while(fr.available()) {
     line = fr.readStringUntil('\n');

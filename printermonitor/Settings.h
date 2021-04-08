@@ -49,6 +49,7 @@ SOFTWARE.
 #include "OctoPrintClient.h"
 #include "OpenWeatherMapClient.h"
 #include "WeatherStationFonts.h"
+#include "LittleFS.h"
 #include "FS.h"
 #include "SH1106Wire.h"
 #include "SSD1306Wire.h"
