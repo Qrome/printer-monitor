@@ -59,15 +59,18 @@ void drawOtaProgress(unsigned int, unsigned int);
 void drawScreen1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawScreen2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+void drawScreen4(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+void drawScreen5(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+void drawUpdate(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 
 // Set the number of Frames supported
-const int numberOfFrames = 3;
+const int numberOfFrames = 5;
 FrameCallback frames[numberOfFrames];
-FrameCallback clockFrame[2];
+FrameCallback clockFrame[3];
 boolean isClockOn = false;
 
 OverlayCallback overlays[] = { drawHeaderOverlay };
@@ -259,8 +262,11 @@ void setup() {
   frames[0] = drawScreen1;
   frames[1] = drawScreen2;
   frames[2] = drawScreen3;
+  frames[3] = drawScreen4;
+  frames[4] = drawScreen5;
   clockFrame[0] = drawClock;
   clockFrame[1] = drawWeather;
+  clockFrame[2] = drawUpdate;
   ui.setOverlays(overlays, numberOfOverlays);
   
   // Inital UI takes care of initalising the display too.
@@ -751,7 +757,7 @@ String getFooter() {
   if (lastReportStatus != "") {
     html += "<i class='fa fa-external-link'></i> Report Status: " + lastReportStatus + "<br>";
   }
-  html += "<i class='fa fa-paper-plane-o'></i> Version: " + String(VERSION) + "<br>";
+  html += "<i class='fa fa-paper-plane-o'></i> Version: " + String(VERSION) + " Next Update: " + getTimeTillUpdate() + "<br>";
   html += "<i class='fa fa-rss'></i> Signal Strength: ";
   html += String(rssi) + "%";
   html += "</footer>";
@@ -805,6 +811,12 @@ void displayPrinterStatus() {
     if (filamentLength > 0) {
       float fLength = float(filamentLength) / 1000;
       html += "Filament: " + String(fLength) + "m<br>";
+    }
+    if (printerClient.isPrinting()) {
+    html += "Layer: " + printerClient.getCurrentLayer() + " / " + printerClient.getTotalLayers() + "<br>";
+    }
+    if (printerClient.isPrinting()) {
+    html += "Estimated Finish Time: " + printerClient.getEstimatedEndTime() + "<br>";
     }
   
     html += "Tool Temperature: " + printerClient.getTempToolActual() + "&#176; C<br>";
@@ -963,6 +975,44 @@ void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
   display->drawString(64 + x, 14 + y, time);
 }
 
+void drawScreen4(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+  
+  String layer = printerClient.getCurrentLayer();
+  String totalLayers = printerClient.getTotalLayers();
+  if (printerClient.getTotalLayers().toInt() >= 1000) {
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    display->setFont(ArialMT_Plain_16);
+  
+    display->drawString(64 + x, 0 + y, "Layer");
+    //display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->setFont(ArialMT_Plain_16);
+  
+    display->drawString(64 + x, 16 + y, layer + " / " + totalLayers);
+  } else {
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->setFont(ArialMT_Plain_16);
+
+  display->drawString(64 + x, 0 + y, "Layer");
+  //display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->setFont(ArialMT_Plain_24);
+
+  display->drawString(64 + x, 14 + y, layer + " / " + totalLayers);
+  }
+}
+
+void drawScreen5(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+  
+  String EstimatedEnd = printerClient.getEstimatedEndTime();
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->setFont(ArialMT_Plain_16);
+
+  display->drawString(64 + x, 0 + y, "End Time");
+  //display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->setFont(ArialMT_Plain_24);
+
+  display->drawString(64 + x, 14 + y, EstimatedEnd);
+}
+
 void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->setTextAlignment(TEXT_ALIGN_CENTER);
   
@@ -991,6 +1041,39 @@ void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
   display->drawString(0 + x, 24 + y, weatherClient.getCondition(0));
   display->setFont((const uint8_t*)Meteocons_Plain_42);
   display->drawString(86 + x, 0 + y, weatherClient.getWeatherIcon(0));
+}
+
+void drawUpdate(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  display->setFont(ArialMT_Plain_16);
+
+  display->drawString(64 + x, 0 + y, "Next Update:");
+  //display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->setFont(ArialMT_Plain_24);
+
+  display->drawString(64 + x, 14 + y, getTimeTillUpdate());
+}
+
+String getTimeTillUpdate() {
+  String rtnValue = "";
+
+  long timeToUpdate = (((minutesBetweenDataRefresh * 60) + lastEpoch) - timeClient.getCurrentEpoch());
+
+  int hours = numberOfHours(timeToUpdate);
+  int minutes = numberOfMinutes(timeToUpdate);
+  int seconds = numberOfSeconds(timeToUpdate);
+
+  rtnValue += String(hours) + ":";
+  if (minutes < 10) {
+    rtnValue += "0";
+  }
+  rtnValue += String(minutes) + ":";
+  if (seconds < 10) {
+    rtnValue += "0";
+  }
+  rtnValue += String(seconds);
+
+  return rtnValue;
 }
 
 String getTempSymbol() {

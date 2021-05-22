@@ -59,6 +59,9 @@ private:
     String state;
     String toolTemp;
     String toolTargetTemp;
+    String currentLayer;
+    String totalLayers;
+    String estimatedEndTime;
     String filamentLength;
     String bedTemp;
     String bedTargetTemp;
@@ -92,6 +95,9 @@ public:
   boolean isPSUoff();
   String getTempBedActual();
   String getTempBedTarget();
+  String getEstimatedEndTime();
+  String getCurrentLayer();
+  String getTotalLayers();
   String getTempToolActual();
   String getTempToolTarget();
   String getFilamentLength();

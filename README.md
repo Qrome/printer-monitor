@@ -10,6 +10,9 @@ Now available is the Pre Loaded Monitor Board Kit that comes ready to plug and p
 * Displays the print status from OctoPrint or Repetier Server
 * Option to display time and weather when printer is idle
 * Estimated time remaining
+* Estimated End Time
+* Current Layer
+* Total Layers
 * Time Printing
 * Percentage complete
 * Progress bar
@@ -24,6 +27,7 @@ Now available is the Pre Loaded Monitor Board Kit that comes ready to plug and p
 * Fully configurable from the web interface (not required to update Settings.h)
 * Supports OTA (loading firmware over WiFi connection on same LAN)
 * Basic Authentication to protect your settings
+* Next Scheduled Update
 * Version 2.2 added the ability to update firmware through web interface from a compiled binary
 * Can query the Octoprint [PSU Control plugin](https://plugins.octoprint.org/plugins/psucontrol/) to enter clock or blank mode when PSU is off
 * Repetier support added in version 3.0 -- define in Settings.h
