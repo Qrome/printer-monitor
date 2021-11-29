@@ -237,6 +237,16 @@ void OctoPrintClient::getPrinterJobResults() {
   if (printing == "true") {
     printerData.isPrinting = true;
   } else {
+    if (printerData.isPrinting) {
+      // Print complete chime
+      tone(D6, 450);
+      delay(250);
+      noTone(D6);
+      delay(250);
+      tone(D6, 450);
+      delay(250);
+      noTone(D6);
+    }
     printerData.isPrinting = false;
   }
   printerData.toolTemp = (const char*)root2["temperature"]["tool0"]["actual"];

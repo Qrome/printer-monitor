@@ -196,7 +196,12 @@ static const char COLOR_THEMES[] PROGMEM = "<option>red</option>"
                       "<option>w3schools</option>";
                             
 
-void setup() {  
+void setup() {
+  // Play a test beep
+  tone(D6, 450);
+  delay(250);
+  noTone(D6);
+  
   Serial.begin(115200);
   SPIFFS.begin();
   delay(10);
