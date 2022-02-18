@@ -23,6 +23,7 @@ SOFTWARE.
 
 // Additional Contributions:
 /* 15 Jan 2019 : Owen Carter : Add psucontrol option and processing */
+/* 18 Feb 2022 : Robert von Könemann @vknmnn : Lets us select Moonraker + fix usage of AMPM/24Hrs time */
 
  /**********************************************
  * Edit Settings.h for personalization
@@ -87,6 +88,8 @@ boolean displayOn = true;
 // Printer Client
 #if defined(USE_REPETIER_CLIENT)
   RepetierClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
+#elif defined(USE_MOONRAKER_CLIENT)
+  MoonrakerClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
 #else
   OctoPrintClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
 #endif
@@ -418,8 +421,11 @@ void getUpdateTime() {
   //Update the Time
   timeClient.updateTime();
   lastEpoch = timeClient.getCurrentEpoch();
-  Serial.println("Local time: " + timeClient.getAmPmFormattedTime());
-
+  if (IS_24HOUR) {
+    Serial.println("Local time: " + timeClient.getFormattedTime());
+  } else {
+    Serial.println("Local time: " + timeClient.getAmPmFormattedTime());
+  }
   ledOnOff(false);  // turn off the LED
 }
 
@@ -769,10 +775,11 @@ void displayPrinterStatus() {
   server.setContentLength(CONTENT_LENGTH_UNKNOWN);
   server.send(200, "text/html", "");
   server.sendContent(String(getHeader(true)));
-
-  String displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds() + " " + timeClient.getAmPm();
+  String displayTime;
   if (IS_24HOUR) {
     displayTime = timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  } else {
+    displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds() + " " + timeClient.getAmPm();
   }
   
   html += "<div class='w3-cell-row' style='width:100%'><h2>" + printerClient.getPrinterType() + " Monitor</h2></div><div class='w3-cell-row'>";
@@ -965,10 +972,11 @@ void drawScreen3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int
 
 void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   display->setTextAlignment(TEXT_ALIGN_CENTER);
-  
-  String displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
+  String displayTime;
   if (IS_24HOUR) {
     displayTime = timeClient.getHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds(); 
+  } else {
+    displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes() + ":" + timeClient.getSeconds();
   }
   String displayName = PrinterHostName;
   if (printerClient.getPrinterType() == "Repetier") {
@@ -1029,9 +1037,11 @@ String zeroPad(int value) {
 void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   display->setColor(WHITE);
   display->setFont(ArialMT_Plain_16);
-  String displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes();
+  String displayTime;
   if (IS_24HOUR) {
     displayTime = timeClient.getHours() + ":" + timeClient.getMinutes();
+  } else {
+    displayTime = timeClient.getAmPmHours() + ":" + timeClient.getMinutes();
   }
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawString(0, 48, displayTime);
