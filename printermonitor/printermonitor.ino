@@ -30,7 +30,7 @@ SOFTWARE.
 
 #include "Settings.h"
 
-#define VERSION "3.0"
+#define VERSION "4.0"
 
 #define HOSTNAME "PrintMon-" 
 #define CONFIG "/conf.txt"
@@ -307,6 +307,7 @@ void setup() {
     server.on("/updateweatherconfig", handleUpdateWeather);
     server.on("/configure", handleConfigure);
     server.on("/configureweather", handleWeatherConfigure);
+    server.on("/resetadmin", handleResetAdmin);
     server.onNotFound(redirectHome);
     serverUpdater.setup(&server, "/update", www_username, www_password);
     // Start the server
@@ -428,6 +429,18 @@ boolean authentication() {
     return server.authenticate(www_username, www_password);
   } 
   return true; // Authentication not required
+}
+
+//ONLY USED in Special Build
+void handleResetAdmin() {
+  Serial.println("Reset System Configuration");
+  if (SPIFFS.remove(CONFIG)) {
+    Serial.println("Config settings removed...");
+  }
+  redirectHome();
+  WiFiManager wifiManager;
+  wifiManager.resetSettings();
+  ESP.restart();
 }
 
 void handleSystemReset() {
