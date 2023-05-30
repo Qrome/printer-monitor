@@ -84,6 +84,9 @@ String lastSecond = "xx";
 String lastReportStatus = "";
 boolean displayOn = true;
 
+//LDR Status
+int ldrStatus =0;
+
 // Printer Client
 #if defined(USE_REPETIER_CLIENT)
   RepetierClient printerClient(PrinterApiKey, PrinterServer, PrinterPort, PrinterAuthUser, PrinterAuthPass, HAS_PSU);
@@ -394,7 +397,7 @@ void loop() {
   }
 
   checkDisplay(); // Check to see if the printer is on or offline and change display.
-
+  lightOn(); //Check if the lights are on
   ui.update();
 
   if (WEBSERVER_ENABLED) {
@@ -402,6 +405,20 @@ void loop() {
   }
   if (ENABLE_OTA) {
     ArduinoOTA.handle();
+  }
+}
+
+void lightOn() {  //Check LDR status
+  ldrStatus = analogRead(ldrPin);
+  if(ldrStatus>=250){  //Change this value to change the sensitivity of the LDR
+    Serial.print("LDR value will turn on screen");
+  DISPLAYCLOCK = true;
+  //enableDisplay(true);
+  }
+  else{
+    Serial.print("LDR will NOT turn on screen");
+    DISPLAYCLOCK = false;
+  // enableDisplay(false);
   }
 }
 

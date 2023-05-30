@@ -92,13 +92,16 @@ boolean DISPLAYCLOCK = true;   // true = Show Clock when not printing / false = 
 // Display Settings
 const int I2C_DISPLAY_ADDRESS = 0x3c; // I2C Address of your Display (usually 0x3c or 0x3d)
 const int SDA_PIN = D2;
-const int SCL_PIN = D5; // original code D5 -- Monitor Easy Board use D1
+const int SCL_PIN = D3; // original code D5 -- Monitor Easy Board use D1
 boolean INVERT_DISPLAY = false; // true = pins at top | false = pins at the bottom
 //#define DISPLAY_SH1106       // Uncomment this line to use the SH1106 display -- SSD1306 is used by default and is most common
 
 // LED Settings
 const int externalLight = LED_BUILTIN; // LED will always flash on bootup or Wifi Errors
 boolean USE_FLASH = true; // true = System LED will Flash on Service Calls; false = disabled LED flashing
+
+//Light Dependant Resistor (LDR) Port
+const int ldrPin = A0;
 
 // PSU Control
 boolean HAS_PSU = false; // Set to true if https://github.com/kantlivelong/OctoPrint-PSUControl/ in use
