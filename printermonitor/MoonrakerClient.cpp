@@ -46,31 +46,48 @@ void MoonrakerClient::updatePrintClient(String ApiKey, String server, int port, 
 }
 
 boolean MoonrakerClient::validate() {
-  boolean rtnValue = false;
   printerData.error = "";
   if (String(myServer) == "") {
     printerData.error += "Server address is required; ";
+    return false;
   }
-  if (myApiKey == "") {
-    printerData.error += "ApiKey is required; ";
+  return true;
+}
+
+String MoonrakerClient::jsonToString(JsonVariant value) {
+  if (!value.success()) {
+    return "";
   }
-  if (printerData.error == "") {
-    rtnValue = true;
+  if (value.is<const char*>()) {
+    const char* text = value.as<const char*>();
+    return text ? String(text) : "";
   }
-  return rtnValue;
+  return String((double)value);
+}
+
+String MoonrakerClient::toolLabelFromName(String extruderName) {
+  if (extruderName == "extruder") {
+    return "T0";
+  }
+  if (extruderName.startsWith("extruder")) {
+    return "T" + extruderName.substring(8);
+  }
+  return extruderName;
 }
 
 WiFiClient MoonrakerClient::getSubmitRequest(String apiGetData) {
   WiFiClient printClient;
   printClient.setTimeout(5000);
 
-  Serial.println("Getting Octoprint Data via GET");
+  Serial.println("Getting Moonraker Data via GET");
   Serial.println(apiGetData);
   result = "";
   if (printClient.connect(myServer, myPort)) {  //starts client connection, checks for connection
     printClient.println(apiGetData);
     printClient.println("Host: " + String(myServer) + ":" + String(myPort));
-    printClient.println("X-Api-Key: " + myApiKey);
+    if (myApiKey != "") {
+      printClient.println("X-Api-Key: " + myApiKey);
+    }
     if (encodedAuth != "") {
       printClient.print("Authorization: ");
       printClient.println("Basic " + encodedAuth);
@@ -86,17 +103,17 @@ WiFiClient MoonrakerClient::getSubmitRequest(String apiGetData) {
     }
   }
   else {
-    Serial.println("Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+    Serial.println("Connection to Moonraker failed: " + String(myServer) + ":" + String(myPort));
     Serial.println();
     resetPrintData();
-    printerData.error = "Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort);
+    printerData.error = "Connection to Moonraker failed: " + String(myServer) + ":" + String(myPort);
     return printClient;
   }
 
   // Check HTTP status
   char status[32] = {0};
   printClient.readBytesUntil('\r', status, sizeof(status));
-  if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
+  if (strncmp(status, "HTTP/1.1 200", 12) != 0 && strncmp(status, "HTTP/1.0 200", 12) != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
     Serial.print(F("Unexpected response: "));
     Serial.println(status);
     printerData.state = "";
@@ -126,7 +143,9 @@ WiFiClient MoonrakerClient::getPostRequest(String apiPostData, String apiPostBod
     printClient.println(apiPostData);
     printClient.println("Host: " + String(myServer) + ":" + String(myPort));
     printClient.println("Connection: close");
-    printClient.println("X-Api-Key: " + myApiKey);
+    if (myApiKey != "") {
+      printClient.println("X-Api-Key: " + myApiKey);
+    }
     if (encodedAuth != "") {
       printClient.print("Authorization: ");
       printClient.println("Basic " + encodedAuth);
@@ -146,17 +165,17 @@ WiFiClient MoonrakerClient::getPostRequest(String apiPostData, String apiPostBod
     }
   }
   else {
-    Serial.println("Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort)); //error message if no client connect
+    Serial.println("Connection to Moonraker failed: " + String(myServer) + ":" + String(myPort));
     Serial.println();
     resetPrintData();
-    printerData.error = "Connection to OctoPrint failed: " + String(myServer) + ":" + String(myPort);
+    printerData.error = "Connection to Moonraker failed: " + String(myServer) + ":" + String(myPort);
     return printClient;
   }
 
   // Check HTTP status
   char status[32] = {0};
   printClient.readBytesUntil('\r', status, sizeof(status));
-  if (strcmp(status, "HTTP/1.1 200 OK") != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
+  if (strncmp(status, "HTTP/1.1 200", 12) != 0 && strncmp(status, "HTTP/1.0 200", 12) != 0 && strcmp(status, "HTTP/1.1 409 CONFLICT") != 0) {
     Serial.print(F("Unexpected response: "));
     Serial.println(status);
     printerData.state = "";
@@ -179,103 +198,76 @@ void MoonrakerClient::getPrinterJobResults() {
   if (!validate()) {
     return;
   }
-  //**** get the Printer Job status
-  String apiGetData = "GET /printer/objects/query?print_stats&server&virtual_sdcard&toolhead&display_status HTTP/1.1";
+
+  String apiGetData = "GET /printer/objects/query?print_stats=filename,state,print_duration,total_duration,filament_used&virtual_sdcard=progress,file_position,file_size&display_status=progress&heater_bed=temperature,target&toolhead=extruder&extruder=temperature,target&extruder1=temperature,target&extruder2=temperature,target&extruder3=temperature,target HTTP/1.1";
   WiFiClient printClient = getSubmitRequest(apiGetData);
   if (printerData.error != "") {
     return;
   }
-  const size_t bufferSize = JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(3) + 2*JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + 710;
+
+  const size_t bufferSize = 2048;
   DynamicJsonBuffer jsonBuffer(bufferSize);
-
-  // Parse JSON object
   JsonObject& root = jsonBuffer.parseObject(printClient);
+  printClient.stop();
   if (!root.success()) {
-    Serial.println("OctoPrint Data Parsing failed: " + String(myServer) + ":" + String(myPort));
-    printerData.error = "OctoPrint Data Parsing failed: " + String(myServer) + ":" + String(myPort);
+    Serial.println("Moonraker Data Parsing failed: " + String(myServer) + ":" + String(myPort));
+    printerData.error = "Moonraker Data Parsing failed: " + String(myServer) + ":" + String(myPort);
     printerData.state = "";
     return;
   }
 
-  printerData.averagePrintTime =     (const char*)root["result"]["status"]["print_stats"]["print_duration"];
-  printerData.fileName =             (const char*)root["result"]["status"]["print_stats"]["filename"];
-  printerData.fileSize =             (const char*)root["result"]["status"]["virtual_sdcard"]["file_size"];
-  printerData.progressCompletion =   (const char*)root["result"]["status"]["virtual_sdcard"]["progress"];
-  printerData.progressFilepos =      (const char*)root["result"]["status"]["virtual_sdcard"]["file_position"];
-  printerData.progressPrintTime =    (const char*)root["result"]["status"]["print_stats"]["total_duration"];
-  printerData.progressPrintTimeLeft = (const char*) "";
-  printerData.filamentLength =       (const char*)root["result"]["status"]["print_stats"]["filament_used"];
-  printerData.state =                (const char*)root["result"]["status"]["print_stats"]["state"];
+  printerData.fileName = jsonToString(root["result"]["status"]["print_stats"]["filename"]);
+  printerData.state = jsonToString(root["result"]["status"]["print_stats"]["state"]);
+  printerData.averagePrintTime = jsonToString(root["result"]["status"]["print_stats"]["print_duration"]);
+  printerData.progressPrintTime = jsonToString(root["result"]["status"]["print_stats"]["total_duration"]);
+  printerData.filamentLength = jsonToString(root["result"]["status"]["print_stats"]["filament_used"]);
+  printerData.fileSize = jsonToString(root["result"]["status"]["virtual_sdcard"]["file_size"]);
+  printerData.progressFilepos = jsonToString(root["result"]["status"]["virtual_sdcard"]["file_position"]);
 
-  String apiGetHistoryData = "GET /server/history/list?limit=2 HTTP/1.1";
-  WiFiClient printClientHistory = getSubmitRequest(apiGetHistoryData);
-  if (printerData.error != "") {
-    return;
-  }
+  String displayProgress = jsonToString(root["result"]["status"]["display_status"]["progress"]);
+  String sdProgress = jsonToString(root["result"]["status"]["virtual_sdcard"]["progress"]);
+  printerData.progressCompletion = (displayProgress != "") ? displayProgress : sdProgress;
 
-  const size_t bufferSizeHistory = 2048;
-  DynamicJsonBuffer jsonBufferhistory(bufferSizeHistory);
-  JsonObject& roothistory = jsonBufferhistory.parseObject(printClientHistory);
-  if (!roothistory.success()) {
-    Serial.println("OctoPrint Data Parsing failed: " + String(myServer) + ":" + String(myPort));
-    printerData.error = "OctoPrint Data Parsing failed: " + String(myServer) + ":" + String(myPort);
-    printerData.state = "";
-    return;
+  String activeExtruder = jsonToString(root["result"]["status"]["toolhead"]["extruder"]);
+  if (activeExtruder == "" || activeExtruder == "null") {
+    activeExtruder = "extruder";
   }
-  printerData.lastPrintTime = (const char*)roothistory["result"]["jobs"][1]["print_duration"];
+  printerData.activeTool = toolLabelFromName(activeExtruder);
+  printerData.toolTemp = jsonToString(root["result"]["status"][activeExtruder.c_str()]["temperature"]);
+  printerData.toolTargetTemp = jsonToString(root["result"]["status"][activeExtruder.c_str()]["target"]);
+  printerData.bedTemp = jsonToString(root["result"]["status"]["heater_bed"]["temperature"]);
+  printerData.bedTargetTemp = jsonToString(root["result"]["status"]["heater_bed"]["target"]);
 
-  String apiGetFileData = "GET /server/files/metadata?filename=" + urlencode(printerData.fileName) + " HTTP/1.1";
-  WiFiClient printClientFile = getSubmitRequest(apiGetFileData);
-  if (printerData.error != "") {
-    return;
+  printerData.isPrinting = (printerData.state == "printing" || printerData.state == "paused");
+  printerData.estimatedPrintTime = "";
+  printerData.progressPrintTimeLeft = "";
+  printerData.lastPrintTime = "";
+
+  if (printerData.fileName != "" && printerData.fileName != "null") {
+    String apiGetFileData = "GET /server/files/metadata?filename=" + urlencode(printerData.fileName) + " HTTP/1.1";
+    WiFiClient printClientFile = getSubmitRequest(apiGetFileData);
+    if (printerData.error == "") {
+      DynamicJsonBuffer jsonBufferFile(1024);
+      JsonObject& rootfile = jsonBufferFile.parseObject(printClientFile);
+      printClientFile.stop();
+      if (rootfile.success()) {
+        printerData.estimatedPrintTime = jsonToString(rootfile["result"]["estimated_time"]);
+        float estimated = printerData.estimatedPrintTime.toFloat();
+        float progress = printerData.progressCompletion.toFloat();
+        if (estimated > 0 && progress >= 0 && progress < 1) {
+          printerData.progressPrintTimeLeft = String(estimated * (1.0 - progress));
+        }
+      }
+    } else {
+      printerData.error = "";
+    }
   }
-  const size_t bufferSizeFilename = 2048;
-  DynamicJsonBuffer jsonBufferFilename(bufferSize);
-  JsonObject& rootfile = jsonBufferFilename.parseObject(printClientFile);
-  if (!rootfile.success()) {
-    Serial.println("OctoPrint Data Parsing failed: " + String(myServer) + ":" + String(myPort));
-    printerData.error = "OctoPrint Data Parsing failed: " + String(myServer) + ":" + String(myPort);
-    printerData.state = "";
-    return;
-  }
-  printerData.estimatedPrintTime = (const char*)rootfile["result"]["estimated_time"];
 
   if (isOperational()) {
     Serial.println("Status: " + printerData.state);
   } else {
-    Serial.println("Printer Not Operational");
+    Serial.println("Printer Not Operational: " + printerData.state);
   }
-
-  //**** get the Printer Temps and Stat
-  apiGetData = "GET /api/printer?exclude=sd,history HTTP/1.1";
-  printClient = getSubmitRequest(apiGetData);
-  if (printerData.error != "") {
-    return;
-  }
-  const size_t bufferSize2 = 3*JSON_OBJECT_SIZE(2) + 2*JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(9) + 300;
-  DynamicJsonBuffer jsonBuffer2(bufferSize2);
-
-  // Parse JSON object
-  JsonObject& root2 = jsonBuffer2.parseObject(printClient);
-  if (!root2.success()) {
-    printerData.isPrinting = false;
-    printerData.toolTemp = "";
-    printerData.toolTargetTemp = "";
-    printerData.bedTemp = "";
-    printerData.bedTargetTemp = (const char*)root2["temperature"]["bed"]["target"];
-    return;
-  }
-
-  String printing = (const char*)root2["state"]["flags"]["printing"];
-  if (printing == "true") {
-    printerData.isPrinting = true;
-  } else {
-    printerData.isPrinting = false;
-  }
-  printerData.toolTemp = (const char*)root2["temperature"]["tool0"]["actual"];
-  printerData.toolTargetTemp = (const char*)root2["temperature"]["tool0"]["target"];
-  printerData.bedTemp = (const char*)root2["temperature"]["bed"]["actual"];
-  printerData.bedTargetTemp = (const char*)root2["temperature"]["bed"]["target"];
 
   if (isPrinting()) {
     Serial.println("Status: " + printerData.state + " " + printerData.fileName + "(" + getProgressCompletion() + "%)");
@@ -335,6 +327,7 @@ void MoonrakerClient::resetPrintData() {
   printerData.filamentLength = "";
   printerData.bedTemp = "";
   printerData.bedTargetTemp = "";
+  printerData.activeTool = "";
   printerData.isPrinting = false;
   printerData.isPSUoff = false;
   printerData.error = "";
@@ -389,11 +382,13 @@ boolean MoonrakerClient::isPSUoff() {
 }
 
 boolean MoonrakerClient::isOperational() {
-  boolean operational = false;
-  if (printerData.state == "Operational" || isPrinting()) {
-    operational = true;
-  }
-  return operational;
+  return printerData.state == "standby" ||
+         printerData.state == "printing" ||
+         printerData.state == "paused" ||
+         printerData.state == "complete" ||
+         printerData.state == "cancelled" ||
+         printerData.state == "error" ||
+         printerData.state == "Operational";
 }
 
 String MoonrakerClient::getTempBedActual() {
@@ -410,6 +405,10 @@ String MoonrakerClient::getTempToolActual() {
 
 String MoonrakerClient::getTempToolTarget() {
   return printerData.toolTargetTemp;
+}
+
+String MoonrakerClient::getActiveTool() {
+  return printerData.activeTool;
 }
 
 String MoonrakerClient::getFilamentLength() {

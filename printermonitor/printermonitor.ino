@@ -35,6 +35,7 @@ SOFTWARE.
 
 #define HOSTNAME "PrintMon-" 
 #define CONFIG "/conf.txt"
+#define SETTINGS_REVISION "moonraker-u1"
 
 /* Useful Constants */
 #define SECS_PER_MIN  (60UL)
@@ -578,8 +579,8 @@ void handleConfigure() {
   CHANGE_FORM =       "<form class='w3-container' action='/updateconfig' method='get'><h2>Station Config:</h2>"
                       "<p><label>" + printerClient.getPrinterType() + " API Key (get from your server)</label>"
                       "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterApiKey' id='PrinterApiKey' value='%OCTOKEY%' maxlength='60'></p>";
-  if (printerClient.getPrinterType() == "OctoPrint") {
-    CHANGE_FORM +=      "<p><label>" + printerClient.getPrinterType() + " Host Name (usually octopi)</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>";                        
+  if (printerClient.getPrinterType() == "OctoPrint" || printerClient.getPrinterType() == "Moonraker") {
+    CHANGE_FORM +=      "<p><label>" + printerClient.getPrinterType() + " Host Name</label><input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterHostName' value='%OCTOHOST%' maxlength='60'></p>";                        
   }
   CHANGE_FORM +=      "<p><label>" + printerClient.getPrinterType() + " Address (do not include http://)</label>"
                       "<input class='w3-input w3-border w3-margin-bottom' type='text' name='PrinterAddress' id='PrinterAddress' value='%OCTOADDRESS%' maxlength='60'></p>"
@@ -816,7 +817,7 @@ void displayPrinterStatus() {
       html += "Filament: " + String(fLength) + "m<br>";
     }
   
-    html += "Tool Temperature: " + printerClient.getTempToolActual() + "&#176; C<br>";
+    html += printerClient.getActiveTool() + " Temperature: " + printerClient.getTempToolActual() + "&#176; C<br>";
     if ( printerClient.getTempBedActual() != 0 ) {
         html += "Bed Temperature: " + printerClient.getTempBedActual() + "&#176; C<br>";
     }
@@ -920,13 +921,17 @@ void flashLED(int number, int delayTime) {
 void drawScreen1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   String bed = printerClient.getValueRounded(printerClient.getTempBedActual());
   String tool = printerClient.getValueRounded(printerClient.getTempToolActual());
+  String toolLabel = printerClient.getActiveTool();
+  if (toolLabel == "") {
+    toolLabel = "Tool";
+  }
   display->setTextAlignment(TEXT_ALIGN_CENTER);
   display->setFont(ArialMT_Plain_16);
   if (bed != "0") {
-    display->drawString(29 + x, 0 + y, "Tool");
+    display->drawString(29 + x, 0 + y, toolLabel);
     display->drawString(89 + x, 0 + y, "Bed");
   } else {
-    display->drawString(64 + x, 0 + y, "Tool Temp");
+    display->drawString(64 + x, 0 + y, toolLabel + " Temp");
   }
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->setFont(ArialMT_Plain_24);
@@ -992,16 +997,18 @@ void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16
 }
 
 void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+  // Dual-color 0.96" OLEDs are yellow in rows 0-15 and blue below.
+  // Keep each element inside one band so icons/text are not split by color.
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->setFont(ArialMT_Plain_24);
+  display->setFont(ArialMT_Plain_16);
   display->drawString(0 + x, 0 + y, weatherClient.getTempRounded(0) + getTempSymbol());
-  display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->setFont(ArialMT_Plain_24);
 
   display->setFont(ArialMT_Plain_16);
-  display->drawString(0 + x, 24 + y, weatherClient.getCondition(0));
-  display->setFont((const uint8_t*)Meteocons_Plain_42);
-  display->drawString(86 + x, 0 + y, weatherClient.getWeatherIcon(0));
+  display->drawString(0 + x, 18 + y, weatherClient.getCondition(0));
+
+  display->setTextAlignment(TEXT_ALIGN_RIGHT);
+  display->setFont((const uint8_t*)Meteocons_Plain_21);
+  display->drawString(128 + x, 17 + y, weatherClient.getWeatherIcon(0));
 }
 
 String getTempSymbol() {
@@ -1048,17 +1055,20 @@ void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   }
   display->setTextAlignment(TEXT_ALIGN_LEFT);
   display->drawString(0, 48, displayTime);
-  
+  int timeRight = display->getStringWidth(displayTime);
+
   if (!IS_24HOUR) {
     String ampm = timeClient.getAmPm();
     display->setFont(ArialMT_Plain_10);
-    display->drawString(39, 54, ampm);
+    display->drawString(timeRight + 2, 53, ampm);
+    timeRight += 2 + display->getStringWidth(ampm);
   }
 
   display->setFont(ArialMT_Plain_16);
-  display->setTextAlignment(TEXT_ALIGN_LEFT);
-  String percent = String(printerClient.getProgressCompletion()) + "%";
-  display->drawString(64, 48, percent);
+  display->setTextAlignment(TEXT_ALIGN_CENTER);
+  String percent = printerClient.getValueRounded(printerClient.getProgressCompletion()) + "%";
+  const int wifiLeft = 114;
+  display->drawString((timeRight + wifiLeft) / 2, 48, percent);
   
   // Draw indicator to show next update
   int updatePos = (printerClient.getProgressCompletion().toFloat() / float(100)) * 128;
@@ -1080,7 +1090,7 @@ void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     if (printerClient.isPSUoff()) {
       display->drawString(64, 47, "psu off");
-    } else if (printerClient.getState() == "Operational") {
+    } else if (printerClient.isOperational()) {
       display->drawString(64, 47, "online");
     } else {
       display->drawString(64, 47, "offline");
@@ -1088,7 +1098,7 @@ void drawClockHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
   } else {
     if (printerClient.isPSUoff()) {
       display->drawString(0, 47, "psu off");
-    } else if (printerClient.getState() == "Operational") {
+    } else if (printerClient.isOperational()) {
       display->drawString(0, 47, "online");
     } else {
       display->drawString(0, 47, "offline");
@@ -1156,15 +1166,32 @@ void writeSettings() {
     f.println("isMetric=" + String(IS_METRIC));
     f.println("language=" + String(WeatherLanguage));
     f.println("hasPSU=" + String(HAS_PSU));
+    f.println("settingsRevision=" + String(SETTINGS_REVISION));
   }
   f.close();
   readSettings();
   timeClient.setUtcOffset(UtcOffset);
+  timeClient.setObserveDst(OBSERVE_DST);
 }
 
 void readSettings() {
   if (SPIFFS.exists(CONFIG) == false) {
     Serial.println("Settings File does not yet exists.");
+    writeSettings();
+    return;
+  }
+  File peek = SPIFFS.open(CONFIG, "r");
+  String storedRevision = "";
+  while (peek.available()) {
+    String peekLine = peek.readStringUntil('\n');
+    if (peekLine.indexOf("settingsRevision=") >= 0) {
+      storedRevision = peekLine.substring(peekLine.lastIndexOf("settingsRevision=") + 17);
+      storedRevision.trim();
+    }
+  }
+  peek.close();
+  if (storedRevision != String(SETTINGS_REVISION)) {
+    Serial.println("Settings revision changed; applying Settings.h printer defaults");
     writeSettings();
     return;
   }
@@ -1287,6 +1314,7 @@ void readSettings() {
   weatherClient.setMetric(IS_METRIC);
   weatherClient.updateCityIdList(CityIDs, 1);
   timeClient.setUtcOffset(UtcOffset);
+  timeClient.setObserveDst(OBSERVE_DST);
 }
 
 int getMinutesFromLastRefresh() {

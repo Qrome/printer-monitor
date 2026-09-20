@@ -336,6 +336,10 @@ String RepetierClient::getTempToolTarget() {
   return printerData.toolTargetTemp;
 }
 
+String RepetierClient::getActiveTool() {
+  return "Tool";
+}
+
 String RepetierClient::getFilamentLength() {
   return printerData.filamentLength;
 }

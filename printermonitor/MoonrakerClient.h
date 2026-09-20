@@ -42,6 +42,8 @@ class MoonrakerClient {
 
     void resetPrintData();
     boolean validate();
+    String jsonToString(JsonVariant value);
+    String toolLabelFromName(String extruderName);
     WiFiClient getSubmitRequest(String apiGetData);
     WiFiClient getPostRequest(String apiPostData, String apiPostBody);
 
@@ -63,6 +65,7 @@ class MoonrakerClient {
       String filamentLength;
       String bedTemp;
       String bedTargetTemp;
+      String activeTool;
       boolean isPrinting;
       boolean isPSUoff;
       String error;
@@ -95,6 +98,7 @@ class MoonrakerClient {
     String getTempBedTarget();
     String getTempToolActual();
     String getTempToolTarget();
+    String getActiveTool();
     String getFilamentLength();
     String getValueRounded(String value);
     String getError();

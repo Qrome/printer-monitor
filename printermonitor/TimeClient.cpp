@@ -70,6 +70,32 @@ void TimeClient::updateTime() {
         localEpoc = (parsedHours * 60 * 60 + parsedMinutes * 60 + parsedSeconds);
         Serial.println(localEpoc);
         localMillisAtUpdate = millis();
+
+        dstOffsetHours = 0;
+        if (observeDst) {
+          int comma = line.indexOf(',');
+          if (comma > 0) {
+            int idx = comma + 1;
+            while (idx < (int)line.length() && line.charAt(idx) == ' ') {
+              idx++;
+            }
+            int parsedDay = line.substring(idx).toInt();
+            while (idx < (int)line.length() && line.charAt(idx) != ' ') {
+              idx++;
+            }
+            while (idx < (int)line.length() && line.charAt(idx) == ' ') {
+              idx++;
+            }
+            String monthName = line.substring(idx, idx + 3);
+            idx += 4;
+            int parsedYear = line.substring(idx).toInt();
+            int parsedMonth = monthFromName(monthName);
+            if (parsedYear > 2000 && parsedMonth > 0 && isUsDaylightSaving(parsedYear, parsedMonth, parsedDay, parsedHours)) {
+              dstOffsetHours = 1;
+            }
+            Serial.println("Date: " + String(parsedYear) + "-" + String(parsedMonth) + "-" + String(parsedDay) + " DST=" + String(dstOffsetHours));
+          }
+        }
         client.stop();
       }
     }
@@ -79,6 +105,65 @@ void TimeClient::updateTime() {
 
 void TimeClient::setUtcOffset(float utcOffset) {
 	myUtcOffset = utcOffset;
+}
+
+void TimeClient::setObserveDst(boolean observe) {
+  observeDst = observe;
+}
+
+int TimeClient::monthFromName(String monthName) {
+  if (monthName == "JAN") return 1;
+  if (monthName == "FEB") return 2;
+  if (monthName == "MAR") return 3;
+  if (monthName == "APR") return 4;
+  if (monthName == "MAY") return 5;
+  if (monthName == "JUN") return 6;
+  if (monthName == "JUL") return 7;
+  if (monthName == "AUG") return 8;
+  if (monthName == "SEP") return 9;
+  if (monthName == "OCT") return 10;
+  if (monthName == "NOV") return 11;
+  if (monthName == "DEC") return 12;
+  return 0;
+}
+
+int TimeClient::dayOfWeek(int year, int month, int day) {
+  static const int t[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+  int y = year;
+  if (month < 3) {
+    y -= 1;
+  }
+  return (y + y / 4 - y / 100 + y / 400 + t[month - 1] + day) % 7;
+}
+
+int TimeClient::nthSunday(int year, int month, int n) {
+  int dow1 = dayOfWeek(year, month, 1);
+  int firstSunday = (dow1 == 0) ? 1 : (8 - dow1);
+  return firstSunday + ((n - 1) * 7);
+}
+
+boolean TimeClient::isUsDaylightSaving(int year, int month, int day, int utcHour) {
+  if (month < 3 || month > 11) {
+    return false;
+  }
+  if (month > 3 && month < 11) {
+    return true;
+  }
+
+  int startDay = nthSunday(year, 3, 2);
+  int endDay = nthSunday(year, 11, 1);
+  int startUtcHour = (int)round(2.0 - myUtcOffset);
+  int endUtcHour = (int)round(2.0 - (myUtcOffset + 1));
+
+  if (month == 3) {
+    if (day < startDay) return false;
+    if (day > startDay) return true;
+    return utcHour >= startUtcHour;
+  }
+
+  if (day < endDay) return true;
+  if (day > endDay) return false;
+  return utcHour < endUtcHour;
 }
 
 String TimeClient::getHours() {
@@ -148,5 +233,5 @@ long TimeClient::getCurrentEpoch() {
 }
 
 long TimeClient::getCurrentEpochWithUtcOffset() {
-  return (long)round(getCurrentEpoch() + 3600 * myUtcOffset + 86400L) % 86400L;
+  return (long)round(getCurrentEpoch() + 3600 * (myUtcOffset + dstOffsetHours) + 86400L) % 86400L;
 }

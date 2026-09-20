@@ -94,6 +94,7 @@ public:
   String getTempBedTarget();
   String getTempToolActual();
   String getTempToolTarget();
+  String getActiveTool();
   String getFilamentLength();
   String getValueRounded(String value);
   String getError();

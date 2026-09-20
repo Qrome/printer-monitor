@@ -383,6 +383,10 @@ String OctoPrintClient::getTempToolTarget() {
   return printerData.toolTargetTemp;
 }
 
+String OctoPrintClient::getActiveTool() {
+  return "Tool";
+}
+
 String OctoPrintClient::getFilamentLength() {
   return printerData.filamentLength;
 }
