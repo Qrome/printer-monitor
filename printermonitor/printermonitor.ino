@@ -997,18 +997,16 @@ void drawClock(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16
 }
 
 void drawWeather(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
-  // Dual-color 0.96" OLEDs are yellow in rows 0-15 and blue below.
-  // Keep each element inside one band so icons/text are not split by color.
   display->setTextAlignment(TEXT_ALIGN_LEFT);
-  display->setFont(ArialMT_Plain_16);
+  display->setFont(ArialMT_Plain_24);
   display->drawString(0 + x, 0 + y, weatherClient.getTempRounded(0) + getTempSymbol());
+  display->setTextAlignment(TEXT_ALIGN_LEFT);
+  display->setFont(ArialMT_Plain_24);
 
   display->setFont(ArialMT_Plain_16);
-  display->drawString(0 + x, 18 + y, weatherClient.getCondition(0));
-
-  display->setTextAlignment(TEXT_ALIGN_RIGHT);
-  display->setFont((const uint8_t*)Meteocons_Plain_21);
-  display->drawString(128 + x, 17 + y, weatherClient.getWeatherIcon(0));
+  display->drawString(0 + x, 24 + y, weatherClient.getCondition(0));
+  display->setFont((const uint8_t*)Meteocons_Plain_42);
+  display->drawString(86 + x, 0 + y, weatherClient.getWeatherIcon(0));
 }
 
 String getTempSymbol() {
